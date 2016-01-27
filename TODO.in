@@ -1,0 +1,34 @@
+@PACKAGE@ -- TODO file.  @DATE@
+
+Work to do on applets:
+
+av-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+
+bt-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+
+dh-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+
+hal-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+- [ ] this should probably be a udev applet
+
+pk-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+
+sd-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+
+wl-applet: not converted yet
+
+- [ ] convert this applet from perl(1)
+
+# vim: set ft=asciidoc tw=72 nocin nosi fo+=tcqlorn:
