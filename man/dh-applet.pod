@@ -1,0 +1,68 @@
+=pod
+
+=head1 NAME
+
+ dh-applet - an Avahi system tray applet
+
+=head1 SYNOPSIS
+
+ dh-applet [ OPTIONS ]
+ dh-applet --quit [ OPTIONS ]
+ dh-applet --replace [ OPTIONS ]
+ dh-applet --help [ OPTIONS ]
+ dh-applet --version
+ dh-applet --copying
+
+=head1 DESCRIPTION
+
+=head1 ARGUMENTS
+
+=head1 OPTIONS
+
+=head2 COMMAND OPTIONS
+
+=head2 GENERAL OPTIONS
+
+=head2 SESSION MANAGEMENT OPTIONS
+
+X session management options are not used by another user other than the
+X11 Session Manager.  The following options are used by X session
+management:
+
+=over
+
+=item B<-clientId> I<CLIENTID>
+
+Specifies the X Session Management client identifier of the previously
+running session of B<xde-winlist>.
+
+=item B<-restore> I<SAVEFILE>
+
+Specifies the X Session Management filename of a file to which to save
+session information.
+
+=back
+
+=head1 USAGE
+
+=head1 ENVIRONMENT
+
+=head1 HISTORY
+
+=head1 AUTHOR
+
+Brian Bidulock L<mailto:bidulock@openss7.org>.
+
+=head1 SEE ALSO
+
+L<xde-applets(5)>.
+
+=head1 LICENSE
+
+See the F<COPYING> file in the distribution or use the B<--copying> flag
+to display copying permissions.
+
+=cut
+
+# vim: set sw=4 tw=72 nocin spell spelllang=en_ca:
+

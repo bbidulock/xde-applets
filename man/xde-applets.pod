@@ -1,0 +1,89 @@
+=pod
+
+=head1 NAME
+
+xde-applets - package of 'C' language system tray applets for XDE
+
+=head1 DESCRIPTION
+
+Provides a set of system tray applets for use with an Arch Linux based
+system.  The system tray icons provided in this package are as follows:
+
+=over
+
+=item L<av-applet(1)>
+
+Provides a system tray applet for monitoring DDNS and DNS-SD networks.
+
+
+=item L<bt-applet(1)>
+
+Provides a system tray applet for connecting bluetooth devices to a
+computer.
+
+=item L<dh-applet(1)>
+
+Provides a system tray applet for establishing connections with the DHCP
+client daemon (L<dhcpcd(8)>).
+
+=item L<hal-applet(1)>
+
+Provides a system tray applet for monitoring HAL (which in turn monitors
+devices and system resources).
+
+=item L<pk-applet(1)>
+
+Provides a system tray applet for monitoring and maintaining ArchLinux
+packages.
+
+=item L<sd-applet(1)>
+
+Provides a system tray applet for monitoring L<systemd(1)> activities.
+
+=item L<wl-applet(1)>
+
+Provide a system tray applet for forming wireless network connections
+using L<wpa_supplicant(1)>.
+
+=back
+
+=head1 CAVEATS
+
+Not all of the programs of the original separate perl packages have
+been converted successfully to C<C>.
+
+=head1 HISTORY
+
+Many of the tools in the B<xde-applets> package were originally written
+as perl programs in separate packages.  One of the problems with
+using perl for various things X is that perl has no support for various
+libraries such as ICE, X11 session management and startup notification.
+These libraries are useful things for a desktop environment.  Therefore,
+each of the applets in the separate packages were converted from
+perl programs to C<C> language programs.
+
+=head1 AUTHOR
+
+Brian Bidulock L<mailto:bidulock@openss7.org>.
+
+=head1 SEE ALSO
+
+L<av-applet(1)>,
+L<av-applet(1)>,
+L<bt-applet(1)>,
+L<dh-applet(1)>,
+L<hal-applet(1)>,
+L<pk-applet(1)>,
+L<sd-applet(1)>,
+L<wl-applet(1)>,
+L<wpa_supplicant(1)>,
+L<dhcpcd(1)>
+
+=head1 LICENSE
+
+See the F<COPYING> file in the distribution or use the B<--copying> flag
+to display copying permissions.
+
+=cut
+
+# vim: set sw=4 tw=72 nocin spell spelllang=en_ca:
