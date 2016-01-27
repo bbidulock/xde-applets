@@ -1,15 +1,15 @@
 [Desktop Entry]
 Encoding=UTF-8
 Type=Application
-Name=??? Applet
+Name=Wireless Applet
 GenericName=Tray Icon
-Comment=A ??? System Tray Icon
-Icon=
-TryExec=sl-applet
-Exec=sl-applet
+Comment=A Wireless System Tray Icon
+Icon=network-wireless
+TryExec=wl-applet
+Exec=wl-applet
 Categories=XDE;System;Utilities;TrayIcon;
 NotShowIn=GNOME;KDE;XFCE;LXDE;
 StartupNotify=true
-StartupWMClass=av-applet
+StartupWMClass=wlApplet
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Phase=Application
