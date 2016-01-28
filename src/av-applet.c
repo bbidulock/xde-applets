@@ -398,7 +398,7 @@ on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	gtk_menu_append(menu, item);
 
 	item = gtk_image_menu_item_new_with_label("VNC...");
-	imag = gtk_image_new_from_icon_name("system-file-Manager", GTK_ICON_SIZE_MENU);
+	imag = gtk_image_new_from_icon_name("system-file-manager", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
 	g_signal_connect(item, "activate", G_CALLBACK(on_vnc_selected), xscr);
 	gtk_widget_show(item);
