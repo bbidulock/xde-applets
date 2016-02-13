@@ -1,7 +1,7 @@
 
 ## xde-applets
 
-Package xde-applets-0.3.1 was released under GPL license 2016-01-27.
+Package xde-applets-0.3.9 was released under GPL license 2016-01-28.
 
 This package provides a number of "C"-language applets for the system
 tray that provide various functions from package management to wireless
@@ -12,12 +12,12 @@ and to provide access to libraries not available from perl(1).
 
 ### Release
 
-This is the `xde-applets-0.3.1` package, released 2016-01-27.  This release,
+This is the `xde-applets-0.3.9` package, released 2016-01-28.  This release,
 and the latest version, can be obtained from the GitHub repository at
-http://github.com/bbidulock/xde-applets, using a command such as:
+https://github.com/bbidulock/xde-applets, using a command such as:
 
 ```bash
-git clone http://github.com/bbidulock/xde-applets.git
+git clone https://github.com/bbidulock/xde-applets.git
 ```
 
 Please see the [NEWS](NEWS) file for release notes and history of user visible
@@ -40,7 +40,7 @@ The quickest and easiest way to get xde-applets up and running is to run
 the following commands:
 
 ```bash
-git clone http://github.com/bbidulock/xde-applets.git xde-applets
+git clone https://github.com/bbidulock/xde-applets.git xde-applets
 cd xde-applets
 ./autogen.sh
 ./configure --prefix=/usr
@@ -63,5 +63,5 @@ Read the manual pages after installation:
 
 ### Issues
 
-Report issues to http://github.com/bbidulock/xde-applets/issues.
+Report issues to https://github.com/bbidulock/xde-applets/issues.
 
