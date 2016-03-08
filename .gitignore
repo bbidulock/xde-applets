@@ -39,7 +39,7 @@ README
 scripts
 scripts/
 stamp-h*
-.*.sw[op]
+.*.sw[nop]
 THANKS
 TODO
 *-applet
