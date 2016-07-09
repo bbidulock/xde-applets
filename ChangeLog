@@ -1,0 +1,195 @@
+# created with git log --stat=76 -M -C|fmt -sct -w80
+
+commit 0d31c504d82666bc582d09ac0fbfa437c5b31a96
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 04:55:44 2016 -0700
+
+    skeleton for wl-applet
+
+ src/wl-applet.c | 2071 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 2069 insertions(+), 2 deletions(-)
+
+commit da590ccf055d58b5662eb42b1f231d0b436d940a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 04:47:30 2016 -0700
+
+    skeleton for sd-applet
+
+ src/sd-applet.c | 2071 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 2069 insertions(+), 2 deletions(-)
+
+commit 02638dfa75d32d94b937c67effaecbc5cdd87ab0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 04:40:40 2016 -0700
+
+    skeleton for pk-applet
+
+ src/av-applet.c |    2 +-
+ src/pk-applet.c | 2083 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 2082 insertions(+), 3 deletions(-)
+
+commit 57d657f1387ebedc64af77ec92465b86eac0f2cf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 04:31:32 2016 -0700
+
+    skeleton for hal-applet
+
+ src/hal-applet.c | 2060 +++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 2058 insertions(+), 2 deletions(-)
+
+commit 3157fa8709136318f38dd2bacad73338d76f9681
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 04:15:07 2016 -0700
+
+    skeleton for dh-applet
+
+ src/dh-applet.c | 2049 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 2047 insertions(+), 2 deletions(-)
+
+commit a330d08847c287cf02fd466e5832dc2e9bdf89df
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 04:05:18 2016 -0700
+
+    skeleton  for bt-applet
+
+ src/bt-applet.c | 2049 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 2047 insertions(+), 2 deletions(-)
+
+commit a6020ee7f8ca83f88300664a3e1bf31bd95b45ec
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 28 03:52:54 2016 -0700
+
+    skeleton for av-applet
+
+ src/av-applet.c | 2083 ++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 2081 insertions(+), 2 deletions(-)
+
+commit a9c4f502ef9ae4fc6c3df5c25f910a0aa98de937
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 18:55:44 2016 -0700
+
+    add copyright headers
+
+ README.md        |  4 ++--
+ src/av-applet.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/bt-applet.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/dh-applet.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/hal-applet.c | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/pk-applet.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/sd-applet.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ src/wl-applet.c  | 44 ++++++++++++++++++++++++++++++++++++++++++++
+ 8 files changed, 310 insertions(+), 2 deletions(-)
+
+commit 0f58542f89989ab7c7e6c4d3bab003c0791c535a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 16:42:11 2016 -0700
+
+    correct icons
+
+ data/av-applet.desktop  |  4 ++--
+ data/bt-applet.desktop  |  4 ++--
+ data/dh-applet.desktop  |  4 ++--
+ data/hal-applet.desktop |  4 ++--
+ data/pk-applet.desktop  |  4 ++--
+ data/sd-applet.desktop  |  4 ++--
+ data/wl-applet.desktop  | 12 ++++++------
+ 7 files changed, 18 insertions(+), 18 deletions(-)
+
+commit d7870c43bff43ae6394d17b77b6754d1bd6f2058
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 16:29:58 2016 -0700
+
+    update release
+
+ README.md | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 1f1e1c98d7be7eec874c24266678fe224fa74871
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 16:22:38 2016 -0700
+
+    builds
+
+ README.md           |  4 +--
+ man/av-applet.pod   | 68 +++++++++++++++++++++++++++++++++++++
+ man/bt-applet.pod   | 68 +++++++++++++++++++++++++++++++++++++
+ man/dh-applet.pod   | 68 +++++++++++++++++++++++++++++++++++++
+ man/hal-applet.pod  | 68 +++++++++++++++++++++++++++++++++++++
+ man/pk-applet.pod   | 68 +++++++++++++++++++++++++++++++++++++
+ man/sd-applet.pod   | 68 +++++++++++++++++++++++++++++++++++++
+ man/wl-applet.pod   | 68 +++++++++++++++++++++++++++++++++++++
+ man/xde-applets.pod | 89 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 9 files changed, 567 insertions(+), 2 deletions(-)
+
+commit 8b5f6df174555adb28dce619d6afe0d90959c537
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 16:03:17 2016 -0700
+
+    initial build system
+
+ Makefile.am      | 41 +++++++++++++++++++++++++++++++++++++++++
+ README.md        |  4 ++--
+ src/av-applet.c  |  4 ++++
+ src/bt-applet.c  |  4 ++++
+ src/dh-applet.c  |  4 ++++
+ src/hal-applet.c |  4 ++++
+ src/pk-applet.c  |  4 ++++
+ src/sd-applet.c  |  4 ++++
+ src/wl-applet.c  |  4 ++++
+ 9 files changed, 71 insertions(+), 2 deletions(-)
+
+commit b7c7961b034289b533a41710cc9966a7ede9436c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 15:44:03 2016 -0700
+
+    initial updates
+
+ AUTHORS.in | 1 +
+ README.md  | 4 ++--
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+commit 83aa5fc0649aa15a28bf6663ce869f92f38ce897
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Jan 27 15:39:17 2016 -0700
+
+    initial commit
+
+ .gitignore              |  45 +++++++++++++++
+ AUTHORS.in              |   2 +
+ Makefile.am             |   0
+ NEWS.in                 |   8 +++
+ README.in               |  70 ++++++++++++++++++++++
+ README.md               |  67 +++++++++++++++++++++
+ README.md.in            |  67 +++++++++++++++++++++
+ THANKS.in               |   3 +
+ TODO.in                 |  34 +++++++++++
+ autogen.sh              |  45 +++++++++++++++
+ configure.sh            |  38 ++++++++++++
+ configure.template      | 138 ++++++++++++++++++++++++++++++++++++++++++++
+ data/Makefile.am        |  20 +++++++
+ data/av-applet.desktop  |  16 +++++
+ data/bt-applet.desktop  |  15 +++++
+ data/dh-applet.desktop  |  15 +++++
+ data/hal-applet.desktop |  15 +++++
+ data/pk-applet.desktop  |  15 +++++
+ data/sd-applet.desktop  |  15 +++++
+ data/wl-applet.desktop  |  15 +++++
+ man/Makefile.am         |  40 +++++++++++++
+ man/av-applet.pod       |   0
+ man/bt-applet.pod       |   0
+ man/dh-applet.pod       |   0
+ man/hal-applet.pod      |   0
+ man/pk-applet.pod       |   0
+ man/sd-applet.pod       |   0
+ man/wl-applet.pod       |   0
+ man/xde-applets.pod     |   0
+ rebuild.sh              |   8 +++
+ src/Makefile.am         |  48 +++++++++++++++
+ src/av-applet.c         |   0
+ src/bt-applet.c         |   0
+ src/dh-applet.c         |   0
+ src/hal-applet.c        |   0
+ src/pk-applet.c         |   0
+ src/sd-applet.c         |   0
+ src/wl-applet.c         |   0
+ 38 files changed, 739 insertions(+)

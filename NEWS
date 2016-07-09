@@ -1,6 +1,6 @@
-@PACKAGE@ -- NEWS file.  @DATE@
+xde-applets -- NEWS file.  2016-01-28
 
-Release @PACKAGE@-@VERSION@
+Release xde-applets-0.3.9
 ===========================
 
 git shortlog -e -n -w80,6,8 ..0.1
