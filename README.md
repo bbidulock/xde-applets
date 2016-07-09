@@ -1,7 +1,7 @@
 
 ## xde-applets
 
-Package xde-applets-0.3.9 was released under GPL license 2016-01-28.
+Package xde-applets-0.4 was released under GPL license 2016-07-09.
 
 This package provides a number of "C"-language applets for the system
 tray that provide various functions from package management to wireless
@@ -12,7 +12,7 @@ and to provide access to libraries not available from perl(1).
 
 ### Release
 
-This is the `xde-applets-0.3.9` package, released 2016-01-28.  This release,
+This is the `xde-applets-0.4` package, released 2016-07-09.  This release,
 and the latest version, can be obtained from the GitHub repository at
 https://github.com/bbidulock/xde-applets, using a command such as:
 
