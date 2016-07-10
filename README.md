@@ -79,4 +79,4 @@ Report issues at GitHub [here][7].
 [6]: COPYING
 [7]: https://github.com/bbidulock/xde-applets/issues
 
-[ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn: ]: #
+[ vim: set ft=markdown sw=4 tw=80 nocin nosi fo+=tcqlorn spell: ]: #
