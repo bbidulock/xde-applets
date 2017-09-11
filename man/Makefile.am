@@ -1,5 +1,5 @@
 
-xde_man_files = \
+xde_man1_files = \
 	av-applet.man \
 	bt-applet.man \
 	dh-applet.man \
@@ -9,8 +9,8 @@ xde_man_files = \
 	wl-applet.man \
 	xde-applets.man
 
-nodist_man1_MANS = $(xde_man_files)
-CLEANFILES = $(xde_man_files)
+nodist_man1_MANS = $(xde_man1_files)
+CLEANFILES = $(xde_man1_files)
 
 EXTRA_DIST = \
 	av-applet.pod \
@@ -22,10 +22,8 @@ EXTRA_DIST = \
 	wl-applet.pod \
 	xde-applets.pod
 
-SUFFIXES = .man .pod
-
-.pod.man:
-	pod2man --center="User Commands" \
+$(xde_man1_files): %.man: %.pod
+	$(AM_V_GEN)pod2man --center="User Commands" \
 		--date="$(DATE)" \
 		--errors="none" \
 		--fixed="CW" \
@@ -37,4 +35,16 @@ SUFFIXES = .man .pod
 		--section="1" \
 		$< >$@
 
+#$(xde_man5_files): %.man: %.pod
+#	$(AM_V_GEN)pod2man --center="Standards, Environments and Macros" \
+#		--date="$(DATE)" \
+#		--errors="none" \
+#		--fixed="CW" \
+#		--fixedbold="CB" \
+#		--fixeditalic="CI" \
+#		--fixedbolditalic="CX" \
+#		--nourls \
+#		--release="$(PACKAGE) $(VERSION)" \
+#		--section="5" \
+#		$< >$@
 
