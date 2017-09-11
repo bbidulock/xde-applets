@@ -2,6 +2,9 @@ xde-applets -- TODO file.  2016-01-28
 
 Work to do on applets:
 
+These are basically just skeletons of status icons for now.  They all
+require some dbus work to actually perform a function.
+
 av-applet: not converted yet
 
 - [ ] convert this applet from perl(1)
