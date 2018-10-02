@@ -2,48 +2,59 @@
 
 =head1 NAME
 
-xde-applets - package of 'C' language system tray applets for XDE
+xde-applets - package of 'C' language system tray and dock applets for XDE
 
 =head1 DESCRIPTION
 
-Provides a set of system tray applets for use with an Arch Linux based
-system.  The system tray icons provided in this package are as follows:
+Provides a set of system tray and dock applets for use with an Arch
+Linux based system.  The system tray icons dock apps provided in this
+package are as follows:
 
 =over
 
-=item L<av-applet(1)>
+=item L<xde-av-applet(1)>
 
-Provides a system tray applet for monitoring DDNS and DNS-SD networks.
+Provides a system tray and dock applet for monitoring DDNS and DNS-SD
+networks.
 
+=item L<xde-bt-applet(1)>
 
-=item L<bt-applet(1)>
+Provides a system tray and dock applet for managing and connecting
+bluetooth devices to a computer.
 
-Provides a system tray applet for connecting bluetooth devices to a
-computer.
+=item L<xde-dh-applet(1)>
 
-=item L<dh-applet(1)>
+Provides a system tray and dock applet for managing and establishing
+connections with the DHCP client daemon (L<dhcpcd(8)>).
 
-Provides a system tray applet for establishing connections with the DHCP
-client daemon (L<dhcpcd(8)>).
+=item L<xde-hal-applet(1)>
 
-=item L<hal-applet(1)>
+Provides a system tray and dock applet for monitoring HAL (which in turn
+monitors devices and system resources).
 
-Provides a system tray applet for monitoring HAL (which in turn monitors
-devices and system resources).
+=item L<xde-lm-applet(1)>
 
-=item L<pk-applet(1)>
+Provides a system tray and dock applet for monitoring LM sensor output.
 
-Provides a system tray applet for monitoring and maintaining ArchLinux
-packages.
+=item L<xde-pk-applet(1)>
 
-=item L<sd-applet(1)>
+Provides a system tray and dock applet for monitoring and maintaining
+ArchLinux packages.
 
-Provides a system tray applet for monitoring L<systemd(1)> activities.
+=item L<xde-sd-applet(1)>
 
-=item L<wl-applet(1)>
+Provides a system tray and dock applet for monitoring L<systemd(1)>
+activities.
 
-Provide a system tray applet for forming wireless network connections
-using L<wpa_supplicant(1)>.
+=item L<xde-up-applet(1)>
+
+Provides a system tray and dock applet for monitoring L<upower(1)>
+levels and events.
+
+=item L<xde-wl-applet(1)>
+
+Provide a system tray and dock applet for managing and forming wireless
+network connections using L<wpa_supplicant(1)>.
 
 =back
 
@@ -68,14 +79,16 @@ Brian Bidulock L<mailto:bidulock@openss7.org>.
 
 =head1 SEE ALSO
 
-L<av-applet(1)>,
-L<av-applet(1)>,
-L<bt-applet(1)>,
-L<dh-applet(1)>,
-L<hal-applet(1)>,
-L<pk-applet(1)>,
-L<sd-applet(1)>,
-L<wl-applet(1)>,
+L<xde-av-applet(1)>,
+L<xde-av-applet(1)>,
+L<xde-bt-applet(1)>,
+L<xde-dh-applet(1)>,
+L<xde-hal-applet(1)>,
+L<xde-lm-applet(1)>,
+L<xde-pk-applet(1)>,
+L<xde-sd-applet(1)>,
+L<xde-up-applet(1)>,
+L<xde-wl-applet(1)>,
 L<wpa_supplicant(1)>,
 L<dhcpcd(1)>
 

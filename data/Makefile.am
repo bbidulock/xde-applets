@@ -1,20 +1,24 @@
 
 dist_autostart_DATA = \
-	av-applet.desktop \
-	bt-applet.desktop \
-	dh-applet.desktop \
-	hal-applet.desktop \
-	pk-applet.desktop \
-	sd-applet.desktop \
-	wl-applet.desktop
+	xde-av-applet.desktop \
+	xde-bt-applet.desktop \
+	xde-dh-applet.desktop \
+	xde-hal-applet.desktop \
+	xde-lm-applet.desktop \
+	xde-pk-applet.desktop \
+	xde-sd-applet.desktop \
+	xde-up-applet.desktop \
+	xde-wl-applet.desktop
 
 dist_applications_DATA = \
-	av-applet.desktop \
-	bt-applet.desktop \
-	dh-applet.desktop \
-	hal-applet.desktop \
-	pk-applet.desktop \
-	sd-applet.desktop \
-	wl-applet.desktop
+	xde-av-applet.desktop \
+	xde-bt-applet.desktop \
+	xde-dh-applet.desktop \
+	xde-hal-applet.desktop \
+	xde-lm-applet.desktop \
+	xde-pk-applet.desktop \
+	xde-sd-applet.desktop \
+	xde-up-applet.desktop \
+	xde-wl-applet.desktop
 
 
