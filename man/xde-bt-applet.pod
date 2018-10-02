@@ -2,16 +2,16 @@
 
 =head1 NAME
 
- bt-applet - an Avahi system tray applet
+ xde-bt-applet - an Avahi system tray applet
 
 =head1 SYNOPSIS
 
- bt-applet [ OPTIONS ]
- bt-applet --quit [ OPTIONS ]
- bt-applet --replace [ OPTIONS ]
- bt-applet --help [ OPTIONS ]
- bt-applet --version
- bt-applet --copying
+ xde-bt-applet [ OPTIONS ]
+ xde-bt-applet --quit [ OPTIONS ]
+ xde-bt-applet --replace [ OPTIONS ]
+ xde-bt-applet --help [ OPTIONS ]
+ xde-bt-applet --version
+ xde-bt-applet --copying
 
 =head1 DESCRIPTION
 

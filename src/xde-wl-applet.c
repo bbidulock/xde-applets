@@ -146,7 +146,7 @@
 #define GTK_EVENT_STOP		TRUE
 #define GTK_EVENT_PROPAGATE	FALSE
 
-#define XA_SELECTION_NAME	"_WL_APPLET_S%d"
+#define XA_SELECTION_NAME	"_XDE_WL_APPLET_S%d"
 
 #define LOGO_NAME		"network-wireless"
 
@@ -188,10 +188,10 @@ Atom _XA_XDE_WM_VERSION;
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
 
-Atom _XA_WL_APPLET_REFRESH;
-Atom _XA_WL_APPLET_RESTART;
-Atom _XA_WL_APPLET_POPMENU;
-Atom _XA_WL_APPLET_REQUEST;
+Atom _XA_XDE_WL_APPLET_REFRESH;
+Atom _XA_XDE_WL_APPLET_RESTART;
+Atom _XA_XDE_WL_APPLET_POPMENU;
+Atom _XA_XDE_WL_APPLET_REQUEST;
 
 typedef struct {
 	int index;
@@ -797,19 +797,19 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 		update_theme(xscr, xev->xclient.message_type);
 		update_icon_theme(xscr, xev->xclient.message_type);
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_WL_APPLET_REFRESH) {
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_WL_APPLET_REFRESH) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
 		applet_refresh(xscr);
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_WL_APPLET_RESTART) {
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_WL_APPLET_RESTART) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
 		applet_restart();
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_WL_APPLET_POPMENU) {
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_WL_APPLET_POPMENU) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
@@ -1527,17 +1527,17 @@ startup(int argc, char *argv[], Command command)
 	atom = gdk_atom_intern_static_string("MANAGER");
 	_XA_MANAGER = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_WL_APPLET_REFRESH");
-	_XA_WL_APPLET_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string("_XDE_WL_APPLET_REFRESH");
+	_XA_XDE_WL_APPLET_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_WL_APPLET_RESTART");
-	_XA_WL_APPLET_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string("_XDE_WL_APPLET_RESTART");
+	_XA_XDE_WL_APPLET_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_WL_APPLET_POPMENU");
-	_XA_WL_APPLET_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string("_XDE_WL_APPLET_POPMENU");
+	_XA_XDE_WL_APPLET_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_WL_APPLET_REQUEST");
-	_XA_WL_APPLET_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string("_XDE_WL_APPLET_REQUEST");
+	_XA_XDE_WL_APPLET_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
@@ -1585,7 +1585,7 @@ do_refresh(int argc, char *argv[])
 			ev.xclient.send_event = False;
 			ev.xclient.display = dpy;
 			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_WL_APPLET_REFRESH;
+			ev.xclient.message_type = _XA_XDE_WL_APPLET_REFRESH;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
@@ -1633,7 +1633,7 @@ do_restart(int argc, char *argv[])
 			ev.xclient.send_event = False;
 			ev.xclient.display = dpy;
 			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_WL_APPLET_RESTART;
+			ev.xclient.message_type = _XA_XDE_WL_APPLET_RESTART;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;

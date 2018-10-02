@@ -4,8 +4,10 @@ xde_man1_files = \
 	xde-bt-applet.man \
 	xde-dh-applet.man \
 	xde-hal-applet.man \
+	xde-lm-applet.man \
 	xde-pk-applet.man \
 	xde-sd-applet.man \
+	xde-up-applet.man \
 	xde-wl-applet.man \
 	xde-applets.man
 
@@ -17,8 +19,10 @@ EXTRA_DIST = \
 	xde-bt-applet.pod \
 	xde-dh-applet.pod \
 	xde-hal-applet.pod \
+	xde-lm-applet.pod \
 	xde-pk-applet.pod \
 	xde-sd-applet.pod \
+	xde-up-applet.pod \
 	xde-wl-applet.pod \
 	xde-applets.pod
 

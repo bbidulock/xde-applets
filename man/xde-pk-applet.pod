@@ -2,16 +2,16 @@
 
 =head1 NAME
 
- pk-applet - an Avahi system tray applet
+ xde-pk-applet - an Package Kit system tray applet
 
 =head1 SYNOPSIS
 
- pk-applet [ OPTIONS ]
- pk-applet --quit [ OPTIONS ]
- pk-applet --replace [ OPTIONS ]
- pk-applet --help [ OPTIONS ]
- pk-applet --version
- pk-applet --copying
+ xde-pk-applet [ OPTIONS ]
+ xde-pk-applet --quit [ OPTIONS ]
+ xde-pk-applet --replace [ OPTIONS ]
+ xde-pk-applet --help [ OPTIONS ]
+ xde-pk-applet --version
+ xde-pk-applet --copying
 
 =head1 DESCRIPTION
 

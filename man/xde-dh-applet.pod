@@ -2,16 +2,16 @@
 
 =head1 NAME
 
- dh-applet - an Avahi system tray applet
+ xde-dh-applet - a DHCP system tray applet
 
 =head1 SYNOPSIS
 
- dh-applet [ OPTIONS ]
- dh-applet --quit [ OPTIONS ]
- dh-applet --replace [ OPTIONS ]
- dh-applet --help [ OPTIONS ]
- dh-applet --version
- dh-applet --copying
+ xde-dh-applet [ OPTIONS ]
+ xde-dh-applet --quit [ OPTIONS ]
+ xde-dh-applet --replace [ OPTIONS ]
+ xde-dh-applet --help [ OPTIONS ]
+ xde-dh-applet --version
+ xde-dh-applet --copying
 
 =head1 DESCRIPTION
 

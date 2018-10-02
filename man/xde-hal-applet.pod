@@ -2,16 +2,16 @@
 
 =head1 NAME
 
- hal-applet - an Avahi system tray applet
+ xde-hal-applet - a HAL system tray applet
 
 =head1 SYNOPSIS
 
- hal-applet [ OPTIONS ]
- hal-applet --quit [ OPTIONS ]
- hal-applet --replace [ OPTIONS ]
- hal-applet --help [ OPTIONS ]
- hal-applet --version
- hal-applet --copying
+ xde-hal-applet [ OPTIONS ]
+ xde-hal-applet --quit [ OPTIONS ]
+ xde-hal-applet --replace [ OPTIONS ]
+ xde-hal-applet --help [ OPTIONS ]
+ xde-hal-applet --version
+ xde-hal-applet --copying
 
 =head1 DESCRIPTION
 

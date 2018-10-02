@@ -2,16 +2,16 @@
 
 =head1 NAME
 
- sd-applet - an Avahi system tray applet
+ xde-sd-applet - an Systemd system tray applet
 
 =head1 SYNOPSIS
 
- sd-applet [ OPTIONS ]
- sd-applet --quit [ OPTIONS ]
- sd-applet --replace [ OPTIONS ]
- sd-applet --help [ OPTIONS ]
- sd-applet --version
- sd-applet --copying
+ xde-sd-applet [ OPTIONS ]
+ xde-sd-applet --quit [ OPTIONS ]
+ xde-sd-applet --replace [ OPTIONS ]
+ xde-sd-applet --help [ OPTIONS ]
+ xde-sd-applet --version
+ xde-sd-applet --copying
 
 =head1 DESCRIPTION
 

@@ -2,16 +2,16 @@
 
 =head1 NAME
 
- av-applet - an Avahi system tray applet
+ xde-av-applet - an Avahi system tray applet
 
 =head1 SYNOPSIS
 
- av-applet [ OPTIONS ]
- av-applet --quit [ OPTIONS ]
- av-applet --replace [ OPTIONS ]
- av-applet --help [ OPTIONS ]
- av-applet --version
- av-applet --copying
+ xde-av-applet [ OPTIONS ]
+ xde-av-applet --quit [ OPTIONS ]
+ xde-av-applet --replace [ OPTIONS ]
+ xde-av-applet --help [ OPTIONS ]
+ xde-av-applet --version
+ xde-av-applet --copying
 
 =head1 DESCRIPTION
 
