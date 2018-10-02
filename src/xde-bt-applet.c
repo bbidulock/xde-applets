@@ -1408,7 +1408,7 @@ startup(int argc, char *argv[], Command command)
 	}
 
 	home = getenv("HOME") ? : ".";
-	len = strlen(home) + strlen(suffix);
+	len = strlen(home) + strlen(suffix) + 1;
 	file = calloc(len + 1, sizeof(*file));
 	strncpy(file, home, len);
 	strncat(file, suffix, len);

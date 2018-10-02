@@ -1,11 +1,30 @@
-xde-applets -- history of user-visible changes.  2016-07-09
+xde-applets -- history of user-visible changes.  2018-10-02
+
+Release xde-applets-0.4.11 released 2018-10-02
+----------------------------------------------
+
+git shortlog -e -n -w80,6,8 0.4...HEAD
+
+Brian Bidulock <bidulock@openss7.org> (11):
+      git hates trailing space
+      better formatting
+      better formatting
+      limit changelog
+      todos
+      update build system
+      rename things a bit
+      more more things around
+      add two new applets
+      more additions for new applets
+      update build system
+
 
 Release xde-applets-0.4 released 2016-07-09
 -------------------------------------------
 
 git shortlog -e -n -w80,6,8 0.3...0.4
 
-Brian Bidulock <bidulock@openss7.org> (12):
+Brian Bidulock <bidulock@openss7.org> (13):
       correct icons
       add copyright headers
       skeleton for av-applet
@@ -18,6 +37,7 @@ Brian Bidulock <bidulock@openss7.org> (12):
       minor updates to build system
       modified ignore files
       simplify distribution
+      update release files
 
 
 Release xde-applets-0.3 released 2016-01-27

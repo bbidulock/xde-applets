@@ -1,4 +1,180 @@
-# created with git log --stat=76 -M -C|fmt -sct -w80
+# created with git log --stat=76 -M -C -500|fmt -sct -w80
+
+commit d4633de6c9a6ac5d4f06085d07419a2fa04a0abf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 05:07:39 2018 -0600
+
+    update build system
+
+ Makefile.am  | 27 ++++++++++++++++++---------
+ RELEASE.md   | 32 ++++++++++++++++++++++++++++++++
+ autogen.sh   |  7 +++++--
+ configure.ac | 10 ++++++----
+ configure.sh |  1 +
+ dist.sh      |  2 +-
+ gennews.sh   |  9 +++++----
+ rebuild.sh   |  2 +-
+ 8 files changed, 69 insertions(+), 21 deletions(-)
+
+commit c36a17003bdb13205a0169d70713c3122fef46ed
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 05:01:14 2018 -0600
+
+    more additions for new applets
+
+ data/Makefile.am                                 | 32 +++++----
+ .../{av-applet.desktop => xde-av-applet.desktop} |  0
+ .../{bt-applet.desktop => xde-bt-applet.desktop} |  0
+ .../{dh-applet.desktop => xde-dh-applet.desktop} |  0
+ ...hal-applet.desktop => xde-hal-applet.desktop} |  0
+ data/xde-lm-applet.desktop                       |  0
+ .../{pk-applet.desktop => xde-pk-applet.desktop} |  0
+ .../{sd-applet.desktop => xde-sd-applet.desktop} |  0
+ data/xde-up-applet.desktop                       |  0
+ .../{wl-applet.desktop => xde-wl-applet.desktop} |  0
+ man/xde-applets.pod                              | 73 ++++++++++++--------
+ 11 files changed, 61 insertions(+), 44 deletions(-)
+
+commit 3a7b38c5c33994b2424fc2042eba830259d0c65f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 04:51:47 2018 -0600
+
+    add two new applets
+
+ man/Makefile.am        |    4 +
+ man/xde-av-applet.pod  |   14 +-
+ man/xde-bt-applet.pod  |   14 +-
+ man/xde-dh-applet.pod  |   14 +-
+ man/xde-hal-applet.pod |   14 +-
+ man/xde-lm-applet.pod  |   68 ++
+ man/xde-pk-applet.pod  |   14 +-
+ man/xde-sd-applet.pod  |   14 +-
+ man/xde-up-applet.pod  |   68 ++
+ man/xde-wl-applet.pod  |   14 +-
+ src/Makefile.am        |   26 +-
+ src/xde-av-applet.c    |   36 +-
+ src/xde-bt-applet.c    |   36 +-
+ src/xde-dh-applet.c    |   36 +-
+ src/xde-hal-applet.c   |   36 +-
+ src/xde-lm-applet.c    | 2127 ++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-pk-applet.c    |   36 +-
+ src/xde-sd-applet.c    |   36 +-
+ src/xde-up-applet.c    | 2127 ++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-wl-applet.c    |   36 +-
+ 20 files changed, 4588 insertions(+), 182 deletions(-)
+
+commit 5e07aeb0ad89fd5b551b6b750659614e823183bd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 04:25:23 2018 -0600
+
+    more more things around
+
+ configure.ac                               |  8 +--
+ man/Makefile.am                            | 28 ++++-----
+ man/{av-applet.pod => xde-av-applet.pod}   |  0
+ man/{bt-applet.pod => xde-bt-applet.pod}   |  0
+ man/{dh-applet.pod => xde-dh-applet.pod}   |  0
+ man/{hal-applet.pod => xde-hal-applet.pod} |  0
+ man/xde-lm-applet.pod                      |  0
+ man/{pk-applet.pod => xde-pk-applet.pod}   |  0
+ man/{sd-applet.pod => xde-sd-applet.pod}   |  0
+ man/xde-up-applet.pod                      |  0
+ man/{wl-applet.pod => xde-wl-applet.pod}   |  0
+ src/Makefile.am                            | 84 +++++++++++++-------------
+ src/xde-lm-applet.c                        |  0
+ src/xde-up-applet.c                        |  0
+ 14 files changed, 60 insertions(+), 60 deletions(-)
+
+commit 29c0fe1dd8934cdf6c705a86242cdfeafa7cae9e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 04:21:18 2018 -0600
+
+    rename things a bit
+
+ src/{av-applet.c => xde-av-applet.c}   | 0
+ src/{bt-applet.c => xde-bt-applet.c}   | 0
+ src/{dh-applet.c => xde-dh-applet.c}   | 0
+ src/{hal-applet.c => xde-hal-applet.c} | 0
+ src/{pk-applet.c => xde-pk-applet.c}   | 0
+ src/{sd-applet.c => xde-sd-applet.c}   | 0
+ src/{wl-applet.c => xde-wl-applet.c}   | 0
+ 7 files changed, 0 insertions(+), 0 deletions(-)
+
+commit f3c4451d612056ff707aec18ddca0d8117c2a202
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 02:24:46 2017 -0600
+
+    update build system
+
+ Makefile.am     | 16 +++++++-------
+ README.md       | 63 +++++++++++++++++++++++++++-------------------------
+ README.md.in    | 61 ++++++++++++++++++++++++++------------------------
+ autogen.sh      |  9 ++++++++
+ configure.ac    | 64 ++++++++++++++++++++++++++++++++++++++++++++++++-----
+ configure.sh    | 18 +++++++++------
+ man/Makefile.am | 24 ++++++++++++++------
+ rebuild.sh      |  4 ++--
+ 8 files changed, 170 insertions(+), 89 deletions(-)
+
+commit 9d21f4a2ac33a4252fae5d9a9b9207ab8ec80854
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 11 02:23:26 2017 -0600
+
+    todos
+
+ TODO | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 73c565b814e7057a997644c701b0f876e85ef5f4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:46:43 2016 -0600
+
+    limit changelog
+
+ Makefile.am | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit 09d616dfd4b81a4bce8db17ee3d9da798c577d6f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 02:33:13 2016 -0600
+
+    better formatting
+
+ README.md    | 2 +-
+ README.md.in | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+commit 07d1007a358859942e1b2ce7969980c83470e869
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 01:20:59 2016 -0600
+
+    better formatting
+
+ README.md    | 81 +++++++++++++++++++++++++++++++++-----------------------
+ README.md.in | 81 +++++++++++++++++++++++++++++++++-----------------------
+ 2 files changed, 96 insertions(+), 66 deletions(-)
+
+commit eeb1b4bb0b44600fcf09be84e5cfdcecbc16ca94
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Jul 10 01:20:52 2016 -0600
+
+    git hates trailing space
+
+ gennews.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 8570d18c290e852ca6d6ef131a52d37c360a6cee
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jul 9 16:04:20 2016 -0600
+
+    update release files
+
+ AUTHORS      |  2 +-
+ ChangeLog    | 42 ++++++++++++++++++++++++++++++++++++++++++
+ NEWS         | 52 +++++++++++++++++++++++++++++++++++++++++++++++-----
+ README.md    |  4 ++--
+ configure.ac |  6 +++---
+ 5 files changed, 95 insertions(+), 11 deletions(-)
 
 commit 4d9c8b2d27fd10ff077bc4efe78390fd6f6ae970
 Author: Brian Bidulock <bidulock@openss7.org>

@@ -1,5 +1,6 @@
 *~
 aclocal.m4
+*-applet
 autoconf.h
 autoconf.h.in
 autoconf.h.in~
@@ -30,9 +31,9 @@ Makefile.in
 README
 README.html
 README.txt
+RELEASE
 scripts/
 stamp-h*
 .*.sw[mnop]
 *.tar.*
 *.tmp
-*-applet
