@@ -206,6 +206,9 @@ typedef struct {
 	Atom atom;
 	char *wmname;
 	Bool goodwm;
+	GdkPixbuf *icon;
+	cairo_t *cr;
+	GdkWindow *iwin;
 } XdeScreen;
 
 typedef enum {
@@ -444,21 +447,56 @@ init_statusicon(XdeScreen *xscr)
 			G_CALLBACK(on_popup_menu), xscr);
 }
 
+static GdkFilterReturn
+w_dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
+{
+	XdeScreen *xscr = data;
+
+	(void) xscr;
+	return GDK_FILTER_CONTINUE;
+}
+
+static GdkFilterReturn
+i_dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
+{
+	XdeScreen *xscr = data;
+	XEvent *xev = xevent;
+
+	DPRINTF("Event of type %d(%d)\n", event->type, xev->type);
+	if (xev->type == Expose) {
+		GdkRectangle rect =
+		    { xev->xexpose.x, xev->xexpose.y, xev->xexpose.width, xev->xexpose.height };
+		gdk_cairo_rectangle(xscr->cr, &rect);
+		cairo_clip(xscr->cr);
+		cairo_paint(xscr->cr);
+		gdk_cairo_reset_clip(xscr->cr, GDK_DRAWABLE(xscr->iwin));
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
 static void
-init_dockapp(XdeScreen *xscr)
+init_dockapp(XdeScreen * xscr)
 {
 	GdkWindow *w;
 	GdkWindowAttr attrs = { NULL, };
 	XWMHints wmhints = { 0, };
 	XSizeHints sizehints = { 0, };
 	int attrs_mask = 0;
-	Window win;
+	Window win, icon;
 
-	attrs.event_mask = 0;
+	attrs.event_mask = GDK_ALL_EVENTS_MASK;
+	attrs.event_mask |= GDK_EXPOSURE_MASK;
+	attrs.event_mask |= GDK_POINTER_MOTION_HINT_MASK;
 	attrs.event_mask |= GDK_BUTTON_PRESS_MASK;
+	attrs.event_mask |= GDK_BUTTON_RELEASE_MASK;
+	attrs.event_mask |= GDK_KEY_PRESS_MASK;
+	attrs.event_mask |= GDK_KEY_RELEASE_MASK;
 	attrs.event_mask |= GDK_ENTER_NOTIFY_MASK;
 	attrs.event_mask |= GDK_LEAVE_NOTIFY_MASK;
-	attrs.event_mask |= GDK_POINTER_MOTION_HINT_MASK;
+	attrs.event_mask |= GDK_FOCUS_CHANGE_MASK;
+	attrs.event_mask |= GDK_STRUCTURE_MASK;
+	attrs.event_mask |= GDK_SUBSTRUCTURE_MASK;
+	attrs.event_mask |= GDK_SCROLL_MASK;
 	/* might want some more */
 	attrs.width = 64;
 	attrs.height = 64;
@@ -472,7 +510,7 @@ init_dockapp(XdeScreen *xscr)
 	attrs_mask |= GDK_WA_X;
 	attrs.y = 0;
 	attrs_mask |= GDK_WA_Y;
-	attrs.cursor = /* basic cursor */;
+	attrs.cursor = /* basic cursor */ ;
 	attrs_mask |= GDK_WA_CURSOR;
 	attrs.override_redirect = FALSE;
 	attrs_mask |= GDK_WA_NOREDIR;
@@ -490,9 +528,17 @@ init_dockapp(XdeScreen *xscr)
 #endif
 
 	w = gdk_window_new(NULL, &attrs, attrs_mask);
+	gdk_window_set_back_pixmap(w, NULL, TRUE);
+	gdk_window_add_filter(w, w_dockapp_handler, xscr);
+
+	attrs.window_type = GDK_WINDOW_CHILD;
+
+	xscr->iwin = gdk_window_new(w, &attrs, attrs_mask);
+	gdk_window_set_back_pixmap(xscr->iwin, NULL, TRUE);
+	gdk_window_add_filter(xscr->iwin, i_dockapp_handler, xscr);
 
 	/* set the window's icon window to itself */
-	gdk_window_set_icon(w, w, NULL, NULL);
+	gdk_window_set_icon(w, xscr->iwin, NULL, NULL);
 
 	/* largely for when the WM does not support dock apps */
 #if 0
@@ -503,6 +549,7 @@ init_dockapp(XdeScreen *xscr)
 	gdk_window_set_skip_pager_hint(w, TRUE);
 #endif
 	win = GDK_WINDOW_XID(w);
+	icon = GDK_WINDOW_XID(xscr->iwin);
 
 	/* make this user specified size so WM does not mess with it */
 	sizehints.flags = USSize;
@@ -514,7 +561,7 @@ init_dockapp(XdeScreen *xscr)
 	wmhints.flags = 0;
 	wmhints.initial_state = WithdrawnState;
 	wmhints.flags |= StateHint;
-	wmhints.icon_window = win;
+	wmhints.icon_window = icon;
 	wmhints.flags |= IconWindowHint;
 	wmhints.icon_x = 0;
 	wmhints.icon_y = 0;
@@ -522,15 +569,17 @@ init_dockapp(XdeScreen *xscr)
 	wmhints.window_group = win;
 	wmhints.flags |= WindowGroupHint;
 
+	gdk_window_show_unraised(xscr->iwin);
+
 	{
 		Window t, p, dummy1, *dummy2;
 		unsigned int dummy3;
 		Display *dpy = GDK_WINDOW_XDISPLAY(w);
 
 		/* NOTE: this has to be done this way for GDK2, otherwise, the window is mapped to
-		 * the window manager with an initial state of NormalState.  So, we reparent the
-		 * window under a temporary window (from root) before gdk_window_show() and then
-		 * set the proper WMHints and then reparent it back to root in the mapped state. */
+		   the window manager with an initial state of NormalState.  So, we reparent the
+		   window under a temporary window (from root) before gdk_window_show() and then
+		   set the proper WMHints and then reparent it back to root in the mapped state. */
 		XQueryTree(dpy, win, &dummy1, &p, &dummy2, &dummy3);
 		if (dummy2)
 			XFree(dummy2);
@@ -541,6 +590,24 @@ init_dockapp(XdeScreen *xscr)
 		XReparentWindow(dpy, win, p, 0, 0);
 		XDestroyWindow(dpy, t);
 	}
+
+	GtkIconTheme *itheme = gtk_icon_theme_get_default();
+
+	xscr->icon = gtk_icon_theme_load_icon(itheme, LOGO_NAME, 56,
+					      GTK_ICON_LOOKUP_USE_BUILTIN |
+					      GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+	if (!xscr->icon) {
+		EPRINTF("could not get icon!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	xscr->cr = gdk_cairo_create(GDK_DRAWABLE(xscr->iwin));
+	gdk_cairo_set_source_pixbuf(xscr->cr, xscr->icon, 4.0, 4.0);
+	GdkRectangle rect = { 4, 4, 56, 56 };
+	gdk_cairo_rectangle(xscr->cr, &rect);
+	cairo_clip(xscr->cr);
+	cairo_paint(xscr->cr);
+	gdk_cairo_reset_clip(xscr->cr, GDK_DRAWABLE(xscr->iwin));
 }
 
 static Window
