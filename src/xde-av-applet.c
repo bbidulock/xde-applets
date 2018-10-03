@@ -498,8 +498,8 @@ init_dockapp(XdeScreen * xscr)
 	attrs.event_mask |= GDK_SUBSTRUCTURE_MASK;
 	attrs.event_mask |= GDK_SCROLL_MASK;
 	/* might want some more */
-	attrs.width = 64;
-	attrs.height = 64;
+	attrs.width = 56;
+	attrs.height = 56;
 	attrs.wclass = GDK_INPUT_OUTPUT;
 	attrs.window_type = GDK_WINDOW_TOPLEVEL;
 
@@ -553,8 +553,8 @@ init_dockapp(XdeScreen * xscr)
 
 	/* make this user specified size so WM does not mess with it */
 	sizehints.flags = USSize;
-	sizehints.width = 64;
-	sizehints.height = 64;
+	sizehints.width = 56;
+	sizehints.height = 56;
 	XSetWMNormalHints(GDK_WINDOW_XDISPLAY(w), win, &sizehints);
 
 	/* set the window to start in the withdrawn state */
@@ -602,12 +602,8 @@ init_dockapp(XdeScreen * xscr)
 	}
 
 	xscr->cr = gdk_cairo_create(GDK_DRAWABLE(xscr->iwin));
-	gdk_cairo_set_source_pixbuf(xscr->cr, xscr->icon, 4.0, 4.0);
-	GdkRectangle rect = { 4, 4, 56, 56 };
-	gdk_cairo_rectangle(xscr->cr, &rect);
-	cairo_clip(xscr->cr);
+	gdk_cairo_set_source_pixbuf(xscr->cr, xscr->icon, 0.0, 0.0);
 	cairo_paint(xscr->cr);
-	gdk_cairo_reset_clip(xscr->cr, GDK_DRAWABLE(xscr->iwin));
 }
 
 static Window
