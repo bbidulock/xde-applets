@@ -448,16 +448,7 @@ init_statusicon(XdeScreen *xscr)
 }
 
 static GdkFilterReturn
-w_dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
-{
-	XdeScreen *xscr = data;
-
-	(void) xscr;
-	return GDK_FILTER_CONTINUE;
-}
-
-static GdkFilterReturn
-i_dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
+dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
 {
 	XdeScreen *xscr = data;
 	XEvent *xev = xevent;
@@ -477,12 +468,11 @@ i_dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
 static void
 init_dockapp(XdeScreen * xscr)
 {
-	GdkWindow *w;
 	GdkWindowAttr attrs = { NULL, };
 	XWMHints wmhints = { 0, };
 	XSizeHints sizehints = { 0, };
 	int attrs_mask = 0;
-	Window win, icon;
+	Window icon;
 
 	attrs.event_mask = GDK_ALL_EVENTS_MASK;
 	attrs.event_mask |= GDK_EXPOSURE_MASK;
@@ -527,35 +517,28 @@ init_dockapp(XdeScreen * xscr)
 	attrs_mask |= GDK_WA_TYPE_HINT;
 #endif
 
-	w = gdk_window_new(NULL, &attrs, attrs_mask);
-	gdk_window_set_back_pixmap(w, NULL, TRUE);
-	gdk_window_add_filter(w, w_dockapp_handler, xscr);
-
-	attrs.window_type = GDK_WINDOW_CHILD;
-
-	xscr->iwin = gdk_window_new(w, &attrs, attrs_mask);
+	xscr->iwin = gdk_window_new(NULL, &attrs, attrs_mask);
 	gdk_window_set_back_pixmap(xscr->iwin, NULL, TRUE);
-	gdk_window_add_filter(xscr->iwin, i_dockapp_handler, xscr);
+	gdk_window_add_filter(xscr->iwin, dockapp_handler, xscr);
 
 	/* set the window's icon window to itself */
-	gdk_window_set_icon(w, xscr->iwin, NULL, NULL);
+	gdk_window_set_icon(xscr->iwin, xscr->iwin, NULL, NULL);
 
 	/* largely for when the WM does not support dock apps */
 #if 0
-	gdk_window_set_type_hint(w, GDK_WINDOW_TYPE_HINT_DOCK);
+	gdk_window_set_type_hint(xscr->iwin, GDK_WINDOW_TYPE_HINT_DOCK);
 #else
-	gdk_window_set_decorations(w, FALSE);
-	gdk_window_set_skip_taskbar_hint(w, TRUE);
-	gdk_window_set_skip_pager_hint(w, TRUE);
+	gdk_window_set_decorations(xscr->iwin, FALSE);
+	gdk_window_set_skip_taskbar_hint(xscr->iwin, TRUE);
+	gdk_window_set_skip_pager_hint(xscr->iwin, TRUE);
 #endif
-	win = GDK_WINDOW_XID(w);
 	icon = GDK_WINDOW_XID(xscr->iwin);
 
 	/* make this user specified size so WM does not mess with it */
 	sizehints.flags = USSize;
 	sizehints.width = 56;
 	sizehints.height = 56;
-	XSetWMNormalHints(GDK_WINDOW_XDISPLAY(w), win, &sizehints);
+	XSetWMNormalHints(GDK_WINDOW_XDISPLAY(xscr->iwin), icon, &sizehints);
 
 	/* set the window to start in the withdrawn state */
 	wmhints.flags = 0;
@@ -566,28 +549,26 @@ init_dockapp(XdeScreen * xscr)
 	wmhints.icon_x = 0;
 	wmhints.icon_y = 0;
 	wmhints.flags |= IconPositionHint;
-	wmhints.window_group = win;
+	wmhints.window_group = icon;
 	wmhints.flags |= WindowGroupHint;
-
-	gdk_window_show_unraised(xscr->iwin);
 
 	{
 		Window t, p, dummy1, *dummy2;
 		unsigned int dummy3;
-		Display *dpy = GDK_WINDOW_XDISPLAY(w);
+		Display *dpy = GDK_WINDOW_XDISPLAY(xscr->iwin);
 
 		/* NOTE: this has to be done this way for GDK2, otherwise, the window is mapped to
 		   the window manager with an initial state of NormalState.  So, we reparent the
 		   window under a temporary window (from root) before gdk_window_show() and then
 		   set the proper WMHints and then reparent it back to root in the mapped state. */
-		XQueryTree(dpy, win, &dummy1, &p, &dummy2, &dummy3);
+		XQueryTree(dpy, icon, &dummy1, &p, &dummy2, &dummy3);
 		if (dummy2)
 			XFree(dummy2);
 		t = XCreateSimpleWindow(dpy, p, 0, 0, 1, 1, 0, 0, 0);
-		XReparentWindow(dpy, win, t, 0, 0);
-		gdk_window_show(w);
-		XSetWMHints(dpy, win, &wmhints);
-		XReparentWindow(dpy, win, p, 0, 0);
+		XReparentWindow(dpy, icon, t, 0, 0);
+		gdk_window_show(xscr->iwin);
+		XSetWMHints(dpy, icon, &wmhints);
+		XReparentWindow(dpy, icon, p, 0, 0);
 		XDestroyWindow(dpy, t);
 	}
 
