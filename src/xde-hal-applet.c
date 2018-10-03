@@ -206,6 +206,9 @@ typedef struct {
 	Atom atom;
 	char *wmname;
 	Bool goodwm;
+	GdkPixbuf *icon;
+	cairo_t *cr;
+	GdkWindow *iwin;
 } XdeScreen;
 
 typedef enum {
@@ -231,6 +234,7 @@ typedef struct {
 	char *clientId;
 	char *saveFile;
 	Bool tray;
+	Bool dock;
 	Bool dieonerr;
 } Options;
 
@@ -243,6 +247,7 @@ Options options = {
 	.clientId = NULL,
 	.saveFile = NULL,
 	.tray = True,
+	.dock = True,
 	.dieonerr = False,
 };
 
@@ -255,6 +260,7 @@ Options defaults = {
 	.clientId = NULL,
 	.saveFile = NULL,
 	.tray = True,
+	.dock = True,
 	.dieonerr = False,
 };
 
@@ -416,6 +422,146 @@ init_statusicon(XdeScreen *xscr)
 			G_CALLBACK(on_button_press), xscr);
 	g_signal_connect(icon, "popup_menu",
 			G_CALLBACK(on_popup_menu), xscr);
+}
+
+static GdkFilterReturn
+dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
+{
+	XdeScreen *xscr = data;
+	XEvent *xev = xevent;
+
+	DPRINTF("Event of type %d(%d)\n", event->type, xev->type);
+	if (xev->type == Expose) {
+		GdkRectangle rect =
+		    { xev->xexpose.x, xev->xexpose.y, xev->xexpose.width, xev->xexpose.height };
+		gdk_cairo_rectangle(xscr->cr, &rect);
+		cairo_clip(xscr->cr);
+		cairo_paint(xscr->cr);
+		gdk_cairo_reset_clip(xscr->cr, GDK_DRAWABLE(xscr->iwin));
+	}
+	return GDK_FILTER_CONTINUE;
+}
+
+static void
+init_dockapp(XdeScreen * xscr)
+{
+	GdkWindowAttr attrs = { NULL, };
+	XWMHints wmhints = { 0, };
+	XSizeHints sizehints = { 0, };
+	int attrs_mask = 0;
+	Window icon;
+
+	attrs.event_mask = GDK_ALL_EVENTS_MASK;
+	attrs.event_mask |= GDK_EXPOSURE_MASK;
+	attrs.event_mask |= GDK_POINTER_MOTION_HINT_MASK;
+	attrs.event_mask |= GDK_BUTTON_PRESS_MASK;
+	attrs.event_mask |= GDK_BUTTON_RELEASE_MASK;
+	attrs.event_mask |= GDK_KEY_PRESS_MASK;
+	attrs.event_mask |= GDK_KEY_RELEASE_MASK;
+	attrs.event_mask |= GDK_ENTER_NOTIFY_MASK;
+	attrs.event_mask |= GDK_LEAVE_NOTIFY_MASK;
+	attrs.event_mask |= GDK_FOCUS_CHANGE_MASK;
+	attrs.event_mask |= GDK_STRUCTURE_MASK;
+	attrs.event_mask |= GDK_SUBSTRUCTURE_MASK;
+	attrs.event_mask |= GDK_SCROLL_MASK;
+	/* might want some more */
+	attrs.width = 56;
+	attrs.height = 56;
+	attrs.wclass = GDK_INPUT_OUTPUT;
+	attrs.window_type = GDK_WINDOW_TOPLEVEL;
+
+	attrs.title = g_strdup_printf("Blah %s", "Blah");
+	attrs_mask |= GDK_WA_TITLE;
+#if 0
+	attrs.x = 0;
+	attrs_mask |= GDK_WA_X;
+	attrs.y = 0;
+	attrs_mask |= GDK_WA_Y;
+	attrs.cursor = /* basic cursor */ ;
+	attrs_mask |= GDK_WA_CURSOR;
+	attrs.override_redirect = FALSE;
+	attrs_mask |= GDK_WA_NOREDIR;
+#endif
+	attrs.visual = gdk_visual_get_system();
+	attrs_mask |= GDK_WA_VISUAL;
+	attrs.colormap = gdk_colormap_get_system();
+	attrs_mask |= GDK_WA_COLORMAP;
+	attrs.wmclass_name = "xdeavapplet";
+	attrs.wmclass_class = "DockApp";
+	attrs_mask |= GDK_WA_WMCLASS;
+#if 0
+	attrs.type_hint = GDK_WINDOW_TYPE_HINT_UTILITY;
+	attrs_mask |= GDK_WA_TYPE_HINT;
+#endif
+
+	xscr->iwin = gdk_window_new(NULL, &attrs, attrs_mask);
+	gdk_window_set_back_pixmap(xscr->iwin, NULL, TRUE);
+	gdk_window_add_filter(xscr->iwin, dockapp_handler, xscr);
+
+	/* set the window's icon window to itself */
+	gdk_window_set_icon(xscr->iwin, xscr->iwin, NULL, NULL);
+
+	/* largely for when the WM does not support dock apps */
+#if 0
+	gdk_window_set_type_hint(xscr->iwin, GDK_WINDOW_TYPE_HINT_DOCK);
+#else
+	gdk_window_set_decorations(xscr->iwin, FALSE);
+	gdk_window_set_skip_taskbar_hint(xscr->iwin, TRUE);
+	gdk_window_set_skip_pager_hint(xscr->iwin, TRUE);
+#endif
+	icon = GDK_WINDOW_XID(xscr->iwin);
+
+	/* make this user specified size so WM does not mess with it */
+	sizehints.flags = USSize;
+	sizehints.width = 56;
+	sizehints.height = 56;
+	XSetWMNormalHints(GDK_WINDOW_XDISPLAY(xscr->iwin), icon, &sizehints);
+
+	/* set the window to start in the withdrawn state */
+	wmhints.flags = 0;
+	wmhints.initial_state = WithdrawnState;
+	wmhints.flags |= StateHint;
+	wmhints.icon_window = icon;
+	wmhints.flags |= IconWindowHint;
+	wmhints.icon_x = 0;
+	wmhints.icon_y = 0;
+	wmhints.flags |= IconPositionHint;
+	wmhints.window_group = icon;
+	wmhints.flags |= WindowGroupHint;
+
+	{
+		Window t, p, dummy1, *dummy2;
+		unsigned int dummy3;
+		Display *dpy = GDK_WINDOW_XDISPLAY(xscr->iwin);
+
+		/* NOTE: this has to be done this way for GDK2, otherwise, the window is mapped to
+		   the window manager with an initial state of NormalState.  So, we reparent the
+		   window under a temporary window (from root) before gdk_window_show() and then
+		   set the proper WMHints and then reparent it back to root in the mapped state. */
+		XQueryTree(dpy, icon, &dummy1, &p, &dummy2, &dummy3);
+		if (dummy2)
+			XFree(dummy2);
+		t = XCreateSimpleWindow(dpy, p, 0, 0, 1, 1, 0, 0, 0);
+		XReparentWindow(dpy, icon, t, 0, 0);
+		gdk_window_show(xscr->iwin);
+		XSetWMHints(dpy, icon, &wmhints);
+		XReparentWindow(dpy, icon, p, 0, 0);
+		XDestroyWindow(dpy, t);
+	}
+
+	GtkIconTheme *itheme = gtk_icon_theme_get_default();
+
+	xscr->icon = gtk_icon_theme_load_icon(itheme, LOGO_NAME, 56,
+					      GTK_ICON_LOOKUP_USE_BUILTIN |
+					      GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+	if (!xscr->icon) {
+		EPRINTF("could not get icon!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	xscr->cr = gdk_cairo_create(GDK_DRAWABLE(xscr->iwin));
+	gdk_cairo_set_source_pixbuf(xscr->cr, xscr->icon, 0.0, 0.0);
+	cairo_paint(xscr->cr);
 }
 
 static Window
@@ -740,6 +886,8 @@ setup_x11(Bool replace)
 		update_icon_theme(xscr, None);
 		if (options.tray)
 			init_statusicon(xscr);
+		if (options.dock)
+			init_dockapp(xscr);
 	}
 }
 
@@ -1780,16 +1928,19 @@ General options:\n\
         abort on error [default: %4$s]\n\
     --notray\n\
         do not install a system tray icon [default: %5$s]\n\
+    --nodock\n\
+        do not install a withdrawn dock app [default: %6$s]\n\
     -D, --debug [LEVEL]\n\
-        increment or set debug LEVEL [default: %6$d]\n\
+        increment or set debug LEVEL [default: %7$d]\n\
     -v, --verbose [LEVEL]\n\
-        increment or set output verbosity LEVEL [default: %7$d]\n\
+        increment or set output verbosity LEVEL [default: %8$d]\n\
         this option may be repeated.\n\
 ", argv[0]
 	, defaults.display
 	, defaults.screen
 	, show_bool(defaults.dieonerr)
 	, show_bool(!defaults.tray)
+	, show_bool(!defaults.dock)
 	, defaults.debug
 	, defaults.output
 );
@@ -1879,6 +2030,7 @@ main(int argc, char *argv[])
 			{"screen",	required_argument,	NULL,	 4 },
 			{"die-on-error",no_argument,		NULL,	'e'},
 			{"notray",	no_argument,		NULL,	 2 },
+			{"nodock",	no_argument,		NULL,	 5 },
 			{"nogenerate",	no_argument,		NULL,	 3 },
 			{"verbose",	optional_argument,	NULL,	'v'},
 			{"debug",	optional_argument,	NULL,	'D'},
@@ -1932,6 +2084,9 @@ main(int argc, char *argv[])
 			break;
 		case 2:	/* --notray */
 			options.tray = False;
+			break;
+		case 5: /* --nodock */
+			options.dock = False;
 			break;
 
 		case 'm':	/* -m, --monitor */
