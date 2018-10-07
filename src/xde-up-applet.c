@@ -719,6 +719,41 @@ xde_manager_dump(GDBusProxy *proxy)
 	}
 }
 
+void
+update_display_icon(gchar *icon)
+{
+	GtkIconTheme *theme;
+	GdkPixbuf *pixbuf;
+	GdkDisplay *disp;
+	XdeScreen *xscr;
+	int s, nscr;
+	gchar *p;
+
+	if (icon) {
+		if ((p = strstr(icon, "-symbolic")))
+			*p = '\0';
+
+		theme = gtk_icon_theme_get_default();
+		pixbuf = gtk_icon_theme_load_icon(theme, icon, 56,
+						  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+		if (pixbuf) {
+			disp = gdk_display_get_default();
+			nscr = gdk_display_get_n_screens(disp);
+			for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+				if (xscr->status)
+					gtk_status_icon_set_from_icon_name(xscr->status, icon);
+				if (xscr->cr) {
+					gdk_cairo_set_source_pixbuf(xscr->cr, pixbuf, 0.0, 0.0);
+					gdk_window_clear(xscr->iwin);
+					cairo_paint(xscr->cr);
+				}
+			}
+		}
+		/* consumes icon */
+		g_free(icon);
+	}
+}
+
 const char *
 show_type(uint32_t type)
 {
@@ -1166,7 +1201,6 @@ on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 		GVariant *boxed;
 		GVariant *val;
 		const gchar *name;
-		gchar *icon, *p;
 
 		g_variant_iter_init(&iter2, prop);
 		if (!(key = g_variant_iter_next_value(&iter2))) {
@@ -1194,31 +1228,7 @@ on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 			g_variant_unref(key);
 			continue;
 		}
-		if ((icon = g_variant_dup_string(val, NULL)) && *icon) {
-			GdkDisplay *disp = gdk_display_get_default();
-			int nscr = gdk_display_get_n_screens(disp);
-			GtkIconTheme *theme = gtk_icon_theme_get_default();
-			GdkPixbuf *pixbuf;
-			XdeScreen *xscr;
-			int s;
-
-			if ((p = strstr(icon, "-symbolic")))
-				*p = '\0';
-			if ((pixbuf = gtk_icon_theme_load_icon(theme, icon, 56,
-							GTK_ICON_LOOKUP_USE_BUILTIN |
-							GTK_ICON_LOOKUP_FORCE_SIZE, NULL))) {
-				for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-					if (xscr->status)
-						gtk_status_icon_set_from_icon_name(xscr->status, icon);
-					if (xscr->cr) {
-						gdk_cairo_set_source_pixbuf(xscr->cr, pixbuf, 0.0, 0.0);
-						gdk_window_clear(xscr->iwin);
-						cairo_paint(xscr->cr);
-					}
-				}
-			}
-			g_free(icon);
-		}
+		update_display_icon(g_variant_dup_string(val, NULL));
 		g_variant_unref(val);
 		g_variant_unref(boxed);
 		g_variant_unref(key);
@@ -1309,32 +1319,7 @@ init_upower(void)
 		if (options.debug > 1)
 			xde_device_dump(up_display);
 		if ((prop = g_dbus_proxy_get_cached_property(up_display, "IconName"))) {
-			gchar *icon, *p;
-			if ((icon = g_variant_dup_string(prop, NULL)) && *icon) {
-				GdkDisplay *disp = gdk_display_get_default();
-				int nscr = gdk_display_get_n_screens(disp);
-				GtkIconTheme *theme = gtk_icon_theme_get_default();
-				GdkPixbuf *pixbuf;
-				XdeScreen *xscr;
-				int s;
-
-				if ((p = strstr(icon, "-symbolic")))
-					*p = '\0';
-				if ((pixbuf = gtk_icon_theme_load_icon(theme, icon, 56,
-								GTK_ICON_LOOKUP_USE_BUILTIN |
-								GTK_ICON_LOOKUP_FORCE_SIZE, NULL))) {
-					for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-						if (xscr->status)
-							gtk_status_icon_set_from_icon_name(xscr->status, icon);
-						if (xscr->cr) {
-							gdk_cairo_set_source_pixbuf(xscr->cr, pixbuf, 0.0, 0.0);
-							gdk_window_clear(xscr->iwin);
-							cairo_paint(xscr->cr);
-						}
-					}
-				}
-				g_free(icon);
-			}
+			update_display_icon(g_variant_dup_string(prop, NULL));
 			g_variant_unref(prop);
 		}
 	}
