@@ -675,11 +675,264 @@ get_default_ca_context(void)
 
 GDBusProxy *up_manager = NULL;
 GDBusProxy *up_display = NULL;
+GDBusProxy *up_wakeups = NULL;
+GHashTable *up_devices = NULL;
+gchar *up_critical = NULL;
+
+typedef struct {
+	char *path;
+	GDBusProxy *proxy;
+} XdeDevice;
+
+void
+xde_device_destroy(gpointer data)
+{
+	XdeDevice *xd = data;
+
+	g_free(xd->path);
+	g_object_unref(G_OBJECT(xd->proxy));
+	free(xd);
+}
+
+void
+xde_manager_dump(GDBusProxy *proxy)
+{
+	GVariant *prop;
+
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "DaemonVersion"))) {
+		DPRINTF(1, "DaemonVersion: \"%s\"\n", g_variant_get_string(prop, NULL));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "OnBattery"))) {
+		DPRINTF(1, "OnBattery: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "LidIsClosed"))) {
+		DPRINTF(1, "LidIsClosed: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "LidIsPresent"))) {
+		DPRINTF(1, "LidIsPresent: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+}
+
+void
+xde_device_dump(GDBusProxy *proxy)
+{
+	GVariant *prop;
+
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "NativePath"))) {
+		DPRINTF(1, "NativePath: \"%s\"\n", g_variant_get_string(prop, NULL));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Vendor"))) {
+		DPRINTF(1, "Vendor: \"%s\"\n", g_variant_get_string(prop, NULL));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Model"))) {
+		DPRINTF(1, "Model: \"%s\"\n", g_variant_get_string(prop, NULL));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Serial"))) {
+		DPRINTF(1, "Serial: \"%s\"\n", g_variant_get_string(prop, NULL));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "UpdateTime"))) {
+		DPRINTF(1, "UpdateTime: %lu sec\n", g_variant_get_uint64(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Type"))) {
+		DPRINTF(1, "Type: %u\n", g_variant_get_uint32(prop));
+		/* Unknown(0), Line Power(1), Battery(2), Ups(3), Monitor(4), Mouse(5), Keyboard(6), Pda(7), Phone(8) */
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "PowerSupply"))) {
+		DPRINTF(1, "PowerSupply: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "HasHistory"))) {
+		DPRINTF(1, "HasHistory: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "HasStatistics"))) {
+		DPRINTF(1, "HasStatistics: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Online"))) {
+		DPRINTF(1, "Online: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Energy"))) {
+		DPRINTF(1, "Energy: %f Wh\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "EnergyEmpty"))) {
+		DPRINTF(1, "EnergyEmpty: %f Wh\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "EnergyFull"))) {
+		DPRINTF(1, "EnergyFull: %f Wh\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "EnergyFUllDesign"))) {
+		DPRINTF(1, "EnergyFullDesign: %f Wh\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "EnergyRate"))) {
+		DPRINTF(1, "EnergyRate: %f W\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Voltage"))) {
+		DPRINTF(1, "Voltage: %f V\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Luminosity"))) {
+		DPRINTF(1, "Luminosity: %f\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "TimeToEmpty"))) {
+		DPRINTF(1, "TimeToEmpty: %ld sec\n", g_variant_get_int64(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "TimeToFull"))) {
+		DPRINTF(1, "TimeToFull: %ld sec\n", g_variant_get_int64(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
+		DPRINTF(1, "Percentage: %f%%\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Temperature"))) {
+		DPRINTF(1, "Temperature: %f °C\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "IsPresent"))) {
+		DPRINTF(1, "IsPresent: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "State"))) {
+		DPRINTF(1, "State: %u\n", g_variant_get_uint32(prop));
+		/* Unknown(0), Charging(1), Discharging(2), Empty(3), Fully charged(4), Pending charge(5), Pending discharge(6) */
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "IsRechargeable"))) {
+		DPRINTF(1, "IsRechargeable: %s\n", g_variant_get_boolean(prop) ? "true" : "false");
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Capacity"))) {
+		DPRINTF(1, "Capacity: %f%%\n", g_variant_get_double(prop));
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Technology"))) {
+		DPRINTF(1, "Technology: %u\n", g_variant_get_uint32(prop));
+		/* Unknown(0), Lithium ion(1), Lithium polymer(2), Lithium iron phosphate(3), Lead acid(4), Nickel cadmium(5), Nickel metal hydride(6) */
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
+		DPRINTF(1, "WarningLevel: %u\n", g_variant_get_uint32(prop));
+		/* Unknown(0), None(1), Discharging(2) (UPS only), Low(3), Critical(4), Action(5) */
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "BatteryLevel"))) {
+		DPRINTF(1, "BatteryLevel: %u\n", g_variant_get_uint32(prop));
+		/* Unknown(0), None(1), Low(3), Critical(4), Normal(6), High(7), Full(8) */
+		g_variant_unref(prop);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
+		DPRINTF(1, "BatteryLevel: \"%s\"\n", g_variant_get_string(prop, NULL));
+		g_variant_unref(prop);
+	}
+}
+
+void
+on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
+		GStrv invalidated_properties, gpointer user_data)
+{
+	if (options.debug > 1)
+		xde_device_dump(proxy);
+}
+
+void
+xde_create_device(gchar *dev)
+{
+	GDBusProxy *proxy;
+	GError *err = NULL;
+	XdeDevice *xd;
+
+	DPRINTF(1, "creating device %s\n", dev);
+	if (!(proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+						    "org.freedesktop.UPower", dev,
+						    "org.freedesktop.UPower.Device", NULL, &err)) || err) {
+		if ((xd = calloc(1, sizeof(*xd)))) {
+			xd->path = dev;
+			xd->proxy = proxy;
+			g_hash_table_replace(up_devices, dev, xd);
+			g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
+					G_CALLBACK(on_up_device_proxy_props_changed), xd);
+			if (options.debug > 1)
+				xde_device_dump(proxy);
+			return;
+		}
+		g_object_unref(G_OBJECT(proxy));
+	} else {
+		EPRINTF("could not create proxy for device %s: %s\n", dev, err ? err->message : NULL);
+		g_clear_error(&err);
+	}
+	/* consumes dev */
+	g_free(dev);
+}
+
+void
+xde_remove_device(gchar *dev)
+{
+	DPRINTF(1, "removing device %s\n", dev);
+	g_hash_table_remove(up_devices, dev);
+	/* consumes dev */
+	g_free(dev);
+}
 
 void
 on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_name,
-		GVariant *parameters, gpointer user_data)
+			   GVariant *parameters, gpointer user_data)
 {
+	gchar *device = NULL;
+
+	DPRINTF(1, "received upower manager proxy signal %s( %s )\n", signal_name,
+		g_variant_get_type_string(parameters));
+	if (!strcmp(signal_name, "DeviceAdded")) {
+		g_variant_get(parameters, "(o)", &device);
+		if (device) {
+			DPRINTF(1, "device \"%s\" added\n", device);
+			xde_create_device(device);
+		} else {
+			EPRINTF("could not get added device name\n");
+		}
+	} else if (!strcmp(signal_name, "DeviceRemoved")) {
+		g_variant_get(parameters, "(o)", &device);
+		if (device) {
+			DPRINTF(1, "device \"%s\" removed\n", device);
+			xde_remove_device(device);
+		} else {
+			EPRINTF("could not get removed device name\n");
+		}
+	}
+}
+
+void
+on_up_wakeups_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_name,
+			   GVariant *parameters, gpointer user_data)
+{
+	guint32 total = 0;
+
+	DPRINTF(1, "received upower wakeups proxy signal %s( %s )\n", signal_name,
+		g_variant_get_type_string(parameters));
+	if (!strcmp(signal_name, "TotalChanged")) {
+		g_variant_get(parameters, "(u)", &total);
+		DPRINTF(1, "total changed to %u\n", total);
+	} else if (!strcmp(signal_name, "DataChanged")) {
+		DPRINTF(1, "data changed\n");
+	}
 }
 
 gboolean battery_low = FALSE;
@@ -773,32 +1026,96 @@ on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 void
 init_upower(void)
 {
+	GVariant *result;
 	GError *err = NULL;
+	gchar *device = NULL;
 
-	if (!(up_manager = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0,
-					NULL,
-					"org.freedesktop.UPower",
-					"/org/freedesktop/UPower",
-					"org.freedesktop.UPower", NULL, &err)) || err) {
+	up_devices = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, xde_device_destroy);
+
+	DPRINTF(1, "creating UPower manager proxy\n");
+	if (!(up_manager = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+							 "org.freedesktop.UPower",
+							 "/org/freedesktop/UPower",
+							 "org.freedesktop.UPower", NULL, &err)) || err) {
 		EPRINTF("could not create DBUS proxy up_manager: %s\n", err ? err->message : NULL);
 		g_clear_error(&err);
 		return;
+	} else {
+		if (options.debug > 1)
+			xde_manager_dump(up_manager);
 	}
-	g_signal_connect(G_OBJECT(up_manager), "g-signal",
-			G_CALLBACK(on_up_manager_proxy_signal), NULL);
+	g_signal_connect(G_OBJECT(up_manager), "g-signal", G_CALLBACK(on_up_manager_proxy_signal), NULL);
 	g_signal_connect(G_OBJECT(up_manager), "g-properties-changed",
-			G_CALLBACK(on_up_manager_proxy_props_changed), NULL);
-	if (!(up_display = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0,
-					NULL,
-					"org.freedesktop.UPower",
-					"/org/freedesktop/UPower/devices/DisplayDevice",
-					"org.freedesktop.UPower.Device", NULL, &err)) || err) {
+			 G_CALLBACK(on_up_manager_proxy_props_changed), NULL);
+
+	if ((result = g_dbus_proxy_call_sync(up_manager, "GetCriticalAction", NULL,
+					G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
+		g_variant_get(result, "(s)", &up_critical);
+		DPRINTF(1, "UPower manager critical action: %s\n", up_critical);
+	} else {
+		EPRINTF("could not get critical action: %s\n", err ? err->message : NULL);
+		g_clear_error(&err);
+	}
+	if ((result = g_dbus_proxy_call_sync(up_manager, "GetDisplayDevice", NULL,
+					     G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
+		g_variant_get(result, "(o)", &device);
+		g_variant_unref(result);
+		DPRINTF(1, "UPower manager display device: %s\n", device);
+	} else {
+		EPRINTF("could not get display device: %s\n", err ? err->message : NULL);
+		g_clear_error(&err);
+	}
+	DPRINTF(1, "enumerating UPower manager devices\n");
+	if ((result = g_dbus_proxy_call_sync(up_manager, "EnumerateDevices", NULL,
+					G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
+		GVariantIter iter;
+		GVariant *array;
+
+		g_variant_iter_init(&iter, result);
+		while ((array = g_variant_iter_next_value(&iter))) {
+			GVariantIter iter2;
+			GVariant *object;
+
+			g_variant_iter_init(&iter2, array);
+			while ((object = g_variant_iter_next_value(&iter2))) {
+				gchar *dev;
+
+				if ((dev = g_variant_dup_string(object, NULL)))
+					xde_create_device(dev);
+				g_variant_unref(object);
+			}
+			g_variant_unref(array);
+		}
+		g_variant_unref(result);
+	} else {
+		EPRINTF("could not enumerate devices: %s\n", err ? err->message : NULL);
+		g_clear_error(&err);
+	}
+	DPRINTF(1, "creating UPower manager display device proxy\n");
+	if (!(up_display = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+							 "org.freedesktop.UPower",
+							 device ? :
+							 "/org/freedesktop/UPower/devices/DisplayDevice",
+							 "org.freedesktop.UPower.Device", NULL, &err)) || err) {
 		EPRINTF("could not create DBUS proxy up_display: %s\n", err ? err->message : NULL);
 		g_clear_error(&err);
 		return;
+	} else {
+		if (options.debug > 1)
+			xde_device_dump(up_display);
 	}
 	g_signal_connect(G_OBJECT(up_display), "g-properties-changed",
-			G_CALLBACK(on_up_display_proxy_props_changed), NULL);
+			 G_CALLBACK(on_up_display_proxy_props_changed), NULL);
+	DPRINTF(1, "creating UPower manager wakeups proxy\n");
+	if (!(up_wakeups = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+							 "org.freedesktop.UPower",
+							 "/org/freedesktop/UPower/Wakeups",
+							 "org.freedesktop.UPower.Wakeups", NULL, &err)) || err) {
+		EPRINTF("could not create DBUS proxy up_wakeups: %s\n", err ? err->message : NULL);
+		g_clear_error(&err);
+		return;
+	}
+	g_signal_connect(G_OBJECT(up_wakeups), "g-signal", G_CALLBACK(on_up_wakeups_proxy_signal), NULL);
 }
 
 static Window
@@ -1121,6 +1438,7 @@ setup_x11(Bool replace)
 		init_wnck(xscr);
 		update_theme(xscr, None);
 		update_icon_theme(xscr, None);
+		init_upower();
 		if (options.tray)
 			init_statusicon(xscr);
 		if (options.dock)
