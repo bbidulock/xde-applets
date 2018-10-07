@@ -460,11 +460,9 @@ dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
 		gdk_window_clear_area(xscr->iwin, xev->xexpose.x, xev->xexpose.y,
 				xev->xexpose.width, xev->xexpose.height);
 		gdk_cairo_rectangle(xscr->cr, &rect);
+		cairo_clip(xscr->cr);
 		cairo_paint(xscr->cr);
 		gdk_cairo_reset_clip(xscr->cr, GDK_DRAWABLE(xscr->iwin));
-	} else {
-//		gdk_window_clear(xscr->iwin);
-//		cairo_paint(xscr->cr);
 	}
 	return GDK_FILTER_CONTINUE;
 }

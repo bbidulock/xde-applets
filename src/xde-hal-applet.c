@@ -434,6 +434,8 @@ dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
 	if (xev->type == Expose) {
 		GdkRectangle rect =
 		    { xev->xexpose.x, xev->xexpose.y, xev->xexpose.width, xev->xexpose.height };
+		gdk_window_clear_area(xscr->iwin, xev->xexpose.x, xev->xexpose.y,
+				xev->xexpose.width, xev->xexpose.height);
 		gdk_cairo_rectangle(xscr->cr, &rect);
 		cairo_clip(xscr->cr);
 		cairo_paint(xscr->cr);
@@ -519,6 +521,8 @@ init_dockapp(XdeScreen * xscr)
 
 	/* set the window to start in the withdrawn state */
 	wmhints.flags = 0;
+	wmhints.input = True;
+	wmhints.flags |= InputHint;
 	wmhints.initial_state = WithdrawnState;
 	wmhints.flags |= StateHint;
 	wmhints.icon_window = icon;
@@ -546,6 +550,7 @@ init_dockapp(XdeScreen * xscr)
 		gdk_window_show(xscr->iwin);
 		XSetWMHints(dpy, icon, &wmhints);
 		XReparentWindow(dpy, icon, p, 0, 0);
+		XSetWindowBackgroundPixmap(dpy, icon, ParentRelative);
 		XDestroyWindow(dpy, t);
 	}
 
