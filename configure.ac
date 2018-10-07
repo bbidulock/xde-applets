@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-applets],[0.4.17],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
-AC_REVISION([0.4.17])
+AC_INIT([xde-applets],[0.4.20],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
+AC_REVISION([0.4.20])
 
 AC_CONFIG_SRCDIR([src/xde-av-applet.c])
 AC_CONFIG_HEADERS([autoconf.h])
@@ -12,7 +12,7 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2018-10-03'
+DATE='2018-10-06'
 AC_SUBST([DATE])
 
 BRANCH='master'
@@ -144,6 +144,53 @@ AC_MSG_CHECKING([for XINERAMA support])
 AC_MSG_RESULT([${enable_xinerama:-yes}])
 AM_CONDITIONAL([HAVE_XINERAMA],[test  "x$enable_xinerama" != "xno"])
 
+
+AC_ARG_ENABLE([startup-notification],
+	AC_HELP_STRING([--disable-startup-notification],
+		[Disable startup notification support @<:@default=auto@:>@]))
+if test "x$enable_startup_notification" != xno ; then
+	PKG_CHECK_MODULES([SN],[libstartup-notification-1.0],
+		[AC_DEFINE([STARTUP_NOTIFICATION],[1], [Define to 1 to support startup notification.])],
+		[enable_startup_notification=no])
+fi
+AC_MSG_CHECKING([for startup notification support])
+AC_MSG_RESULT([${enable_startup_notification:-yes}])
+
+AC_ARG_ENABLE([notify],
+	AC_HELP_STRING([--disable-notify],
+		[Disable notification daemon notifications @<:@default=auto@:>@]))
+if test "x$enable_notify" != xno ; then
+	PKG_CHECK_MODULES([NOTIFY],[gio-2.0 gio-unix-2.0 glib-2.0 gdk-pixbuf-2.0 libnotify],
+		[AC_DEFINE([DESKTOP_NOTIFICATIONS],[1],[Define to 1 to support desktop notifications.])],
+		[enable_notify=no])
+fi
+AC_MSG_CHECKING([for notification-daemon support])
+AC_MSG_RESULT([${enable_notify:-yes}])
+AM_CONDITIONAL([HAVE_DESKTOP_NOTIFICATIONS],[test  "x$enable_notify" != "xno"])
+
+AC_ARG_ENABLE([status-icon],
+	AC_HELP_STRING([--disable-status-icon],
+		[Disable status icon in system tray @<:@default=auto@:>@]))
+if test "x$enable_status_icon" != xno ; then
+	PKG_CHECK_MODULES([GTK2],[gtk+-2.0 >= 2.10],
+		[AC_DEFINE([SYSTEM_TRAY_STATUS_ICON],[1],[Define to 1 to support system tray icon.])],
+		[enable_status_icon=no])
+fi
+AC_MSG_CHECKING([for status-icon support])
+AC_MSG_RESULT([${enable_status_icon:-yes}])
+AM_CONDITIONAL([HAVE_SYSTEM_TRAY_STATUS_ICON],[test  "x$enable_status_icon" != "xno"])
+
+AC_ARG_ENABLE([canberra],
+	AC_HELP_STRING([--disable-canberra],
+		[Disable canberra sound @<:@default=auto@:>@]))
+if test "x$enable_canberra" != xno ; then
+	PKG_CHECK_MODULES([SOUND],[libcanberra-gtk],
+		[AC_DEFINE([CANBERRA_SOUND],[1],[Define to 1 to support libcanberra sound.])],
+		[enable_canberra=no])
+fi
+AC_MSG_CHECKING([for libcanberra sound support])
+AC_MSG_RESULT([${enable_canberra:-yes}])
+AM_CONDITIONAL([HAVE_CANBERRA_SOUND],[test "x$enable_canberra" != "xno"])
 
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],

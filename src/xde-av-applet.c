@@ -1,7 +1,7 @@
 /*****************************************************************************
 
- Copyright (c) 2008-2018  Monavacon Limited <http://www.monavacon.com/>
- Copyright (c) 2001-2008  OpenSS7 Corporation <http://www.openss7.com/>
+ Copyright (c) 2010-2018  Monavacon Limited <http://www.monavacon.com/>
+ Copyright (c) 2002-2009  OpenSS7 Corporation <http://www.openss7.com/>
  Copyright (c) 1997-2001  Brian F. G. Bidulock <bidulock@openss7.org>
 
  All Rights Reserved.
@@ -42,13 +42,18 @@
 
  *****************************************************************************/
 
-#ifdef HAVE_CONFIG_H
-#include "autoconf.h"
-#endif
+/** @section Headers
+  * @{ */
 
 #ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600
 #endif
+
+#ifdef HAVE_CONFIG_H
+#include "autoconf.h"
+#endif
+
+#undef STARTUP_NOTIFICATION
 
 #include <stddef.h>
 #include <stdint.h>
@@ -79,7 +84,9 @@
 #include <stdarg.h>
 #include <strings.h>
 #include <regex.h>
-#include <pwd.h>
+#include <wordexp.h>
+#include <execinfo.h>
+#include <math.h>
 #include <dlfcn.h>
 
 #include <X11/Xatom.h>
@@ -99,9 +106,13 @@
 #include <libsn/sn.h>
 #endif
 #include <X11/SM/SMlib.h>
+#include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 #include <glib.h>
+#include <glib-unix.h>
 #include <gdk/gdkx.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <cairo.h>
 
@@ -109,31 +120,69 @@
 #include <libwnck/libwnck.h>
 
 #include <pwd.h>
+#include <fontconfig/fontconfig.h>
+#include <pango/pangofc-fontmap.h>
+
+#ifdef CANBERRA_SOUND
+#include <canberra-gtk.h>
+#endif
 
 #ifdef _GNU_SOURCE
 #include <getopt.h>
 #endif
 
-#define XPRINTF(args...) do { } while (0)
-#define OPRINTF(args...) do { if (options.output > 1) { \
-	fprintf(stderr, "I: "); \
-	fprintf(stderr, args); \
-	fflush(stderr); } } while (0)
-#define DPRINTF(args...) do { if (options.debug) { \
-	fprintf(stderr, "D: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr); } } while (0)
-#define EPRINTF(args...) do { \
-	fprintf(stderr, "E: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr);   } while (0)
-#define WPRINTF(args...) do { \
-	fprintf(stderr, "W: %s +%d %s(): ", __FILE__, __LINE__, __func__); \
-	fprintf(stderr, args); \
-	fflush(stderr);   } while (0)
-#define DPRINT() do { if (options.debug) { \
-	fprintf(stderr, "D: %s +%d %s()\n", __FILE__, __LINE__, __func__); \
-	fflush(stderr); } } while (0)
+/** @} */
+
+/** @section Preamble
+  * @{ */
+
+static const char *
+_timestamp(void)
+{
+	static struct timeval tv = { 0, 0 };
+	static char buf[BUFSIZ];
+	double stamp;
+
+	gettimeofday(&tv, NULL);
+	stamp = (double)tv.tv_sec + (double)((double)tv.tv_usec/1000000.0);
+	snprintf(buf, BUFSIZ-1, "%f", stamp);
+	return buf;
+}
+
+#define XPRINTF(_args...) do { } while (0)
+
+#define OPRINTF(_num, _args...) do { if (options.debug >= _num || options.output > _num) { \
+		fprintf(stdout, NAME ": I: "); \
+		fprintf(stdout, _args); fflush(stdout); } } while (0)
+
+#define DPRINTF(_num, _args...) do { if (options.debug >= _num) { \
+		fprintf(stderr, NAME ": D: [%s] %12s +%4d %s(): ", _timestamp(), __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr); } } while (0)
+
+#define EPRINTF(_args...) do { \
+		fprintf(stderr, NAME ": E: [%s] %12s +%4d %s(): ", _timestamp(), __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr);   } while (0)
+
+#define WPRINTF(_args...) do { \
+		fprintf(stderr, NAME ": W: [%s] %12s +%4d %s(): ", _timestamp(), __FILE__, __LINE__, __func__); \
+		fprintf(stderr, _args); fflush(stderr);   } while (0)
+
+#define PTRACE(_num) do { if (options.debug >= _num || options.output >= _num) { \
+		fprintf(stderr, NAME ": T: [%s] %12s +%4d %s()\n", _timestamp(), __FILE__, __LINE__, __func__); \
+		fflush(stderr); } } while (0)
+
+void
+dumpstack(const char *file, const int line, const char *func)
+{
+	void *buffer[32];
+	int nptr;
+	char **strings;
+	int i;
+
+	if ((nptr = backtrace(buffer, 32)) && (strings = backtrace_symbols(buffer, nptr)))
+		for (i = 0; i < nptr; i++)
+			fprintf(stderr, NAME ": E: %12s +%4d : %s() : \t%s\n", file, line, func, strings[i]);
+}
 
 #undef EXIT_SUCCESS
 #undef EXIT_FAILURE
@@ -146,17 +195,27 @@
 #define GTK_EVENT_STOP		TRUE
 #define GTK_EVENT_PROPAGATE	FALSE
 
-#define XA_SELECTION_NAME	"_XDE_AV_APPLET_S%d"
+const char *program = NAME;
 
+#define XA_PREFIX		"_XDE_AV_APPLET"
+#define XA_SELECTION_NAME	XA_PREFIX "_S%d"
 #define LOGO_NAME		"network-wired"
-
-SmcConn smcConn = NULL;
 
 int saveArgc;
 char **saveArgv;
 
+#define RESNAME "xde-av-applet"
+#define RESCLAS "XDE-AV-Applet"
+#define RESTITL "XDE Avahi Applet"
+
+#define APPDFLT "/usr/share/X11/app-defaults/" RESCLAS
+
+SmcConn smcConn = NULL;
+
 int cmdArgc;
 char **cmdArgv;
+
+/** @} */
 
 Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
 Atom _XA_XDE_THEME_NAME;
@@ -192,6 +251,18 @@ Atom _XA_XDE_AV_APPLET_REFRESH;
 Atom _XA_XDE_AV_APPLET_RESTART;
 Atom _XA_XDE_AV_APPLET_POPMENU;
 Atom _XA_XDE_AV_APPLET_REQUEST;
+
+#define CA_CONTEXT_ID	55
+
+typedef enum {
+	CaEventWindowManager = CA_CONTEXT_ID,
+	CaEventWorkspaceChange,
+	CaEventDesktopChange,
+	CaEventWindowChange,
+	CaEventLockScreen,
+	CaEventPowerChanged,
+	CaEventSleepSuspend,
+} CaEventId;
 
 typedef struct {
 	int index;
@@ -363,7 +434,7 @@ applet_restart(void)
 	for (i = 0; i < saveArgc; i++)
 		argv[i] = saveArgv[i];
 
-	DPRINTF("%s: restarting the applet\n", NAME);
+	DPRINTF(1, "%s: restarting the applet\n", NAME);
 	if (execvp(argv[0], argv) == -1)
 		EPRINTF("%s: %s\n", argv[0], strerror(errno));
 	return;
@@ -453,7 +524,7 @@ dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
 	XdeScreen *xscr = data;
 	XEvent *xev = xevent;
 
-	DPRINTF("Event of type %d(%d)\n", event->type, xev->type);
+	DPRINTF(1, "Event of type %d(%d)\n", event->type, xev->type);
 	if (xev->type == Expose) {
 		GdkRectangle rect =
 		    { xev->xexpose.x, xev->xexpose.y, xev->xexpose.width, xev->xexpose.height };
@@ -611,9 +682,9 @@ get_selection(Bool replace, Window selwin)
 		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
 		atom = XInternAtom(dpy, selection, False);
 		if (!(owner = XGetSelectionOwner(dpy, atom)))
-			DPRINTF("No owner for %s\n", selection);
+			DPRINTF(1, "No owner for %s\n", selection);
 		if ((owner && replace) || (!owner && selwin)) {
-			DPRINTF("Setting owner of %s to 0x%08lx from 0x%08lx\n", selection, selwin,
+			DPRINTF(1, "Setting owner of %s to 0x%08lx from 0x%08lx\n", selection, selwin,
 				owner);
 			XSetSelectionOwner(dpy, atom, selwin, CurrentTime);
 			XSync(dpy, False);
@@ -625,14 +696,14 @@ get_selection(Bool replace, Window selwin)
 	if (replace) {
 		if (gotone) {
 			if (selwin)
-				DPRINTF("%s: replacing running instance\n", NAME);
+				DPRINTF(1, "%s: replacing running instance\n", NAME);
 			else
-				DPRINTF("%s: quitting running instance\n", NAME);
+				DPRINTF(1, "%s: quitting running instance\n", NAME);
 		} else {
 			if (selwin)
-				DPRINTF("%s: no running instance to replace\n", NAME);
+				DPRINTF(1, "%s: no running instance to replace\n", NAME);
 			else
-				DPRINTF("%s: no running instance to quit\n", NAME);
+				DPRINTF(1, "%s: no running instance to quit\n", NAME);
 		}
 		if (selwin) {
 			XEvent ev;
@@ -659,7 +730,7 @@ get_selection(Bool replace, Window selwin)
 			}
 		}
 	} else if (gotone)
-		DPRINTF("%s: not replacing running instance\n", NAME);
+		DPRINTF(1, "%s: not replacing running instance\n", NAME);
 	return (gotone);
 }
 
@@ -699,8 +770,8 @@ window_manager_changed(WnckScreen *wnck, gpointer user)
 			xscr->wmname = strdup("uwm");
 		}
 	}
-	DPRINTF("window manager is '%s'\n", xscr->wmname);
-	DPRINTF("window manager is %s\n", xscr->goodwm ? "usable" : "unusable");
+	DPRINTF(1, "window manager is '%s'\n", xscr->wmname);
+	DPRINTF(1, "window manager is %s\n", xscr->goodwm ? "usable" : "unusable");
 }
 
 static void
@@ -753,11 +824,11 @@ update_theme(XdeScreen *xscr, Atom prop)
 			if (list)
 				XFreeStringList(list);
 		} else
-			DPRINTF("could not get text list for property\n");
+			DPRINTF(1, "could not get text list for property\n");
 		if (xtp.value)
 			XFree(xtp.value);
 	} else
-		DPRINTF("could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
 	if ((set = gtk_settings_get_for_screen(xscr->scrn))) {
 		GValue theme_v = G_VALUE_INIT;
 		const char *theme;
@@ -773,7 +844,7 @@ update_theme(XdeScreen *xscr, Atom prop)
 		g_value_unset(&theme_v);
 	}
 	if (changed) {
-		DPRINTF("New theme is %s\n", xscr->theme);
+		DPRINTF(1, "New theme is %s\n", xscr->theme);
 		/* FIXME: do somthing more about it. */
 	}
 }
@@ -817,11 +888,11 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 			if (list)
 				XFreeStringList(list);
 		} else
-			DPRINTF("could not get text list for property\n");
+			DPRINTF(1, "could not get text list for property\n");
 		if (xtp.value)
 			XFree(xtp.value);
 	} else
-		DPRINTF("could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
+		DPRINTF(1, "could not get %s for root 0x%lx\n", XGetAtomName(dpy, prop), root);
 	if ((set = gtk_settings_get_for_screen(xscr->scrn))) {
 		GValue theme_v = G_VALUE_INIT;
 		const char *itheme;
@@ -837,7 +908,7 @@ update_icon_theme(XdeScreen *xscr, Atom prop)
 		g_value_unset(&theme_v);
 	}
 	if (changed) {
-		DPRINTF("New icon theme is %s\n", xscr->itheme);
+		DPRINTF(1, "New icon theme is %s\n", xscr->itheme);
 		/* FIXME: do something more about it. */
 	}
 }
@@ -858,19 +929,19 @@ setup_x11(Bool replace)
 	XdeScreen *xscr;
 	int s, nscr;
 
-	DPRINTF("getting default GDK display\n");
+	DPRINTF(1, "getting default GDK display\n");
 	disp = gdk_display_get_default();
-	DPRINTF("getting default display\n");
+	DPRINTF(1, "getting default display\n");
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
-	DPRINTF("getting default GDK screen\n");
+	DPRINTF(1, "getting default GDK screen\n");
 	scrn = gdk_display_get_default_screen(disp);
-	DPRINTF("getting default GDK root window\n");
+	DPRINTF(1, "getting default GDK root window\n");
 	root = gdk_screen_get_root_window(scrn);
 
-	DPRINTF("creating select window\n");
+	DPRINTF(1, "creating select window\n");
 	selwin = XCreateSimpleWindow(dpy, GDK_WINDOW_XID(root), 0, 0, 1, 1, 0, 0, 0);
 
-	DPRINTF("checking for selection\n");
+	DPRINTF(1, "checking for selection\n");
 	if ((owner = get_selection(replace, selwin))) {
 		if (!replace) {
 			XDestroyWindow(dpy, selwin);
@@ -878,21 +949,21 @@ setup_x11(Bool replace)
 			exit(EXIT_FAILURE);
 		}
 	}
-	DPRINTF("selecting inputs on 0x%08lx\n", selwin);
+	DPRINTF(1, "selecting inputs on 0x%08lx\n", selwin);
 	XSelectInput(dpy, selwin,
 		     StructureNotifyMask | SubstructureNotifyMask | PropertyChangeMask);
 
-	DPRINTF("getting number of screens\n");
+	DPRINTF(1, "getting number of screens\n");
 	nscr = gdk_display_get_n_screens(disp);
-	DPRINTF("allocating %d screen structures\n", nscr);
+	DPRINTF(1, "allocating %d screen structures\n", nscr);
 	screens = calloc(nscr, sizeof(*screens));
 
-	DPRINTF("getting GDK window for 0x%08lx\n", selwin);
+	DPRINTF(1, "getting GDK window for 0x%08lx\n", selwin);
 	sel = gdk_x11_window_foreign_new_for_display(disp, selwin);
-	DPRINTF("adding a filter for the select window\n");
+	DPRINTF(1, "adding a filter for the select window\n");
 	gdk_window_add_filter(sel, selwin_handler, screens);
 
-	DPRINTF("initializing %d screens\n", nscr);
+	DPRINTF(1, "initializing %d screens\n", nscr);
 	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
 		snprintf(selection, sizeof(selection), XA_SELECTION_NAME, s);
 		xscr->index = s;
@@ -1019,7 +1090,7 @@ root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XdeScreen *xscr = (typeof(xscr)) data;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
 
-	DPRINT();
+	PTRACE(1);
 	if (!xscr) {
 		EPRINTF("xscr is NULL\n");
 		exit(EXIT_FAILURE);
@@ -1036,7 +1107,7 @@ root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 static GdkFilterReturn
 event_handler_SelectionClear(Display *dpy, XEvent *xev, XdeScreen *xscr)
 {
-	DPRINT();
+	PTRACE(1);
 	if (options.debug > 1) {
 		fprintf(stderr, "==> SelectionClear: %p\n", xscr);
 		fprintf(stderr, "    --> send_event = %s\n",
@@ -1049,7 +1120,7 @@ event_handler_SelectionClear(Display *dpy, XEvent *xev, XdeScreen *xscr)
 	}
 	if (xscr && xev->xselectionclear.window == xscr->selwin) {
 		XDestroyWindow(dpy, xscr->selwin);
-		DPRINTF("selection cleared, exiting\n");
+		DPRINTF(1, "selection cleared, exiting\n");
 		if (smcConn) {
 			/* Care must be taken where if we are running under a session
 			   manager. We set the restart hint to SmRestartImmediately
@@ -1067,7 +1138,7 @@ event_handler_SelectionClear(Display *dpy, XEvent *xev, XdeScreen *xscr)
 static GdkFilterReturn
 event_handler_SelectionRequest(Display *dpy, XEvent *xev, XdeScreen *xscr)
 {
-	DPRINT();
+	PTRACE(1);
 	if (options.debug > 1) {
 		fprintf(stderr, "==> SelectionRequest: %p\n", xscr);
 		fprintf(stderr, "    --> send_event = %s\n",
@@ -1091,7 +1162,7 @@ event_handler_SelectionRequest(Display *dpy, XEvent *xev, XdeScreen *xscr)
 static GdkFilterReturn
 event_handler_DestroyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
 {
-	DPRINT();
+	PTRACE(1);
 	if (options.debug > 1) {
 		fprintf(stderr, "==> DestroyNotify: %p\n", xscr);
 		fprintf(stderr, "    --> send_event = %s\n",
@@ -1112,7 +1183,7 @@ selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XdeScreen *xscr = data;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
 
-	DPRINT();
+	PTRACE(1);
 	if (!xscr) {
 		EPRINTF("xscr is NULL\n");
 		exit(EXIT_FAILURE);
@@ -1151,7 +1222,7 @@ client_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XEvent *xev = (typeof(xev)) xevent;
 	Display *dpy = (typeof(dpy)) data;
 
-	DPRINT();
+	PTRACE(1);
 	switch (xev->type) {
 	case ClientMessage:
 		return event_handler_ClientMessage(dpy, xev);
@@ -2095,7 +2166,7 @@ main(int argc, char *argv[])
 		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
 #endif
 		if (c == -1) {
-			DPRINTF("%s: done options processing\n", argv[0]);
+			DPRINTF(1, "%s: done options processing\n", argv[0]);
 			break;
 		}
 		switch (c) {
@@ -2122,7 +2193,7 @@ main(int argc, char *argv[])
 				goto bad_option;
 			if (command == CommandDefault) {
 				command = CommandMonitor;
-				DPRINTF("Setting command to CommandMonitor\n");
+				DPRINTF(1, "Setting command to CommandMonitor\n");
 			}
 			defaults.command = options.command = CommandMonitor;
 			break;
@@ -2130,7 +2201,7 @@ main(int argc, char *argv[])
 			if (options.command != CommandDefault)
 				goto bad_option;
 			if (command == CommandDefault) {
-				DPRINTF("Setting command to CommandReplace\n");
+				DPRINTF(1, "Setting command to CommandReplace\n");
 				command = CommandReplace;
 			}
 			defaults.command = options.command = CommandReplace;
@@ -2139,7 +2210,7 @@ main(int argc, char *argv[])
 			if (options.command != CommandDefault)
 				goto bad_option;
 			if (command == CommandDefault) {
-				DPRINTF("Setting command to CommandRefresh\n");
+				DPRINTF(1, "Setting command to CommandRefresh\n");
 				command = CommandRefresh;
 			}
 			defaults.command = options.command = CommandRefresh;
@@ -2148,7 +2219,7 @@ main(int argc, char *argv[])
 			if (options.command != CommandDefault)
 				goto bad_option;
 			if (command == CommandDefault) {
-				DPRINTF("Setting command to CommandRestart\n");
+				DPRINTF(1, "Setting command to CommandRestart\n");
 				command = CommandRestart;
 			}
 			defaults.command = options.command = CommandRestart;
@@ -2157,14 +2228,14 @@ main(int argc, char *argv[])
 			if (options.command != CommandDefault)
 				goto bad_option;
 			if (command == CommandDefault) {
-				DPRINTF("Setting command to CommandQuit\n");
+				DPRINTF(1, "Setting command to CommandQuit\n");
 				command = CommandQuit;
 			}
 			defaults.command = options.command = CommandQuit;
 			break;
 
 		case 'D':	/* -D, --debug [LEVEL] */
-			DPRINTF("%s: increasing debug verbosity\n", argv[0]);
+			DPRINTF(1, "%s: increasing debug verbosity\n", argv[0]);
 			if (optarg == NULL) {
 				defaults.debug = options.debug = options.debug + 1;
 				break;
@@ -2176,7 +2247,7 @@ main(int argc, char *argv[])
 			defaults.debug = options.debug = val;
 			break;
 		case 'v':	/* -v, --verbose [LEVEL] */
-			DPRINTF("%s: increasing output verbosity\n", argv[0]);
+			DPRINTF(1, "%s: increasing output verbosity\n", argv[0]);
 			if (optarg == NULL) {
 				defaults.output = options.output = options.output + 1;
 				break;
@@ -2189,15 +2260,15 @@ main(int argc, char *argv[])
 			break;
 		case 'h':	/* -h, --help */
 		case 'H':	/* -H, --? */
-			DPRINTF("Setting command to CommandHelp\n");
+			DPRINTF(1, "Setting command to CommandHelp\n");
 			command = CommandHelp;
 			break;
 		case 'V':
-			DPRINTF("Setting command to CommandVersion\n");
+			DPRINTF(1, "Setting command to CommandVersion\n");
 			command = CommandVersion;
 			break;
 		case 'C':	/* -C, --copying */
-			DPRINTF("Setting command to CommandCopying\n");
+			DPRINTF(1, "Setting command to CommandCopying\n");
 			command = CommandCopying;
 			break;
 		case '?':
@@ -2225,8 +2296,8 @@ main(int argc, char *argv[])
 			exit(EXIT_SYNTAXERR);
 		}
 	}
-	DPRINTF("%s: option index = %d\n", argv[0], optind);
-	DPRINTF("%s: option count = %d\n", argv[0], argc);
+	DPRINTF(1, "%s: option index = %d\n", argv[0], optind);
+	DPRINTF(1, "%s: option count = %d\n", argv[0], argc);
 	if (optind < argc) {
 		EPRINTF("%s: excess non-option arguments near '", argv[0]);
 		while (optind < argc) {
@@ -2245,19 +2316,19 @@ main(int argc, char *argv[])
 	case CommandDefault:
 		defaults.command = options.command = CommandMenugen;
 	case CommandMonitor:
-		DPRINTF("%s: running a new instance\n", argv[0]);
+		DPRINTF(1, "%s: running a new instance\n", argv[0]);
 		do_run(argc, argv, False);
 		break;
 	case CommandReplace:
-		DPRINTF("%s: replacing existing instance\n", argv[0]);
+		DPRINTF(1, "%s: replacing existing instance\n", argv[0]);
 		do_run(argc, argv, True);
 		break;
 	case CommandRefresh:
-		DPRINTF("%s: asking existing instance to refresh\n", argv[0]);
+		DPRINTF(1, "%s: asking existing instance to refresh\n", argv[0]);
 		do_refresh(argc, argv);
 		break;
 	case CommandRestart:
-		DPRINTF("%s: asking existing instance to restart\n", argv[0]);
+		DPRINTF(1, "%s: asking existing instance to restart\n", argv[0]);
 		do_restart(argc, argv);
 		break;
 	case CommandQuit:
@@ -2265,19 +2336,19 @@ main(int argc, char *argv[])
 			EPRINTF("%s: cannot ask instance to quit without DISPLAY\n", argv[0]);
 			exit(EXIT_FAILURE);
 		}
-		DPRINTF("%s: asking existing instance to quit\n", argv[0]);
+		DPRINTF(1, "%s: asking existing instance to quit\n", argv[0]);
 		do_quit(argc, argv);
 		break;
 	case CommandHelp:
-		DPRINTF("%s: printing help message\n", argv[0]);
+		DPRINTF(1, "%s: printing help message\n", argv[0]);
 		help(argc, argv);
 		break;
 	case CommandVersion:
-		DPRINTF("%s: printing version message\n", argv[0]);
+		DPRINTF(1, "%s: printing version message\n", argv[0]);
 		version(argc, argv);
 		break;
 	case CommandCopying:
-		DPRINTF("%s: printing copying message\n", argv[0]);
+		DPRINTF(1, "%s: printing copying message\n", argv[0]);
 		copying(argc, argv);
 		break;
 	}

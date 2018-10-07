@@ -15,46 +15,46 @@ bin_PROGRAMS = \
 
 xde_av_applet_CPPFLAGS = -DNAME=\"xde-av-applet\"
 xde_av_applet_SOURCES = xde-av-applet.c
-xde_av_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_av_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_av_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_av_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_bt_applet_CPPFLAGS = -DNAME=\"xde-bt-applet\"
 xde_bt_applet_SOURCES = xde-bt-applet.c
-xde_bt_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_bt_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_bt_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_bt_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_dh_applet_CPPFLAGS = -DNAME=\"xde-dh-applet\"
 xde_dh_applet_SOURCES = xde-dh-applet.c
-xde_dh_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_dh_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_dh_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_dh_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_hal_applet_CPPFLAGS = -DNAME=\"xde-hal-applet\"
 xde_hal_applet_SOURCES = xde-hal-applet.c
-xde_hal_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_hal_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_hal_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_hal_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_lm_applet_CPPFLAGS = -DNAME=\"xde-lm-applet\"
 xde_lm_applet_SOURCES = xde-lm-applet.c
-xde_lm_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_lm_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_lm_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_lm_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_pk_applet_CPPFLAGS = -DNAME=\"xde-pk-applet\"
 xde_pk_applet_SOURCES = xde-pk-applet.c
-xde_pk_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_pk_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_pk_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_pk_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_sd_applet_CPPFLAGS = -DNAME=\"xde-sd-applet\"
 xde_sd_applet_SOURCES = xde-sd-applet.c
-xde_sd_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_sd_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_sd_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_sd_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_up_applet_CPPFLAGS = -DNAME=\"xde-up-applet\"
 xde_up_applet_SOURCES = xde-up-applet.c
-xde_up_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_up_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_up_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_up_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_wl_applet_CPPFLAGS = -DNAME=\"xde-wl-applet\"
 xde_wl_applet_SOURCES = xde-wl-applet.c
-xde_wl_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS)
-xde_wl_applet_LDFLAGS = $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_wl_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_wl_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
