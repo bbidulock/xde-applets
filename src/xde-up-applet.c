@@ -994,7 +994,7 @@ xde_create_device(gchar *dev)
 	XdeDevice *xd;
 
 	DPRINTF(1, "creating device %s\n", dev);
-	if (!(proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+	if ((proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
 						    "org.freedesktop.UPower", dev,
 						    "org.freedesktop.UPower.Device", NULL, &err)) || err) {
 		if ((xd = calloc(1, sizeof(*xd)))) {
