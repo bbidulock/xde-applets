@@ -280,6 +280,7 @@ typedef struct {
 	GdkPixbuf *icon;
 	cairo_t *cr;
 	GdkWindow *iwin;
+	GtkStatusIcon *status;
 } XdeScreen;
 
 typedef enum {
@@ -516,6 +517,7 @@ init_statusicon(XdeScreen *xscr)
 			G_CALLBACK(on_button_press), xscr);
 	g_signal_connect(icon, "popup_menu",
 			G_CALLBACK(on_popup_menu), xscr);
+	xscr->status = icon;
 }
 
 static GdkFilterReturn
@@ -1152,8 +1154,66 @@ void
 on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
 		GStrv invalidated_properties, gpointer user_data)
 {
-	// FIXME: need to detect and invoke sounds for low battery conditions
-	// need to set battery_low to the correct condition
+	GVariantIter iter;
+	GVariant *prop;
+
+	DPRINTF(1, "received upower display proxy props change signal ( %s )\n",
+			g_variant_get_type_string(changed_properties));
+	g_variant_iter_init(&iter, changed_properties);
+	while ((prop = g_variant_iter_next_value(&iter))) {
+		GVariantIter iter2;
+		GVariant *key;
+		GVariant *boxed;
+		GVariant *val;
+		const gchar *name;
+		gchar *icon, *p;
+
+		g_variant_iter_init(&iter2, prop);
+		if (!(key = g_variant_iter_next_value(&iter2))) {
+			EPRINTF("no key!\n");
+			continue;
+		}
+		if (!(name = g_variant_get_string(key, NULL))) {
+			EPRINTF("no name!\n");
+			g_variant_unref(key);
+			continue;
+		}
+		if (strcmp(name, "IconName")) {
+			DPRINTF(1, "not looking for %s\n", name);
+			g_variant_unref(key);
+			continue;
+		}
+		if (!(boxed = g_variant_iter_next_value(&iter2))) {
+			EPRINTF("no boxed!\n");
+			g_variant_unref(key);
+			continue;
+		}
+		if (!(val = g_variant_get_variant(boxed))) {
+			EPRINTF("no value!\n");
+			g_variant_unref(boxed);
+			g_variant_unref(key);
+			continue;
+		}
+		if ((icon = g_variant_dup_string(val, NULL)) && *icon) {
+			GdkDisplay *disp = gdk_display_get_default();
+			int nscr = gdk_display_get_n_screens(disp);
+			XdeScreen *xscr;
+			int s;
+
+			if ((p = strstr(icon, "-symbolic")))
+				*p = '\0';
+			for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+				if (!xscr->status)
+					continue;
+				gtk_status_icon_set_from_icon_name(xscr->status, icon);
+			}
+			g_free(icon);
+		}
+		g_variant_unref(val);
+		g_variant_unref(boxed);
+		g_variant_unref(key);
+		g_variant_unref(prop);
+	}
 }
 
 void
@@ -1234,8 +1294,29 @@ init_upower(void)
 		g_clear_error(&err);
 		return;
 	} else {
+		GVariant *prop;
+
 		if (options.debug > 1)
 			xde_device_dump(up_display);
+		if ((prop = g_dbus_proxy_get_cached_property(up_display, "IconName"))) {
+			gchar *name, *p;
+			if ((name = g_variant_dup_string(prop, NULL)) && *name) {
+				GdkDisplay *disp = gdk_display_get_default();
+				int nscr = gdk_display_get_n_screens(disp);
+				XdeScreen *xscr;
+				int s;
+
+				if ((p = strstr(name, "-symbolic")))
+					*p = '\0';
+				for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+					if (!xscr->status)
+						continue;
+					gtk_status_icon_set_from_icon_name(xscr->status, name);
+				}
+				g_free(name);
+			}
+			g_variant_unref(prop);
+		}
 	}
 	g_signal_connect(G_OBJECT(up_display), "g-properties-changed",
 			 G_CALLBACK(on_up_display_proxy_props_changed), NULL);
