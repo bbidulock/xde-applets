@@ -717,6 +717,139 @@ xde_manager_dump(GDBusProxy *proxy)
 	}
 }
 
+const char *
+show_type(uint32_t type)
+{
+	static char buf[64];
+
+	switch (type) {
+	case 0:
+		return ("Unknown(0)");
+	case 1:
+		return ("Line Power(1)");
+	case 2:
+		return ("Battery(2)");
+	case 3:
+		return ("Ups(3)");
+	case 4:
+		return ("Monitor(4)");
+	case 5:
+		return ("Mouse(5)");
+	case 6:
+		return ("Keyboard(6)");
+	case 7:
+		return ("Pda(7)");
+	case 8:
+		return ("Phone(8)");
+	default:
+		snprintf(buf, sizeof(buf), "Unknown(%u)", type);
+		return (buf);
+	}
+}
+
+const char *
+show_state(uint32_t state)
+{
+	static char buf[64];
+
+	switch (state) {
+	case 0:
+		return ("Unknown(0)");
+	case 1:
+		return ("Charging(1)");
+	case 2:
+		return ("Discharging(2)");
+	case 3:
+		return ("Empty(3)");
+	case 4:
+		return ("Fully charged(4)");
+	case 5:
+		return ("Pending charge(5)");
+	case 6:
+		return ("Pending discharge(6)");
+	default:
+		snprintf(buf, sizeof(buf), "Unknown(%u)", state);
+		return (buf);
+	}
+}
+
+const char *
+show_technology(uint32_t tech)
+{
+	static char buf[64];
+
+	switch (tech) {
+	case 0:
+		return ("Unknown(0)");
+	case 1:
+		return ("Lithium ion(1)");
+	case 2:
+		return ("Lithium polymer(2)");
+	case 3:
+		return ("Lithium iron phosphate(3)");
+	case 4:
+		return ("Lead acid(4)");
+	case 5:
+		return ("Nickel cadmium(5)");
+	case 6:
+		return ("Nickel metal hydride(6)");
+	default:
+		snprintf(buf, sizeof(buf), "Unknown(%u)", tech);
+		return (buf);
+	}
+}
+
+const char *
+show_warning(uint32_t warn)
+{
+	static char buf[64];
+
+	switch (warn) {
+	case 0:
+		return ("Unknown(0)");
+	case 1:
+		return ("None(1)");
+	case 2:
+		return ("Discharging(2)");
+	case 3:
+		return ("Low(3)");
+	case 4:
+		return ("Critical(4)");
+	case 5:
+		return ("Action(5)");
+	default:
+		snprintf(buf, sizeof(buf), "Unknown(%u)", warn);
+		return (buf);
+	}
+}
+
+const char *
+show_level(uint32_t level)
+{
+	static char buf[64];
+
+	switch (level) {
+	case 0:
+		return ("Unknown(0)");
+	case 1:
+		return ("None(1)");
+	case 3:
+		return ("Low(3)");
+	case 4:
+		return ("Critical(4)");
+	case 6:
+		return ("Normal(6)");
+	case 7:
+		return ("High(7)");
+	case 8:
+		return ("Full(8)");
+	default:
+		snprintf(buf, sizeof(buf), "Unknown(%u)", level);
+		return (buf);
+	}
+}
+
+
 void
 xde_device_dump(GDBusProxy *proxy)
 {
@@ -743,7 +876,7 @@ xde_device_dump(GDBusProxy *proxy)
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Type"))) {
-		DPRINTF(1, "Type: %u\n", g_variant_get_uint32(prop));
+		DPRINTF(1, "Type: %s\n", show_type(g_variant_get_uint32(prop)));
 		/* Unknown(0), Line Power(1), Battery(2), Ups(3), Monitor(4), Mouse(5), Keyboard(6), Pda(7), Phone(8) */
 		g_variant_unref(prop);
 	}
@@ -812,7 +945,7 @@ xde_device_dump(GDBusProxy *proxy)
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "State"))) {
-		DPRINTF(1, "State: %u\n", g_variant_get_uint32(prop));
+		DPRINTF(1, "State: %s\n", show_state(g_variant_get_uint32(prop)));
 		/* Unknown(0), Charging(1), Discharging(2), Empty(3), Fully charged(4), Pending charge(5), Pending discharge(6) */
 		g_variant_unref(prop);
 	}
@@ -825,17 +958,17 @@ xde_device_dump(GDBusProxy *proxy)
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Technology"))) {
-		DPRINTF(1, "Technology: %u\n", g_variant_get_uint32(prop));
+		DPRINTF(1, "Technology: %s\n", show_technology(g_variant_get_uint32(prop)));
 		/* Unknown(0), Lithium ion(1), Lithium polymer(2), Lithium iron phosphate(3), Lead acid(4), Nickel cadmium(5), Nickel metal hydride(6) */
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
-		DPRINTF(1, "WarningLevel: %u\n", g_variant_get_uint32(prop));
+		DPRINTF(1, "WarningLevel: %s\n", show_warning(g_variant_get_uint32(prop)));
 		/* Unknown(0), None(1), Discharging(2) (UPS only), Low(3), Critical(4), Action(5) */
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "BatteryLevel"))) {
-		DPRINTF(1, "BatteryLevel: %u\n", g_variant_get_uint32(prop));
+		DPRINTF(1, "BatteryLevel: %s\n", show_level(g_variant_get_uint32(prop)));
 		/* Unknown(0), None(1), Low(3), Critical(4), Normal(6), High(7), Full(8) */
 		g_variant_unref(prop);
 	}
