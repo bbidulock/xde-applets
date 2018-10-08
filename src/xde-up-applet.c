@@ -171,7 +171,7 @@ _timestamp(void)
 		fprintf(stderr, NAME ": W: [%s] %12s +%4d %s(): ", _timestamp(), __FILE__, __LINE__, __func__); \
 		fprintf(stderr, _args); fflush(stderr);   } while (0)
 
-#define PTRACE(_num) do { if (options.debug >= _num || options.output >= _num) { \
+#define PTRACE(_num) do { if (options.debug >= _num) { \
 		fprintf(stderr, NAME ": T: [%s] %12s +%4d %s()\n", _timestamp(), __FILE__, __LINE__, __func__); \
 		fflush(stderr); } } while (0)
 
