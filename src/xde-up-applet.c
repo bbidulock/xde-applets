@@ -116,6 +116,10 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
 
+#ifdef DESKTOP_NOTIFICATIONS
+#include <libnotify/notify.h>
+#endif
+
 #define WNCK_I_KNOW_THIS_IS_UNSTABLE
 #include <libwnck/libwnck.h>
 
@@ -1654,6 +1658,9 @@ setup_x11(Bool replace)
 			gdk_window_add_filter(own, owner_handler, xscr);
 		}
 		gdk_window_add_filter(xscr->root, root_handler, xscr);
+#ifdef DESKTOP_NOTIFICATIONS
+		notify_init(RESNAME);
+#endif
 		init_wnck(xscr);
 		update_theme(xscr, None);
 		update_icon_theme(xscr, None);
