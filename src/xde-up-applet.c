@@ -1014,7 +1014,7 @@ xde_device_dump(GDBusProxy *proxy)
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
-		DPRINTF(1, "BatteryLevel: \"%s\"\n", g_variant_get_string(prop, NULL));
+		DPRINTF(1, "IconName: \"%s\"\n", g_variant_get_string(prop, NULL));
 		g_variant_unref(prop);
 	}
 }
@@ -1023,8 +1023,68 @@ void
 on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
 		GStrv invalidated_properties, gpointer user_data)
 {
-	if (options.debug > 1)
-		xde_device_dump(proxy);
+	GVariantIter iter;
+	GVariant *prop;
+
+	DPRINTF(1, "received upower devices proxy props change signal ( %s )\n",
+			g_variant_get_type_string(changed_properties));
+	g_variant_iter_init(&iter, changed_properties);
+	while ((prop = g_variant_iter_next_value(&iter))) {
+		GVariantIter iter2;
+		GVariant *key;
+		GVariant *boxed;
+		GVariant *val;
+		const gchar *name;
+
+		g_variant_iter_init(&iter2, prop);
+		if (!(key = g_variant_iter_next_value(&iter2))) {
+			EPRINTF("no key!\n");
+			continue;
+		}
+		if (!(name = g_variant_get_string(key, NULL))) {
+			EPRINTF("no name!\n");
+			g_variant_unref(key);
+			continue;
+		}
+		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel")) {
+			DPRINTF(1, "not looking for %s\n", name);
+			g_variant_unref(key);
+			continue;
+		}
+		if (!(boxed = g_variant_iter_next_value(&iter2))) {
+			EPRINTF("no boxed!\n");
+			g_variant_unref(key);
+			continue;
+		}
+		if (!(val = g_variant_get_variant(boxed))) {
+			EPRINTF("no value!\n");
+			g_variant_unref(boxed);
+			g_variant_unref(key);
+			continue;
+		}
+		if (!strcmp(name, "IconName")) {
+			// update_display_icon(g_variant_dup_string(val, NULL));
+		} else if (!strcmp(name, "WarningLevel")) {
+			switch (g_variant_get_uint32(val)) {
+			case 0: /* Unknown(0) */
+				break;
+			case 1: /* None(1) */
+				break;
+			case 2: /* Discharging(2) */
+				break;
+			case 3: /* Low(3) */
+				break;
+			case 4: /* Critical(4) */
+				break;
+			case 5: /* Action(5) */
+				break;
+			}
+		}
+		g_variant_unref(val);
+		g_variant_unref(boxed);
+		g_variant_unref(key);
+		g_variant_unref(prop);
+	}
 }
 
 void
@@ -1039,11 +1099,30 @@ xde_create_device(gchar *dev)
 						    "org.freedesktop.UPower", dev,
 						    "org.freedesktop.UPower.Device", NULL, &err)) || err) {
 		if ((xd = calloc(1, sizeof(*xd)))) {
+			GVariant *prop;
+
 			xd->path = dev;
 			xd->proxy = proxy;
 			g_hash_table_replace(up_devices, dev, xd);
 			g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
 					G_CALLBACK(on_up_device_proxy_props_changed), xd);
+			if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
+				switch (g_variant_get_uint32(prop)) {
+				case 0: /* Unknown(0) */
+					break;
+				case 1: /* None(1) */
+					break;
+				case 2: /* Discharging(2) */
+					break;
+				case 3: /* Low(3) */
+					break;
+				case 4: /* Critical(4) */
+					break;
+				case 5: /* Action(5) */
+					break;
+				}
+				g_variant_unref(prop);
+			}
 			if (options.debug > 1)
 				xde_device_dump(proxy);
 			return;
@@ -1216,7 +1295,7 @@ on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 			g_variant_unref(key);
 			continue;
 		}
-		if (strcmp(name, "IconName")) {
+		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel")) {
 			DPRINTF(1, "not looking for %s\n", name);
 			g_variant_unref(key);
 			continue;
@@ -1232,7 +1311,31 @@ on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 			g_variant_unref(key);
 			continue;
 		}
-		update_display_icon(g_variant_dup_string(val, NULL));
+		if (!strcmp(name, "IconName")) {
+			update_display_icon(g_variant_dup_string(val, NULL));
+		} else if (!strcmp(name, "WarningLevel")) {
+			switch (g_variant_get_uint32(val)) {
+			default:
+			case 0: /* Unknown(0) */
+				battery_low = FALSE;
+				break;
+			case 1: /* None(1) */
+				battery_low = FALSE;
+				break;
+			case 2: /* Discharging(2) */
+				battery_low = FALSE;
+				break;
+			case 3: /* Low(3) */
+				battery_low = TRUE;
+				break;
+			case 4: /* Critical(4) */
+				battery_low = TRUE;
+				break;
+			case 5: /* Action(5) */
+				battery_low = TRUE;
+				break;
+			}
+		}
 		g_variant_unref(val);
 		g_variant_unref(boxed);
 		g_variant_unref(key);
@@ -1324,6 +1427,30 @@ init_upower(void)
 			xde_device_dump(up_display);
 		if ((prop = g_dbus_proxy_get_cached_property(up_display, "IconName"))) {
 			update_display_icon(g_variant_dup_string(prop, NULL));
+			g_variant_unref(prop);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(up_display, "WarningLevel"))) {
+			switch (g_variant_get_uint32(prop)) {
+			default:
+			case 0: /* Unknown(0) */
+				battery_low = FALSE;
+				break;
+			case 1: /* None(1) */
+				battery_low = FALSE;
+				break;
+			case 2: /* Discharging(2) */
+				battery_low = FALSE;
+				break;
+			case 3: /* Low(3) */
+				battery_low = TRUE;
+				break;
+			case 4: /* Critical(4) */
+				battery_low = TRUE;
+				break;
+			case 5: /* Action(5) */
+				battery_low = TRUE;
+				break;
+			}
 			g_variant_unref(prop);
 		}
 	}
