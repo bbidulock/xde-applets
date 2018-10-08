@@ -690,6 +690,7 @@ typedef struct {
 	char *path;
 	gboolean display;
 	GDBusProxy *proxy;
+	NotifyNotification *notify;
 } XdeDevice;
 
 void
@@ -699,6 +700,7 @@ xde_device_destroy(gpointer data)
 
 	g_free(xdev->path);
 	g_object_unref(G_OBJECT(xdev->proxy));
+	g_object_unref(G_OBJECT(xdev->notify));
 	free(xdev);
 }
 
@@ -1026,37 +1028,62 @@ xde_device_warn(XdeDevice *xdev, guint32 level)
 	ca_context *ca = get_default_ca_context();
 	ca_proplist *pl;
 
+	notify_notification_close(xdev->notify, NULL);
 	ca_context_cancel(ca, CaEventBatteryLevel);
 	ca_proplist_create(&pl);
 
 	switch (level) {
 	default:
 	case 0:		/* Unknown(0) */
-		if (xdev->display)
+		if (xdev->display) {
 			battery_low = FALSE;
+		}
 		break;
 	case 1:		/* None(1) */
-		if (xdev->display)
+		if (xdev->display) {
 			battery_low = FALSE;
+		}
 		break;
 	case 2:		/* Discharging(2) */
-		if (xdev->display)
+		if (xdev->display) {
 			battery_low = FALSE;
+		}
 		break;
 	case 3:		/* Low(3) */
-		if (xdev->display)
+		if (xdev->display) {
 			battery_low = TRUE;
-		ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+			notify_notification_update(xdev->notify,
+					"Warning",
+					"The battery level is low.",
+					"battery-low");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
+		}
 		break;
 	case 4:		/* Critical(4) */
-		if (xdev->display)
+		if (xdev->display) {
 			battery_low = TRUE;
-		ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			notify_notification_update(xdev->notify,
+					"Warning",
+					"The battery level is critically low.",
+					"battery-caution");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
+		}
 		break;
 	case 5:		/* Action(5) */
-		if (xdev->display)
+		if (xdev->display) {
 			battery_low = TRUE;
-		ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			notify_notification_update(xdev->notify,
+					"Warning",
+					"The battery level is critically low.",
+					"battery-empty");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
+		}
 		break;
 	}
 	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
@@ -1069,6 +1096,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 	ca_context *ca = get_default_ca_context();
 	ca_proplist *pl;
 
+	notify_notification_close(xdev->notify, NULL);
 	ca_context_cancel(ca, CaEventBatteryLevel);
 	ca_proplist_create(&pl);
 
@@ -1084,11 +1112,22 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 			if (xdev->display && percent != 0.0) {
 				battery_low = TRUE;
 				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+				notify_notification_update(xdev->notify,
+						"Warning",
+						"The battery level is critically low.",
+						"battery-caution");
+				notify_notification_set_timeout(xdev->notify, 5);
 			}
 		} else if (percent <= 15.0) {
 			if (xdev->display && percent != 0.0) {
 				battery_low = TRUE;
 				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+				notify_notification_update(xdev->notify,
+						"Warning",
+						"The battery level is low.",
+						"battery-low");
+				notify_notification_set_timeout(xdev->notify, 5);
+				notify_notification_show(xdev->notify, NULL);
 			}
 		} else if (percent >= 90.0) {
 			if (xdev->display && percent != 0.0) {
@@ -1098,6 +1137,12 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 			if (xdev->display && percent != 0.0) {
 				battery_low = FALSE;
 				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+				notify_notification_update(xdev->notify,
+						"Notice",
+						"The battery is full.",
+						"battery-full");
+				notify_notification_set_timeout(xdev->notify, 5);
+				notify_notification_show(xdev->notify, NULL);
 			}
 		}
 		break;
@@ -1105,29 +1150,59 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 		if (xdev->display && percent != 0.0) {
 			battery_low = TRUE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+			notify_notification_update(xdev->notify,
+					"Warning",
+					"The battery level is low.",
+					"battery-low");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	case 4:		/* Critical(4) */
 		if (xdev->display && percent != 0.0) {
 			battery_low = TRUE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			notify_notification_update(xdev->notify,
+					"Warning",
+					"The battery level is low.",
+					"battery-low");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	case 6:		/* Normal(6) */
 		if (xdev->display && percent != 0.0) {
 			battery_low = FALSE;
+			notify_notification_update(xdev->notify,
+					"Notice",
+					"The battery level is good.",
+					"battery-good");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	case 7:		/* High(7) */
 		if (xdev->display && percent != 0.0) {
 			battery_low = FALSE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+			notify_notification_update(xdev->notify,
+					"Notice",
+					"The battery level is high.",
+					"battery-full");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	case 8:		/* Full(8) */
 		if (xdev->display && percent != 0.0) {
 			battery_low = FALSE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+			notify_notification_update(xdev->notify,
+					"Notice",
+					"The battery is full.",
+					"battery-full");
+			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	}
@@ -1261,6 +1336,7 @@ xde_create_device(const gchar *dev, gboolean display)
 		xdev->path = g_strdup(dev);
 		xdev->proxy = proxy;
 		xdev->display = display;
+		xdev->notify = notify_notification_new("Warning", "The battery level is low.", "battery-low");
 		xde_remove_device(dev);
 		up_devices = g_list_append(up_devices, xdev);
 		g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
