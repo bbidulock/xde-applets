@@ -266,6 +266,7 @@ typedef enum {
 	CaEventLockScreen,
 	CaEventPowerChanged,
 	CaEventSleepSuspend,
+	CaEventBatteryLevel,
 } CaEventId;
 
 typedef struct {
@@ -1022,7 +1023,14 @@ xde_device_dump(GDBusProxy *proxy)
 void
 xde_device_warn(XdeDevice *xdev, guint32 level)
 {
+	ca_context *ca = get_default_ca_context();
+	ca_proplist *pl;
+
+	ca_context_cancel(ca, CaEventBatteryLevel);
+	ca_proplist_create(&pl);
+
 	switch (level) {
+	default:
 	case 0:		/* Unknown(0) */
 		if (xdev->display)
 			battery_low = FALSE;
@@ -1038,28 +1046,105 @@ xde_device_warn(XdeDevice *xdev, guint32 level)
 	case 3:		/* Low(3) */
 		if (xdev->display)
 			battery_low = TRUE;
+		ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
 		break;
 	case 4:		/* Critical(4) */
 		if (xdev->display)
 			battery_low = TRUE;
+		ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
 		break;
 	case 5:		/* Action(5) */
 		if (xdev->display)
 			battery_low = TRUE;
+		ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
 		break;
 	}
+	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
+	ca_proplist_destroy(pl);
+}
+
+void
+xde_device_level(XdeDevice *xdev, guint32 level, double percent)
+{
+	ca_context *ca = get_default_ca_context();
+	ca_proplist *pl;
+
+	ca_context_cancel(ca, CaEventBatteryLevel);
+	ca_proplist_create(&pl);
+
+	switch (level) {
+	default:
+	case 0:		/* Unknown(0) */
+		if (xdev->display && percent != 0.0) {
+			battery_low = FALSE;
+		}
+		break;
+	case 1:		/* None(1) */
+		if (percent <= 5.0) {
+			if (xdev->display && percent != 0.0) {
+				battery_low = TRUE;
+				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			}
+		} else if (percent <= 15.0) {
+			if (xdev->display && percent != 0.0) {
+				battery_low = TRUE;
+				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+			}
+		} else if (percent >= 90.0) {
+			if (xdev->display && percent != 0.0) {
+				battery_low = FALSE;
+			}
+		} else {
+			if (xdev->display && percent != 0.0) {
+				battery_low = FALSE;
+				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+			}
+		}
+		break;
+	case 3:		/* Low(3) */
+		if (xdev->display && percent != 0.0) {
+			battery_low = TRUE;
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+		}
+		break;
+	case 4:		/* Critical(4) */
+		if (xdev->display && percent != 0.0) {
+			battery_low = TRUE;
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+		}
+		break;
+	case 6:		/* Normal(6) */
+		if (xdev->display && percent != 0.0) {
+			battery_low = FALSE;
+		}
+		break;
+	case 7:		/* High(7) */
+		if (xdev->display && percent != 0.0) {
+			battery_low = FALSE;
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+		}
+		break;
+	case 8:		/* Full(8) */
+		if (xdev->display && percent != 0.0) {
+			battery_low = FALSE;
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+		}
+		break;
+	}
+	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
+	ca_proplist_destroy(pl);
 }
 
 void
 on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
-		GStrv invalidated_properties, gpointer user_data)
+				 GStrv invalidated_properties, gpointer user_data)
 {
 	XdeDevice *xdev = user_data;
 	GVariantIter iter;
 	GVariant *prop;
 
 	DPRINTF(1, "received upower devices proxy props change signal ( %s )\n",
-			g_variant_get_type_string(changed_properties));
+		g_variant_get_type_string(changed_properties));
 	g_variant_iter_init(&iter, changed_properties);
 	while ((prop = g_variant_iter_next_value(&iter))) {
 		GVariantIter iter2;
@@ -1078,7 +1163,8 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 			g_variant_unref(key);
 			continue;
 		}
-		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel")) {
+		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel") && strcmp(name, "Percent")
+		    && strcmp(name, "BatteryLevel")) {
 			DPRINTF(1, "not looking for %s\n", name);
 			g_variant_unref(key);
 			continue;
@@ -1099,6 +1185,24 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 				update_display_icon(xdev, g_variant_get_string(val, NULL));
 		} else if (!strcmp(name, "WarningLevel")) {
 			xde_device_warn(xdev, g_variant_get_uint32(val));
+		} else if (!strcmp(name, "Percentage")) {
+			GVariant *batt;
+			guint32 level = 1;
+
+			if ((batt = g_dbus_proxy_get_cached_property(proxy, "BatteryLevel"))) {
+				level = g_variant_get_uint32(batt);
+				g_variant_unref(batt);
+			}
+			xde_device_level(xdev, level, g_variant_get_double(val));
+		} else if (!strcmp(name, "BatteryLevel")) {
+			GVariant *perc;
+			double percent = 0.0;
+
+			if ((perc = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
+				percent = g_variant_get_double(perc);
+				g_variant_unref(perc);
+			}
+			xde_device_level(xdev, g_variant_get_uint32(val), percent);
 		}
 		g_variant_unref(val);
 		g_variant_unref(boxed);
@@ -1169,6 +1273,17 @@ xde_create_device(const gchar *dev, gboolean display)
 		if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
 			xde_device_warn(xdev, g_variant_get_uint32(prop));
 			g_variant_unref(prop);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
+			double percent = g_variant_get_double(prop);
+
+			g_variant_unref(prop);
+			if ((prop = g_dbus_proxy_get_cached_property(proxy, "BatteryLevel"))) {
+				guint32 level = g_variant_get_uint32(prop);
+
+				g_variant_unref(prop);
+				xde_device_level(xdev, level, percent);
+			}
 		}
 		if (options.debug > 1)
 			xde_device_dump(proxy);
@@ -1255,6 +1370,7 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 			ca_context *ca = get_default_ca_context();
 			ca_proplist *pl;
 
+			ca_context_cancel(ca, CaEventPowerChanged);
 			ca_proplist_create(&pl);
 			if (!strcmp(name, "OnBattery")) {
 				if (setting) {
