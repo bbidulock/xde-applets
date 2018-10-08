@@ -24,6 +24,7 @@
 -ss
 -hnl
 -nbc
+-TXdeDevice
 -Tca_context
 -Tca_proplist
 -TGDBusProxy
