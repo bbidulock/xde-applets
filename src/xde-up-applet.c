@@ -680,13 +680,14 @@ get_default_ca_context(void)
 }
 
 GDBusProxy *up_manager = NULL;
-GDBusProxy *up_display = NULL;
-GDBusProxy *up_wakeups = NULL;
-GHashTable *up_devices = NULL;
+GList *up_devices = NULL;
 gchar *up_critical = NULL;
+gboolean battery_low = FALSE;
+
 
 typedef struct {
 	char *path;
+	gboolean display;
 	GDBusProxy *proxy;
 } XdeDevice;
 
@@ -1023,6 +1024,7 @@ void
 on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
 		GStrv invalidated_properties, gpointer user_data)
 {
+	XdeDevice *xd = user_data;
 	GVariantIter iter;
 	GVariant *prop;
 
@@ -1063,20 +1065,33 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 			continue;
 		}
 		if (!strcmp(name, "IconName")) {
-			// update_display_icon(g_variant_dup_string(val, NULL));
+			if (xd->display)
+				update_display_icon(g_variant_dup_string(val, NULL));
 		} else if (!strcmp(name, "WarningLevel")) {
 			switch (g_variant_get_uint32(val)) {
 			case 0: /* Unknown(0) */
+				if (xd->display)
+					battery_low = FALSE;
 				break;
 			case 1: /* None(1) */
+				if (xd->display)
+					battery_low = FALSE;
 				break;
 			case 2: /* Discharging(2) */
+				if (xd->display)
+					battery_low = FALSE;
 				break;
 			case 3: /* Low(3) */
+				if (xd->display)
+					battery_low = TRUE;
 				break;
 			case 4: /* Critical(4) */
+				if (xd->display)
+					battery_low = TRUE;
 				break;
 			case 5: /* Action(5) */
+				if (xd->display)
+					battery_low = TRUE;
 				break;
 			}
 		}
@@ -1087,62 +1102,101 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 	}
 }
 
+gint
+xde_device_compare(gconstpointer a, gconstpointer b)
+{
+	const XdeDevice *xda = a;
+	const XdeDevice *xdb = b;
+
+	return strcmp(xda->path, xdb->path);
+}
+
+gint
+xde_path_compare(gconstpointer a, gconstpointer b)
+{
+	const XdeDevice *xda = a;
+	const gchar *path = b;
+
+	return strcmp(xda->path, path);
+}
+
 void
-xde_create_device(gchar *dev)
+xde_remove_device(const gchar *dev)
+{
+	GList *found;
+
+	DPRINTF(1, "removing device %s\n", dev);
+	if ((found = g_list_find_custom(up_devices, dev, xde_path_compare))) {
+		xde_device_destroy(found->data);
+		up_devices = g_list_delete_link(up_devices, found);
+	}
+}
+
+void
+xde_create_device(const gchar *dev, gboolean display)
 {
 	GDBusProxy *proxy;
 	GError *err = NULL;
 	XdeDevice *xd;
 
 	DPRINTF(1, "creating device %s\n", dev);
-	if ((proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
-						    "org.freedesktop.UPower", dev,
-						    "org.freedesktop.UPower.Device", NULL, &err)) || err) {
-		if ((xd = calloc(1, sizeof(*xd)))) {
-			GVariant *prop;
+	if ((dev && (proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+							   "org.freedesktop.UPower", dev,
+							   "org.freedesktop.UPower.Device", NULL, &err))) || err) {
+		GVariant *prop;
 
-			xd->path = dev;
-			xd->proxy = proxy;
-			g_hash_table_replace(up_devices, dev, xd);
-			g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
-					G_CALLBACK(on_up_device_proxy_props_changed), xd);
-			if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
-				switch (g_variant_get_uint32(prop)) {
-				case 0: /* Unknown(0) */
-					break;
-				case 1: /* None(1) */
-					break;
-				case 2: /* Discharging(2) */
-					break;
-				case 3: /* Low(3) */
-					break;
-				case 4: /* Critical(4) */
-					break;
-				case 5: /* Action(5) */
-					break;
-				}
-				g_variant_unref(prop);
-			}
-			if (options.debug > 1)
-				xde_device_dump(proxy);
+		if (!(xd = calloc(1, sizeof(*xd)))) {
+			g_object_unref(G_OBJECT(proxy));
 			return;
 		}
-		g_object_unref(G_OBJECT(proxy));
+		xd->path = g_strdup(dev);
+		xd->proxy = proxy;
+		xd->display = display;
+		xde_remove_device(dev);
+		up_devices = g_list_append(up_devices, xd);
+		g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
+				 G_CALLBACK(on_up_device_proxy_props_changed), xd);
+		if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
+			if (xd->display)
+				update_display_icon(g_variant_dup_string(prop, NULL));
+			g_variant_unref(prop);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
+			switch (g_variant_get_uint32(prop)) {
+			default:
+			case 0:	/* Unknown(0) */
+				if (xd->display)
+					battery_low = FALSE;
+				break;
+			case 1:	/* None(1) */
+				if (xd->display)
+					battery_low = FALSE;
+				break;
+			case 2:	/* Discharging(2) */
+				if (xd->display)
+					battery_low = FALSE;
+				break;
+			case 3:	/* Low(3) */
+				if (xd->display)
+					battery_low = TRUE;
+				break;
+			case 4:	/* Critical(4) */
+				if (xd->display)
+					battery_low = TRUE;
+				break;
+			case 5:	/* Action(5) */
+				if (xd->display)
+					battery_low = TRUE;
+				break;
+			}
+			g_variant_unref(prop);
+		}
+		if (options.debug > 1)
+			xde_device_dump(proxy);
 	} else {
 		EPRINTF("could not create proxy for device %s: %s\n", dev, err ? err->message : NULL);
 		g_clear_error(&err);
 	}
-	/* consumes dev */
-	g_free(dev);
-}
-
-void
-xde_remove_device(gchar *dev)
-{
-	DPRINTF(1, "removing device %s\n", dev);
-	g_hash_table_remove(up_devices, dev);
-	/* consumes dev */
-	g_free(dev);
 }
 
 void
@@ -1157,7 +1211,8 @@ on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 		g_variant_get(parameters, "(o)", &device);
 		if (device) {
 			DPRINTF(1, "device \"%s\" added\n", device);
-			xde_create_device(device);
+			xde_create_device(device, FALSE);
+			g_free(device);
 		} else {
 			EPRINTF("could not get added device name\n");
 		}
@@ -1166,29 +1221,12 @@ on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 		if (device) {
 			DPRINTF(1, "device \"%s\" removed\n", device);
 			xde_remove_device(device);
+			g_free(device);
 		} else {
 			EPRINTF("could not get removed device name\n");
 		}
 	}
 }
-
-void
-on_up_wakeups_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_name,
-			   GVariant *parameters, gpointer user_data)
-{
-	guint32 total = 0;
-
-	DPRINTF(1, "received upower wakeups proxy signal %s( %s )\n", signal_name,
-		g_variant_get_type_string(parameters));
-	if (!strcmp(signal_name, "TotalChanged")) {
-		g_variant_get(parameters, "(u)", &total);
-		DPRINTF(1, "total changed to %u\n", total);
-	} else if (!strcmp(signal_name, "DataChanged")) {
-		DPRINTF(1, "data changed\n");
-	}
-}
-
-gboolean battery_low = FALSE;
 
 void
 on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
@@ -1269,88 +1307,11 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 }
 
 void
-on_up_display_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
-		GStrv invalidated_properties, gpointer user_data)
-{
-	GVariantIter iter;
-	GVariant *prop;
-
-	DPRINTF(1, "received upower display proxy props change signal ( %s )\n",
-			g_variant_get_type_string(changed_properties));
-	g_variant_iter_init(&iter, changed_properties);
-	while ((prop = g_variant_iter_next_value(&iter))) {
-		GVariantIter iter2;
-		GVariant *key;
-		GVariant *boxed;
-		GVariant *val;
-		const gchar *name;
-
-		g_variant_iter_init(&iter2, prop);
-		if (!(key = g_variant_iter_next_value(&iter2))) {
-			EPRINTF("no key!\n");
-			continue;
-		}
-		if (!(name = g_variant_get_string(key, NULL))) {
-			EPRINTF("no name!\n");
-			g_variant_unref(key);
-			continue;
-		}
-		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel")) {
-			DPRINTF(1, "not looking for %s\n", name);
-			g_variant_unref(key);
-			continue;
-		}
-		if (!(boxed = g_variant_iter_next_value(&iter2))) {
-			EPRINTF("no boxed!\n");
-			g_variant_unref(key);
-			continue;
-		}
-		if (!(val = g_variant_get_variant(boxed))) {
-			EPRINTF("no value!\n");
-			g_variant_unref(boxed);
-			g_variant_unref(key);
-			continue;
-		}
-		if (!strcmp(name, "IconName")) {
-			update_display_icon(g_variant_dup_string(val, NULL));
-		} else if (!strcmp(name, "WarningLevel")) {
-			switch (g_variant_get_uint32(val)) {
-			default:
-			case 0: /* Unknown(0) */
-				battery_low = FALSE;
-				break;
-			case 1: /* None(1) */
-				battery_low = FALSE;
-				break;
-			case 2: /* Discharging(2) */
-				battery_low = FALSE;
-				break;
-			case 3: /* Low(3) */
-				battery_low = TRUE;
-				break;
-			case 4: /* Critical(4) */
-				battery_low = TRUE;
-				break;
-			case 5: /* Action(5) */
-				battery_low = TRUE;
-				break;
-			}
-		}
-		g_variant_unref(val);
-		g_variant_unref(boxed);
-		g_variant_unref(key);
-		g_variant_unref(prop);
-	}
-}
-
-void
 init_upower(void)
 {
 	GVariant *result;
 	GError *err = NULL;
 	gchar *device = NULL;
-
-	up_devices = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, xde_device_destroy);
 
 	DPRINTF(1, "creating UPower manager proxy\n");
 	if (!(up_manager = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
@@ -1385,6 +1346,8 @@ init_upower(void)
 		EPRINTF("could not get display device: %s\n", err ? err->message : NULL);
 		g_clear_error(&err);
 	}
+	DPRINTF(1, "creating UPower manager display device proxy\n");
+	xde_create_device("/org/freedesktop/UPower/devices/DisplayDevice", TRUE);
 	DPRINTF(1, "enumerating UPower manager devices\n");
 	if ((result = g_dbus_proxy_call_sync(up_manager, "EnumerateDevices", NULL,
 					G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
@@ -1398,10 +1361,7 @@ init_upower(void)
 
 			g_variant_iter_init(&iter2, array);
 			while ((object = g_variant_iter_next_value(&iter2))) {
-				gchar *dev;
-
-				if ((dev = g_variant_dup_string(object, NULL)))
-					xde_create_device(dev);
+				xde_create_device(g_variant_get_string(object, NULL), FALSE);
 				g_variant_unref(object);
 			}
 			g_variant_unref(array);
@@ -1411,61 +1371,6 @@ init_upower(void)
 		EPRINTF("could not enumerate devices: %s\n", err ? err->message : NULL);
 		g_clear_error(&err);
 	}
-	DPRINTF(1, "creating UPower manager display device proxy\n");
-	if (!(up_display = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
-							 "org.freedesktop.UPower",
-							 device ? :
-							 "/org/freedesktop/UPower/devices/DisplayDevice",
-							 "org.freedesktop.UPower.Device", NULL, &err)) || err) {
-		EPRINTF("could not create DBUS proxy up_display: %s\n", err ? err->message : NULL);
-		g_clear_error(&err);
-		return;
-	} else {
-		GVariant *prop;
-
-		if (options.debug > 1)
-			xde_device_dump(up_display);
-		if ((prop = g_dbus_proxy_get_cached_property(up_display, "IconName"))) {
-			update_display_icon(g_variant_dup_string(prop, NULL));
-			g_variant_unref(prop);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(up_display, "WarningLevel"))) {
-			switch (g_variant_get_uint32(prop)) {
-			default:
-			case 0: /* Unknown(0) */
-				battery_low = FALSE;
-				break;
-			case 1: /* None(1) */
-				battery_low = FALSE;
-				break;
-			case 2: /* Discharging(2) */
-				battery_low = FALSE;
-				break;
-			case 3: /* Low(3) */
-				battery_low = TRUE;
-				break;
-			case 4: /* Critical(4) */
-				battery_low = TRUE;
-				break;
-			case 5: /* Action(5) */
-				battery_low = TRUE;
-				break;
-			}
-			g_variant_unref(prop);
-		}
-	}
-	g_signal_connect(G_OBJECT(up_display), "g-properties-changed",
-			 G_CALLBACK(on_up_display_proxy_props_changed), NULL);
-	DPRINTF(1, "creating UPower manager wakeups proxy\n");
-	if (!(up_wakeups = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
-							 "org.freedesktop.UPower",
-							 "/org/freedesktop/UPower/Wakeups",
-							 "org.freedesktop.UPower.Wakeups", NULL, &err)) || err) {
-		EPRINTF("could not create DBUS proxy up_wakeups: %s\n", err ? err->message : NULL);
-		g_clear_error(&err);
-		return;
-	}
-	g_signal_connect(G_OBJECT(up_wakeups), "g-signal", G_CALLBACK(on_up_wakeups_proxy_signal), NULL);
 }
 
 static Window
