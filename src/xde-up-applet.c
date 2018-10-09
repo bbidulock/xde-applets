@@ -283,9 +283,11 @@ typedef struct {
 	char *wmname;
 	Bool goodwm;
 	GdkPixbuf *icon;
-	cairo_t *cr;
+	cairo_t *cr;	    /* for drawing on dockapp window */
+	cairo_t *cr2;	    /* for drawing on pixmap */
 	GdkWindow *iwin;
 	GtkStatusIcon *status;
+	GdkPixmap *pmap;
 } XdeScreen;
 
 typedef enum {
@@ -546,7 +548,7 @@ dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
 }
 
 static void
-init_dockapp(XdeScreen * xscr)
+init_dockapp(XdeScreen *xscr)
 {
 	GdkWindowAttr attrs = { NULL, };
 	XWMHints wmhints = { 0, };
@@ -568,8 +570,8 @@ init_dockapp(XdeScreen * xscr)
 	attrs.event_mask |= GDK_SUBSTRUCTURE_MASK;
 	attrs.event_mask |= GDK_SCROLL_MASK;
 	/* might want some more */
-	attrs.width = 56;
-	attrs.height = 56;
+	attrs.width = 64;
+	attrs.height = 64;
 	attrs.wclass = GDK_INPUT_OUTPUT;
 	attrs.window_type = GDK_WINDOW_TOPLEVEL;
 
@@ -616,8 +618,8 @@ init_dockapp(XdeScreen * xscr)
 
 	/* make this user specified size so WM does not mess with it */
 	sizehints.flags = USSize;
-	sizehints.width = 56;
-	sizehints.height = 56;
+	sizehints.width = 64;
+	sizehints.height = 64;
 	XSetWMNormalHints(GDK_WINDOW_XDISPLAY(xscr->iwin), icon, &sizehints);
 
 	/* set the window to start in the withdrawn state */
@@ -639,10 +641,11 @@ init_dockapp(XdeScreen * xscr)
 		unsigned int dummy3;
 		Display *dpy = GDK_WINDOW_XDISPLAY(xscr->iwin);
 
-		/* NOTE: this has to be done this way for GDK2, otherwise, the window is mapped to
-		   the window manager with an initial state of NormalState.  So, we reparent the
-		   window under a temporary window (from root) before gdk_window_show() and then
-		   set the proper WMHints and then reparent it back to root in the mapped state. */
+		/* NOTE: this has to be done this way for GDK2, otherwise, the window is
+		   mapped to the window manager with an initial state of NormalState.
+		   So, we reparent the window under a temporary window (from root) before 
+		   gdk_window_show() and then set the proper WMHints and then reparent it 
+		   back to root in the mapped state. */
 		XQueryTree(dpy, icon, &dummy1, &p, &dummy2, &dummy3);
 		if (dummy2)
 			XFree(dummy2);
@@ -657,16 +660,27 @@ init_dockapp(XdeScreen * xscr)
 
 	GtkIconTheme *itheme = gtk_icon_theme_get_default();
 
-	xscr->icon = gtk_icon_theme_load_icon(itheme, LOGO_NAME, 56,
-					      GTK_ICON_LOOKUP_USE_BUILTIN |
-					      GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+	xscr->icon = gtk_icon_theme_load_icon(itheme, LOGO_NAME, 48,
+					      GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
 	if (!xscr->icon) {
 		EPRINTF("could not get icon!\n");
 		exit(EXIT_FAILURE);
 	}
 
+	xscr->pmap = gdk_pixmap_new(NULL, 64, 64, 32);
+	GdkVisual *visual = gdk_visual_get_best_with_depth(32);
+	GdkColormap *cmap = gdk_colormap_new(visual, FALSE);
+	gdk_drawable_set_colormap(GDK_DRAWABLE(xscr->pmap), cmap);
+
+	xscr->cr2 = gdk_cairo_create(GDK_DRAWABLE(xscr->pmap));
+	gdk_cairo_set_source_pixbuf(xscr->cr2, xscr->icon, 4.0, 8.0);
+	cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_CLEAR);
+	cairo_paint(xscr->cr2);
+	cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_SOURCE);
+	cairo_paint(xscr->cr2);
+
 	xscr->cr = gdk_cairo_create(GDK_DRAWABLE(xscr->iwin));
-	gdk_cairo_set_source_pixbuf(xscr->cr, xscr->icon, 0.0, 0.0);
+	gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
 	cairo_paint(xscr->cr);
 }
 
@@ -735,15 +749,19 @@ update_display_icon(XdeDevice *xdev, const gchar *icon)
 	GdkDisplay *disp;
 	XdeScreen *xscr;
 	int s, nscr;
-	gchar *name, *p;
+	gchar *name;
 
 	if (!icon || !xdev->display || !(name = g_strdup(icon)))
 		return;
-	if ((p = strstr(name, "-symbolic")))
-		*p = '\0';
+	if (1) {
+		gchar *p;
 
+		if ((p = strstr(name, "-symbolic")))
+			*p = '\0';
+	}
+	/* using a 48x48 display icon, we can put 1x4 16x16 status icons along the right */
 	theme = gtk_icon_theme_get_default();
-	pixbuf = gtk_icon_theme_load_icon(theme, name, 56,
+	pixbuf = gtk_icon_theme_load_icon(theme, name, 48,
 					  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
 	if (pixbuf) {
 		disp = gdk_display_get_default();
@@ -751,8 +769,15 @@ update_display_icon(XdeDevice *xdev, const gchar *icon)
 		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
 			if (xscr->status)
 				gtk_status_icon_set_from_icon_name(xscr->status, name);
+			if (xscr->cr2) {
+				gdk_cairo_set_source_pixbuf(xscr->cr2, pixbuf, 4.0, 8.0);
+				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_CLEAR);
+				cairo_paint(xscr->cr2);
+				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_SOURCE);
+				cairo_paint(xscr->cr2);
+			}
 			if (xscr->cr) {
-				gdk_cairo_set_source_pixbuf(xscr->cr, pixbuf, 0.0, 0.0);
+				gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
 				gdk_window_clear(xscr->iwin);
 				cairo_paint(xscr->cr);
 			}
