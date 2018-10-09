@@ -742,6 +742,95 @@ xde_manager_dump(GDBusProxy *proxy)
 }
 
 void
+update_display_icons(void)
+{
+	GtkIconTheme *theme;
+	GdkDisplay *disp;
+	XdeScreen *xscr;
+	GList *dev;
+	int i, s, nscr;
+
+	theme = gtk_icon_theme_get_default();
+	disp = gdk_display_get_default();
+	nscr = gdk_display_get_n_screens(disp);
+
+	for (i = 0, dev = up_devices; dev && i < 5; dev = dev->next, i++) {
+		XdeDevice *xdev = dev->data;
+		GdkPixbuf *pixbuf;
+		GVariant *prop;
+		gchar *name, *p;
+
+		if (!(prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName")))
+			continue;
+		name = g_variant_dup_string(prop, NULL);
+		g_variant_unref(prop);
+		if (!name)
+			continue;
+		if ((p = strstr(name, "-symbolic")))
+			*p = '\0';
+		if (!*name) {
+			g_free(name);
+			continue;
+		}
+		pixbuf = gtk_icon_theme_load_icon(theme, name, (i == 0) ? 48 : 16,
+					  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+		if (!pixbuf) {
+			g_free(name);
+			continue;
+		}
+		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+			double x, y;
+
+			if (i == 0 && xscr->status)
+				gtk_status_icon_set_from_icon_name(xscr->status, name);
+			switch (i) {
+			default:
+			case 0:
+				x = 0.0;
+				y = 8.0;
+				break;
+			case 1:
+				x = 48.0;
+				y = 0.0;
+				break;
+			case 2:
+				x = 48.0;
+				y = 16.0;
+				break;
+			case 3:
+				x = 48.0;
+				y = 32.0;
+				break;
+			case 4:
+				x = 48.0;
+				y = 48.0;
+				break;
+			}
+			if (xscr->cr2) {
+				gdk_cairo_set_source_pixbuf(xscr->cr2, pixbuf, x, y);
+				if (i == 0) {
+					cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_CLEAR);
+					cairo_paint(xscr->cr2);
+					cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_SOURCE);
+					cairo_paint(xscr->cr2);
+				} else {
+					cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_OVER);
+					cairo_paint(xscr->cr2);
+				}
+			}
+		}
+		g_free(name);
+	}
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		if (xscr->cr) {
+			gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
+			gdk_window_clear(xscr->iwin);
+			cairo_paint(xscr->cr);
+		}
+	}
+}
+
+void
 update_display_icon(XdeDevice *xdev, const gchar *icon)
 {
 	GtkIconTheme *theme;
@@ -1281,8 +1370,12 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 			continue;
 		}
 		if (!strcmp(name, "IconName")) {
-			if (xdev->display)
-				update_display_icon(xdev, g_variant_get_string(val, NULL));
+			if (0) {
+				if (xdev->display)
+					update_display_icon(xdev, g_variant_get_string(val, NULL));
+			} else {
+				update_display_icons();
+			}
 		} else if (!strcmp(name, "WarningLevel")) {
 			xde_device_warn(xdev, g_variant_get_uint32(val));
 		} else if (!strcmp(name, "Percentage")) {
@@ -1367,8 +1460,12 @@ xde_create_device(const gchar *dev, gboolean display)
 		g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
 				 G_CALLBACK(on_up_device_proxy_props_changed), xdev);
 		if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
-			if (xdev->display)
-				update_display_icon(xdev, g_variant_get_string(prop, NULL));
+			if (0) {
+				if (xdev->display)
+					update_display_icon(xdev, g_variant_get_string(prop, NULL));
+			} else {
+				update_display_icons();
+			}
 			g_variant_unref(prop);
 		}
 		if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
