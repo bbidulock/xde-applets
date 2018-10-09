@@ -211,6 +211,7 @@ char **saveArgv;
 #define RESNAME "xde-up-applet"
 #define RESCLAS "XDE-UP-Applet"
 #define RESTITL "XDE UPower Applet"
+#define RESCOMM "A Upower system tray icon and dock application."
 
 #define APPDFLT "/usr/share/X11/app-defaults/" RESCLAS
 
@@ -251,10 +252,10 @@ Atom _XA_XDE_WM_VERSION;
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
 
-Atom _XA_XDE_UP_APPLET_REFRESH;
-Atom _XA_XDE_UP_APPLET_RESTART;
-Atom _XA_XDE_UP_APPLET_POPMENU;
-Atom _XA_XDE_UP_APPLET_REQUEST;
+Atom _XA_XDE_APPLET_REFRESH;
+Atom _XA_XDE_APPLET_RESTART;
+Atom _XA_XDE_APPLET_POPMENU;
+Atom _XA_XDE_APPLET_REQUEST;
 
 #define CA_CONTEXT_ID	55
 
@@ -381,17 +382,12 @@ on_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 }
 
 void
-on_services_selected(GtkMenuItem *item, gpointer user_data)
+on_devices_selected(GtkMenuItem *item, gpointer user_data)
 {
 }
 
 void
-on_ssh_selected(GtkMenuItem *item, gpointer user_data)
-{
-}
-
-void
-on_vnc_selected(GtkMenuItem *item, gpointer user_data)
+on_properties_selected(GtkMenuItem *item, gpointer user_data)
 {
 }
 
@@ -401,7 +397,7 @@ on_about_selected(GtkMenuItem *item, gpointer user_data)
 	gchar *authors[] = { "Brian F. G. Bidulock <bidulock@openss7.org>", NULL };
 	gtk_show_about_dialog(NULL,
 			      "authors", authors,
-			      "comments", "A Upower system tray icon.",
+			      "comments", RESCOMM,
 			      "copyright", "Copyright (c) 2013, 2014, 2015, 2016, 2017, 2018  OpenSS7 Corporation",
 			      "license", "Do what thou wilt shall be the whole of the law.\n\n-- Aleister Crowley",
 			      "logo-icon-name", LOGO_NAME,
@@ -460,32 +456,24 @@ on_quit_selected(GtkMenuItem *item, gpointer user_data)
 	gtk_main_quit();
 }
 
-static void
-on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
+GtkMenu *
+get_popup_menu(XdeScreen *xscr)
 {
-	XdeScreen *xscr = user_data;
 	GtkWidget *menu, *item, *imag;
 
 	menu = gtk_menu_new();
 
-	item = gtk_image_menu_item_new_with_label("Services...");
-	imag = gtk_image_new_from_icon_name("applications-system", GTK_ICON_SIZE_MENU);
+	item = gtk_image_menu_item_new_with_label("Devices...");
+	imag = gtk_image_new_from_icon_name("battery", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_services_selected), xscr);
+	g_signal_connect(item, "activate", G_CALLBACK(on_devices_selected), xscr);
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
-	item = gtk_image_menu_item_new_with_label("SSH...");
-	imag = gtk_image_new_from_icon_name("system-file-manager", GTK_ICON_SIZE_MENU);
+	item = gtk_image_menu_item_new_with_label("Properties...");
+	imag = gtk_image_new_from_icon_name("battery", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_ssh_selected), xscr);
-	gtk_widget_show(item);
-	gtk_menu_append(menu, item);
-
-	item = gtk_image_menu_item_new_with_label("VNC...");
-	imag = gtk_image_new_from_icon_name("system-file-manager", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_vnc_selected), xscr);
+	g_signal_connect(item, "activate", G_CALLBACK(on_properties_selected), xscr);
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
@@ -508,7 +496,16 @@ on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
-	gtk_menu_popup(GTK_MENU(menu), NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
+	return GTK_MENU(menu);
+}
+
+static void
+on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+	GtkMenu *menu = get_popup_menu(xscr);
+
+	gtk_menu_popup(menu, NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
 	return;
 }
 
@@ -528,21 +525,26 @@ init_statusicon(XdeScreen *xscr)
 }
 
 static GdkFilterReturn
-dockapp_handler(GdkXEvent * xevent, GdkEvent * event, gpointer data)
+dockapp_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 {
 	XdeScreen *xscr = data;
 	XEvent *xev = xevent;
 
 	DPRINTF(1, "Event of type %d(%d)\n", event->type, xev->type);
 	if (xev->type == Expose) {
-		GdkRectangle rect =
-		    { xev->xexpose.x, xev->xexpose.y, xev->xexpose.width, xev->xexpose.height };
+		GdkRectangle rect = { xev->xexpose.x, xev->xexpose.y, xev->xexpose.width, xev->xexpose.height };
 		gdk_window_clear_area(xscr->iwin, xev->xexpose.x, xev->xexpose.y,
-				xev->xexpose.width, xev->xexpose.height);
+				      xev->xexpose.width, xev->xexpose.height);
 		gdk_cairo_rectangle(xscr->cr, &rect);
 		cairo_clip(xscr->cr);
 		cairo_paint(xscr->cr);
 		gdk_cairo_reset_clip(xscr->cr, GDK_DRAWABLE(xscr->iwin));
+	} else if (xev->type == ButtonPress) {
+		if (xev->xbutton.button == Button3) {
+			GtkMenu *menu = get_popup_menu(xscr);
+
+			gtk_menu_popup(menu, NULL, NULL, NULL, NULL, xev->xbutton.button, xev->xbutton.time);
+		}
 	}
 	return GDK_FILTER_CONTINUE;
 }
@@ -1325,6 +1327,73 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 }
 
 void
+xde_device_state(XdeDevice *xdev, guint32 state)
+{
+	ca_context *ca = get_default_ca_context();
+	ca_proplist *pl;
+
+	notify_notification_close(xdev->notify, NULL);
+	ca_context_cancel(ca, CaEventBatteryLevel);
+	ca_proplist_create(&pl);
+
+	switch (state) {
+	default:
+	case 0:		/* Unknown(0) */
+		break;
+	case 1:		/* Charging(1) */
+		notify_notification_update(xdev->notify,
+				"Notice",
+				"The battery is charging.",
+				"battery");
+		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_show(xdev->notify, NULL);
+		break;
+	case 2:		/* Discharging(2) */
+		notify_notification_update(xdev->notify,
+				"Notice",
+				"The battery is discharging.",
+				"battery");
+		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_show(xdev->notify, NULL);
+		break;
+	case 3:		/* Empty(3) */
+		notify_notification_update(xdev->notify,
+				"Notice",
+				"The battery is empty.",
+				"battery-empty");
+		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_show(xdev->notify, NULL);
+		break;
+	case 4:		/* Fully charged(4) */
+		notify_notification_update(xdev->notify,
+				"Notice",
+				"The battery is fully charged.",
+				"battery-full");
+		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_show(xdev->notify, NULL);
+		break;
+	case 5:		/* Pending charge(5) */
+		notify_notification_update(xdev->notify,
+				"Notice",
+				"The battery is pending charge.",
+				"battery");
+		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_show(xdev->notify, NULL);
+		break;
+	case 6:		/* Pending discharge(6) */
+		notify_notification_update(xdev->notify,
+				"Notice",
+				"The battery is pending discharge.",
+				"battery");
+		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_show(xdev->notify, NULL);
+		break;
+	}
+	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
+	ca_proplist_destroy(pl);
+}
+
+void
 on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties,
 				 GStrv invalidated_properties, gpointer user_data)
 {
@@ -1353,7 +1422,7 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 			continue;
 		}
 		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel") && strcmp(name, "Percent")
-		    && strcmp(name, "BatteryLevel")) {
+		    && strcmp(name, "BatteryLevel") && strcmp(name, "State")) {
 			DPRINTF(1, "not looking for %s\n", name);
 			g_variant_unref(key);
 			continue;
@@ -1396,6 +1465,8 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 				g_variant_unref(perc);
 			}
 			xde_device_level(xdev, g_variant_get_uint32(val), percent);
+		} else if (!strcmp(name, "State")) {
+			xde_device_state(xdev, g_variant_get_uint32(val));
 		}
 		g_variant_unref(val);
 		g_variant_unref(boxed);
@@ -1482,6 +1553,10 @@ xde_create_device(const gchar *dev, gboolean display)
 				g_variant_unref(prop);
 				xde_device_level(xdev, level, percent);
 			}
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(proxy, "State"))) {
+			xde_device_state(xdev, g_variant_get_uint32(prop));
+			g_variant_unref(prop);
 		}
 		if (options.debug > 1)
 			xde_device_dump(proxy);
@@ -1600,7 +1675,7 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 }
 
 void
-init_upower(void)
+init_applet(void)
 {
 	GVariant *result;
 	GError *err = NULL;
@@ -1993,7 +2068,7 @@ setup_x11(Bool replace)
 			init_statusicon(xscr);
 		if (options.dock)
 			init_dockapp(xscr);
-		init_upower();
+		init_applet();
 	}
 }
 
@@ -2040,19 +2115,19 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 		update_theme(xscr, xev->xclient.message_type);
 		update_icon_theme(xscr, xev->xclient.message_type);
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_UP_APPLET_REFRESH) {
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_APPLET_REFRESH) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
 		applet_refresh(xscr);
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_UP_APPLET_RESTART) {
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_APPLET_RESTART) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
 		applet_restart();
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_UP_APPLET_POPMENU) {
+	} else if (xscr && xev->xclient.message_type == _XA_XDE_APPLET_POPMENU) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
@@ -2770,17 +2845,17 @@ startup(int argc, char *argv[], Command command)
 	atom = gdk_atom_intern_static_string("MANAGER");
 	_XA_MANAGER = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_XDE_UP_APPLET_REFRESH");
-	_XA_XDE_UP_APPLET_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string(XA_PREFIX "_REFRESH");
+	_XA_XDE_APPLET_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_XDE_UP_APPLET_RESTART");
-	_XA_XDE_UP_APPLET_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string(XA_PREFIX "_RESTART");
+	_XA_XDE_APPLET_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_XDE_UP_APPLET_POPMENU");
-	_XA_XDE_UP_APPLET_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string(XA_PREFIX "_POPMENU");
+	_XA_XDE_APPLET_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
-	atom = gdk_atom_intern_static_string("_XDE_UP_APPLET_REQUEST");
-	_XA_XDE_UP_APPLET_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	atom = gdk_atom_intern_static_string(XA_PREFIX "_REQUEST");
+	_XA_XDE_APPLET_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
@@ -2828,7 +2903,7 @@ do_refresh(int argc, char *argv[])
 			ev.xclient.send_event = False;
 			ev.xclient.display = dpy;
 			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_UP_APPLET_REFRESH;
+			ev.xclient.message_type = _XA_XDE_APPLET_REFRESH;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
@@ -2876,7 +2951,7 @@ do_restart(int argc, char *argv[])
 			ev.xclient.send_event = False;
 			ev.xclient.display = dpy;
 			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_UP_APPLET_RESTART;
+			ev.xclient.message_type = _XA_XDE_APPLET_RESTART;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
