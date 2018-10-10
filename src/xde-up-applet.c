@@ -259,6 +259,8 @@ Atom _XA_XDE_APPLET_REQUEST;
 
 #define CA_CONTEXT_ID	55
 
+#define NOTIFY_NORMAL_TIMEOUT	3500
+
 typedef enum {
 	CaEventWindowManager = CA_CONTEXT_ID,
 	CaEventWorkspaceChange,
@@ -1247,7 +1249,7 @@ xde_device_warn(XdeDevice *xdev, guint32 level)
 					"Warning",
 					"The battery level is low.",
 					"battery-low");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1259,7 +1261,7 @@ xde_device_warn(XdeDevice *xdev, guint32 level)
 					"Warning",
 					"The battery level is critically low.",
 					"battery-caution");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1271,7 +1273,7 @@ xde_device_warn(XdeDevice *xdev, guint32 level)
 					"Warning",
 					"The battery level is critically low.",
 					"battery-empty");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1306,7 +1308,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 						"Warning",
 						"The battery level is critically low.",
 						"battery-caution");
-				notify_notification_set_timeout(xdev->notify, 5);
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			}
 		} else if (percent <= 15.0) {
 			if (xdev->display && percent != 0.0) {
@@ -1316,7 +1318,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 						"Warning",
 						"The battery level is low.",
 						"battery-low");
-				notify_notification_set_timeout(xdev->notify, 5);
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 				notify_notification_show(xdev->notify, NULL);
 			}
 		} else if (percent >= 90.0) {
@@ -1331,7 +1333,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 						"Notice",
 						"The battery is full.",
 						"battery-full");
-				notify_notification_set_timeout(xdev->notify, 5);
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 				notify_notification_show(xdev->notify, NULL);
 			}
 		}
@@ -1344,7 +1346,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 					"Warning",
 					"The battery level is low.",
 					"battery-low");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1356,7 +1358,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 					"Warning",
 					"The battery level is low.",
 					"battery-low");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1367,7 +1369,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 					"Notice",
 					"The battery level is good.",
 					"battery-good");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1379,7 +1381,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 					"Notice",
 					"The battery level is high.",
 					"battery-full");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1391,7 +1393,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 					"Notice",
 					"The battery is full.",
 					"battery-full");
-			notify_notification_set_timeout(xdev->notify, 5);
+			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
@@ -1419,7 +1421,7 @@ xde_device_state(XdeDevice *xdev, guint32 state)
 				"Notice",
 				"The battery is charging.",
 				"battery");
-		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 2:		/* Discharging(2) */
@@ -1427,7 +1429,7 @@ xde_device_state(XdeDevice *xdev, guint32 state)
 				"Notice",
 				"The battery is discharging.",
 				"battery");
-		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 3:		/* Empty(3) */
@@ -1435,7 +1437,7 @@ xde_device_state(XdeDevice *xdev, guint32 state)
 				"Notice",
 				"The battery is empty.",
 				"battery-empty");
-		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 4:		/* Fully charged(4) */
@@ -1443,7 +1445,7 @@ xde_device_state(XdeDevice *xdev, guint32 state)
 				"Notice",
 				"The battery is fully charged.",
 				"battery-full");
-		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 5:		/* Pending charge(5) */
@@ -1451,7 +1453,7 @@ xde_device_state(XdeDevice *xdev, guint32 state)
 				"Notice",
 				"The battery is pending charge.",
 				"battery");
-		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 6:		/* Pending discharge(6) */
@@ -1459,7 +1461,7 @@ xde_device_state(XdeDevice *xdev, guint32 state)
 				"Notice",
 				"The battery is pending discharge.",
 				"battery");
-		notify_notification_set_timeout(xdev->notify, 5);
+		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	}
