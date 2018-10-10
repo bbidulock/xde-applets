@@ -674,9 +674,41 @@ get_default_ca_context(void)
 	return (ca);
 }
 
+GDBusProxy *dh_manager = NULL;
+
+void
+on_dh_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_name,
+		GVariant *parameters, gpointer user_data)
+{
+	DPRINTF(1, "received dhcpcd manager proxy signal %s( %s )\n", signal_name,
+			g_variant_get_type_string(parameters));
+	if (!strcmp(signal_name, "Event")) {
+	} else if (!strcmp(signal_name, "StatusChanged")) {
+		gchar *status = NULL;
+		g_variant_get(parameters, "(s)", &status);
+	} else if (!strcmp(signal_name, "ScanResults")) {
+		gchar *interface = NULL;
+		g_variant_get(parameters, "(s)", &interface);
+	} else {
+		EPRINTF("unknown dhcpcd manager proxy signal %s\n", signal_name);
+	}
+}
+
 void
 init_applet(void)
 {
+	GError *err = NULL;
+
+	DPRINTF(1, "creating DHCPCD manager proxy\n");
+	if (!(dh_manager = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+					"name.marples.roy.dhcpcd",
+					"/name/marples/roy/dhcpcd",
+					"name.marples.roy.dhcpcd", NULL, &err)) || err) {
+		EPRINTF("could not create DBUS proxy dh_manager: %s\n", err ? err->message : NULL);
+		g_clear_error(&err);
+		return;
+	}
+	g_signal_connect(G_OBJECT(dh_manager), "g-signal", G_CALLBACK(on_dh_manager_proxy_signal), NULL);
 }
 
 static Window
