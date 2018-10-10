@@ -367,18 +367,43 @@ char *xdg_config_last = NULL;
 
 GMainLoop *loop = NULL;
 
+static void
+on_status_activate(GtkStatusIcon *icon, gpointer user_data)
+{
+	DPRINTF(1, "static icon received activate signal\n");
+
+	/* The reason we might want to use button press instead is if we want more
+	   detailed information about the event that caused the activation. */
+}
+
 static gboolean
-on_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
+on_status_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
 	GdkEventButton *ev;
 
+	DPRINTF(1, "static icon received button-press signal\n");
 	(void) xscr;
 	ev = (typeof(ev)) event;
 	if (ev->button != 1)
 		return GTK_EVENT_PROPAGATE;
 	/* FIXME: do something */
+	return GTK_EVENT_PROPAGATE;
 	return GTK_EVENT_STOP;
+}
+
+static gboolean
+on_status_button_release(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
+{
+	DPRINTF(1, "static icon received button-release signal\n");
+	return GTK_EVENT_PROPAGATE;
+}
+
+static gboolean
+on_status_scroll_event(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
+{
+	DPRINTF(1, "static icon received scoll-event signal\n");
+	return GTK_EVENT_PROPAGATE;
 }
 
 void
@@ -500,11 +525,12 @@ get_popup_menu(XdeScreen *xscr)
 }
 
 static void
-on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
+on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
 	GtkMenu *menu = get_popup_menu(xscr);
 
+	DPRINTF(1, "static icon received popup-menu signal\n");
 	gtk_menu_popup(menu, NULL, NULL, gtk_status_icon_position_menu, icon, button, time);
 	return;
 }
@@ -557,7 +583,7 @@ get_tooltip_widget(void)
 }
 
 static gboolean
-on_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode, GtkTooltip *tooltip,
+on_status_query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_mode, GtkTooltip *tooltip,
 		 gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
@@ -573,19 +599,14 @@ init_statusicon(XdeScreen *xscr)
 	GtkStatusIcon *icon;
 
 	icon = gtk_status_icon_new_from_icon_name(LOGO_NAME);
-//	gtk_status_icon_set_tooltip_text(icon, "Click for menu...");
 	gtk_status_icon_set_has_tooltip(icon, TRUE);
-//	gtk_widget_set_tooltip_window(GTK_WIDGET(icon), twin);
 	gtk_status_icon_set_visible(icon, TRUE);
-	/* activate */
-	g_signal_connect(icon, "button-press-event",
-			G_CALLBACK(on_button_press), xscr);
-	/* button-release-event */
-	g_signal_connect(icon, "popup-menu",
-			G_CALLBACK(on_popup_menu), xscr);
-	g_signal_connect(icon, "query-tooltip",
-			G_CALLBACK(on_query_tooltip), xscr);
-	/* scroll-event */
+	g_signal_connect(icon, "activate", G_CALLBACK(on_status_activate), xscr);
+	g_signal_connect(icon, "button-press-event", G_CALLBACK(on_status_button_press), xscr);
+	g_signal_connect(icon, "button-release-event", G_CALLBACK(on_status_button_release), xscr);
+	g_signal_connect(icon, "popup-menu", G_CALLBACK(on_status_popup_menu), xscr);
+	g_signal_connect(icon, "query-tooltip", G_CALLBACK(on_status_query_tooltip), xscr);
+	g_signal_connect(icon, "scroll-event", G_CALLBACK(on_status_scroll_event), xscr);
 	/* size-changed */
 	xscr->status = icon;
 }
