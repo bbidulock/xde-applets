@@ -561,38 +561,9 @@ on_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode, GtkT
 		 gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
-	GList *dev;
 
 	(void) xscr;
-	if (0) {
-		if ((dev = up_devices)) {
-			XdeDevice *xdev = dev->data;
-			GVariant *prop;
-
-			if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
-				gchar *name, *p;
-
-				if ((name = g_variant_dup_string(prop, NULL))) {
-					if ((p = strstr(name, "-symbolic")))
-						*p = '\0';
-					gtk_tooltip_set_icon_from_icon_name(tooltip, name, GTK_ICON_SIZE_MENU);
-					g_free(name);
-				}
-				g_variant_unref(prop);
-			}
-			if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "PowerSupply"))) {
-				if (!g_variant_get_boolean(prop)) {
-					gtk_tooltip_set_text(tooltip, "AC only: no battery.");
-				} else {
-					gtk_tooltip_set_text(tooltip, "Click for menu...");
-				}
-			} else {
-				gtk_tooltip_set_text(tooltip, "Click for menu...");
-			}
-		}
-	} else {
-		gtk_tooltip_set_custom(tooltip, get_tooltip_widget());
-	}
+	gtk_tooltip_set_custom(tooltip, get_tooltip_widget());
 	return TRUE;
 }
 
