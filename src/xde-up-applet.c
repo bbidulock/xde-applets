@@ -509,18 +509,109 @@ on_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer user_data)
 	return;
 }
 
+GDBusProxy *up_manager = NULL;
+gchar *up_critical = NULL;
+GList *up_devices = NULL;
+gboolean battery_low = FALSE;
+
+
+typedef struct {
+	char *path;
+	gboolean display;
+	GDBusProxy *proxy;
+	NotifyNotification *notify;
+} XdeDevice;
+
+GtkWidget *
+get_tooltip_widget(void)
+{
+	GList *dev;
+	GtkWidget *vbox = gtk_vbox_new(TRUE, 2);
+
+	for (dev = up_devices; dev; dev = dev->next) {
+		XdeDevice *xdev = dev->data;
+		GVariant *prop;
+		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
+
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
+			gchar *p, *name = g_variant_dup_string(prop, NULL);
+
+			if ((p = strstr(name, "-symbolic")))
+				*p = '\0';
+
+			GtkWidget *icon = gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_SMALL_TOOLBAR);
+
+			gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
+			gtk_widget_show(icon);
+
+			GtkWidget *text = gtk_label_new("Just some text...");
+
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+		}
+		gtk_widget_show(hbox);
+	}
+	gtk_widget_show(vbox);
+	return vbox;
+}
+
+static gboolean
+on_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean keyboard_mode, GtkTooltip *tooltip,
+		 gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+	GList *dev;
+
+	(void) xscr;
+	if (0) {
+		if ((dev = up_devices)) {
+			XdeDevice *xdev = dev->data;
+			GVariant *prop;
+
+			if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
+				gchar *name, *p;
+
+				if ((name = g_variant_dup_string(prop, NULL))) {
+					if ((p = strstr(name, "-symbolic")))
+						*p = '\0';
+					gtk_tooltip_set_icon_from_icon_name(tooltip, name, GTK_ICON_SIZE_MENU);
+					g_free(name);
+				}
+				g_variant_unref(prop);
+			}
+			if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "PowerSupply"))) {
+				if (!g_variant_get_boolean(prop)) {
+					gtk_tooltip_set_text(tooltip, "AC only: no battery.");
+				} else {
+					gtk_tooltip_set_text(tooltip, "Click for menu...");
+				}
+			} else {
+				gtk_tooltip_set_text(tooltip, "Click for menu...");
+			}
+		}
+	} else {
+		gtk_tooltip_set_custom(tooltip, get_tooltip_widget());
+	}
+	return TRUE;
+}
+
 static void
 init_statusicon(XdeScreen *xscr)
 {
 	GtkStatusIcon *icon;
 
 	icon = gtk_status_icon_new_from_icon_name(LOGO_NAME);
-	gtk_status_icon_set_tooltip_text(icon, "Click for menu...");
+//	gtk_status_icon_set_tooltip_text(icon, "Click for menu...");
+	gtk_status_icon_set_has_tooltip(icon, TRUE);
+//	gtk_widget_set_tooltip_window(GTK_WIDGET(icon), twin);
 	gtk_status_icon_set_visible(icon, TRUE);
-	g_signal_connect(icon, "button_press_event",
+	g_signal_connect(icon, "button-press-event",
 			G_CALLBACK(on_button_press), xscr);
-	g_signal_connect(icon, "popup_menu",
+	g_signal_connect(icon, "popup-menu",
 			G_CALLBACK(on_popup_menu), xscr);
+	g_signal_connect(icon, "query-tooltip",
+			G_CALLBACK(on_query_tooltip), xscr);
 	xscr->status = icon;
 }
 
@@ -695,19 +786,6 @@ get_default_ca_context(void)
 
 	return (ca);
 }
-
-GDBusProxy *up_manager = NULL;
-GList *up_devices = NULL;
-gchar *up_critical = NULL;
-gboolean battery_low = FALSE;
-
-
-typedef struct {
-	char *path;
-	gboolean display;
-	GDBusProxy *proxy;
-	NotifyNotification *notify;
-} XdeDevice;
 
 void
 xde_device_destroy(gpointer data)
