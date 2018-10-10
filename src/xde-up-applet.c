@@ -577,12 +577,16 @@ init_statusicon(XdeScreen *xscr)
 	gtk_status_icon_set_has_tooltip(icon, TRUE);
 //	gtk_widget_set_tooltip_window(GTK_WIDGET(icon), twin);
 	gtk_status_icon_set_visible(icon, TRUE);
+	/* activate */
 	g_signal_connect(icon, "button-press-event",
 			G_CALLBACK(on_button_press), xscr);
+	/* button-release-event */
 	g_signal_connect(icon, "popup-menu",
 			G_CALLBACK(on_popup_menu), xscr);
 	g_signal_connect(icon, "query-tooltip",
 			G_CALLBACK(on_query_tooltip), xscr);
+	/* scroll-event */
+	/* size-changed */
 	xscr->status = icon;
 }
 
