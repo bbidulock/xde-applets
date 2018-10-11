@@ -580,11 +580,14 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 GtkWidget *
 get_tooltip_widget(void)
 {
-	GtkWidget *vbox = gtk_vbox_new(TRUE, 2);
+	static GtkWidget *vbox = NULL;
 	GtkWidget *icon, *text;
 	char *markup;
 	GList *chip, *feat;
 
+	if (vbox)
+		return (vbox);
+	vbox = gtk_vbox_new(TRUE, 2);
 	for (chip = chips; chip; chip = chip->next) {
 		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
 		XdeChip *xchip = chip->data;
@@ -664,6 +667,7 @@ get_tooltip_widget(void)
 		}
 	}
 	gtk_widget_show(vbox);
+	g_object_ref(G_OBJECT(vbox));
 	return (vbox);
 }
 

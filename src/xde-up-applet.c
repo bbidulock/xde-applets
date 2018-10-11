@@ -553,9 +553,11 @@ typedef struct {
 GtkWidget *
 get_tooltip_widget(void)
 {
+	static GtkWidget *vbox = NULL;
 	GList *dev;
-	GtkWidget *vbox = gtk_vbox_new(TRUE, 2);
 
+	if (vbox)
+		return (vbox);
 	for (dev = up_devices; dev; dev = dev->next) {
 		XdeDevice *xdev = dev->data;
 		GVariant *prop;
@@ -581,7 +583,8 @@ get_tooltip_widget(void)
 		gtk_widget_show(hbox);
 	}
 	gtk_widget_show(vbox);
-	return vbox;
+	g_object_ref(G_OBJECT(vbox));
+	return (vbox);
 }
 
 static gboolean

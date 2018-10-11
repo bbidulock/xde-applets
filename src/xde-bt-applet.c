@@ -516,7 +516,11 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 GtkWidget *
 get_tooltip_widget(void)
 {
-	GtkWidget *vbox = gtk_vbox_new(TRUE, 2);
+	static GtkWidget *vbox = NULL;
+
+	if (vbox)
+		return (vbox);
+	vbox = gtk_vbox_new(TRUE, 2);
 	GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
 
 	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
@@ -530,6 +534,7 @@ get_tooltip_widget(void)
 	gtk_widget_show(text);
 	gtk_widget_show(hbox);
 	gtk_widget_show(vbox);
+	g_object_ref(G_OBJECT(vbox));
 	return (vbox);
 }
 
