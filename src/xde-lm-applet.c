@@ -577,16 +577,27 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 	return;
 }
 
+GtkWidget *tooltip_widget = NULL;
+
+void
+put_tooltip_widget(void)
+{
+	if (tooltip_widget) {
+		g_object_unref(tooltip_widget);
+		tooltip_widget = NULL;
+	}
+}
+
 GtkWidget *
 get_tooltip_widget(void)
 {
-	static GtkWidget *vbox = NULL;
+	GtkWidget *vbox;
 	GtkWidget *icon, *text;
 	char *markup;
 	GList *chip, *feat;
 
-	if (vbox)
-		return (vbox);
+	if (tooltip_widget)
+		return (tooltip_widget);
 	vbox = gtk_vbox_new(TRUE, 2);
 	for (chip = chips; chip; chip = chip->next) {
 		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
@@ -668,7 +679,8 @@ get_tooltip_widget(void)
 	}
 	gtk_widget_show(vbox);
 	g_object_ref(G_OBJECT(vbox));
-	return (vbox);
+	tooltip_widget = vbox;
+	return (tooltip_widget);
 }
 
 static gboolean
