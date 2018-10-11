@@ -131,6 +131,9 @@
 #include <canberra-gtk.h>
 #endif
 
+#define I_KNOW_THE_PACKAGEKIT_GLIB2_API_IS_SUBJECT_TO_CHANGE
+#include <packagekit-glib2/packagekit.h>
+
 #ifdef _GNU_SOURCE
 #include <getopt.h>
 #endif

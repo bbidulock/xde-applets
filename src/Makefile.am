@@ -40,8 +40,8 @@ xde_lm_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_
 
 xde_pk_applet_CPPFLAGS = -DNAME=\"xde-pk-applet\"
 xde_pk_applet_SOURCES = xde-pk-applet.c
-xde_pk_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
-xde_pk_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_pk_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS) $(PKGLIB_CFLAGS)
+xde_pk_applet_LDFLAGS = $(PKGLIB_LIBS) $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_sd_applet_CPPFLAGS = -DNAME=\"xde-sd-applet\"
 xde_sd_applet_SOURCES = xde-sd-applet.c

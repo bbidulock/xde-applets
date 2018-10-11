@@ -117,6 +117,7 @@ PKG_CHECK_MODULES([UNIQUE],[unique-1.0])
 PKG_CHECK_MODULES([WNCK],[libwnck-1.0])
 PKG_CHECK_MODULES([CAIRO],[cairo])
 PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
+PKG_CHECK_MODULES([PKGLIB],[packagekit-glib2])
 
 AC_ARG_ENABLE([xrandr],
 	AC_HELP_STRING([--disable-xrandr],
