@@ -135,6 +135,8 @@
 #include <getopt.h>
 #endif
 
+#include <sensors/sensors.h>
+
 /** @} */
 
 /** @section Preamble
@@ -203,7 +205,7 @@ const char *program = NAME;
 
 #define XA_PREFIX		"_XDE_LM_APPLET"
 #define XA_SELECTION_NAME	XA_PREFIX "_S%d"
-#define LOGO_NAME		"utilities-system-monitor"
+#define LOGO_NAME		"gnome-monitor"
 
 int saveArgc;
 char **saveArgv;
@@ -366,6 +368,34 @@ char *xdg_config_path = NULL;
 char *xdg_config_last = NULL;
 
 GMainLoop *loop = NULL;
+
+GList *chips = NULL;
+
+typedef struct {
+	char *name;
+	enum sensors_subfeature_type type;
+	int number;
+	double value;
+	GtkWidget *label;
+} XdeSubfeature;
+
+typedef struct {
+	char *name;
+	char *label;
+	const char *icon;
+	const char *format;
+	enum sensors_feature_type type;
+	XdeSubfeature *input;
+	XdeSubfeature *minimum;
+	XdeSubfeature *maximum;
+} XdeFeature;
+
+typedef struct {
+	const struct sensors_chip_name *chip;
+	char *name;
+	char *adapter;
+	GList *features;
+} XdeChip;
 
 static void
 on_status_activate(GtkStatusIcon *icon, gpointer user_data)
@@ -551,18 +581,88 @@ GtkWidget *
 get_tooltip_widget(void)
 {
 	GtkWidget *vbox = gtk_vbox_new(TRUE, 2);
-	GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
+	GtkWidget *icon, *text;
+	char *markup;
+	GList *chip, *feat;
 
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-	GtkWidget *icon = gtk_image_new_from_icon_name(LOGO_NAME, GTK_ICON_SIZE_SMALL_TOOLBAR);
+	for (chip = chips; chip; chip = chip->next) {
+		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
+		XdeChip *xchip = chip->data;
+		icon = gtk_image_new_from_icon_name("chip", GTK_ICON_SIZE_MENU);
+		gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
+		gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
+		gtk_widget_show(icon);
+		if (xchip->name) {
+			text = gtk_label_new(NULL);
+			markup = g_strdup_printf("<small>%s</small>", xchip->name);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+		}
+		if (xchip->adapter) {
+			text = gtk_label_new(NULL);
+			markup = g_strdup_printf("<small>%s</small>", xchip->adapter);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+		}
+		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+		gtk_widget_show(hbox);
 
-	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
-	gtk_widget_show(icon);
-	GtkWidget *text = gtk_label_new("Click for menu...");
+		for (feat = xchip->features; feat; feat = feat->next) {
+			GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
+			XdeFeature *xfeat = feat->data;
+			XdeSubfeature *xsubf;
 
-	gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-	gtk_widget_show(text);
-	gtk_widget_show(hbox);
+			icon = gtk_image_new_from_icon_name(xfeat->icon, GTK_ICON_SIZE_MENU);
+			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
+			gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
+			gtk_widget_show(icon);
+			if ((xsubf = xfeat->input)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xfeat->label, xsubf->value);
+				text = gtk_label_new(NULL);
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
+				g_free(markup);
+			} else {
+				text = gtk_label_new(NULL);
+			}
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+			if ((xsubf = xfeat->minimum)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Min", xsubf->value);
+				text = gtk_label_new(NULL);
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
+				g_free(markup);
+			} else {
+				text = gtk_label_new(NULL);
+			}
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+			if ((xsubf = xfeat->maximum)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Max", xsubf->value);
+				text = gtk_label_new(NULL);
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
+				g_free(markup);
+			} else {
+				text = gtk_label_new(NULL);
+			}
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+
+			gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+			gtk_widget_show(hbox);
+		}
+	}
 	gtk_widget_show(vbox);
 	return (vbox);
 }
@@ -769,8 +869,209 @@ get_default_ca_context(void)
 }
 
 void
+update_sensors(void)
+{
+	GList *chip, *feat;
+
+	for (chip = chips; chip; chip = chip->next) {
+		XdeChip *xchip = chip->data;
+
+		for (feat = xchip->features; feat; feat = feat->next) {
+			XdeFeature *xfeat = feat->data;
+			XdeSubfeature *xsubf;
+			char *value;
+
+			if ((xsubf = xfeat->input)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				value = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				if (xsubf->label)
+					gtk_label_set_text(GTK_LABEL(xsubf->label), value);
+				g_free(value);
+			}
+			if ((xsubf = xfeat->minimum)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				value = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				if (xsubf->label)
+					gtk_label_set_text(GTK_LABEL(xsubf->label), value);
+				g_free(value);
+			}
+			if ((xsubf = xfeat->maximum)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				value = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				if (xsubf->label)
+					gtk_label_set_text(GTK_LABEL(xsubf->label), value);
+				g_free(value);
+			}
+		}
+	}
+}
+
+void
+init_sensors(void)
+{
+	const struct sensors_chip_name *chip;
+	const struct sensors_feature *feat;
+	const struct sensors_subfeature *subf;
+	int nr, nr2;
+
+	for (nr = 0; (chip = sensors_get_detected_chips(NULL, &nr));) {
+		XdeChip *xchip = calloc(1, sizeof(*xchip));
+
+		xchip->name = calloc(48, sizeof(*xchip->name));
+		sensors_snprintf_chip_name(xchip->name, 48, chip);
+		xchip->adapter = strdup(sensors_get_adapter_name(&chip->bus));
+		xchip->chip = chip;
+
+		chips = g_list_append(chips, xchip);
+
+		for (nr2 = 0; (feat = sensors_get_features(chip, &nr2));) {
+			switch (feat->type) {
+			case SENSORS_FEATURE_IN:
+			case SENSORS_FEATURE_FAN:
+			case SENSORS_FEATURE_TEMP:
+				break;
+			case SENSORS_FEATURE_POWER:
+			case SENSORS_FEATURE_ENERGY:
+			case SENSORS_FEATURE_CURR:
+			case SENSORS_FEATURE_HUMIDITY:
+			case SENSORS_FEATURE_MAX_MAIN:
+			case SENSORS_FEATURE_VID:
+			case SENSORS_FEATURE_INTRUSION:
+			case SENSORS_FEATURE_MAX_OTHER:
+			case SENSORS_FEATURE_BEEP_ENABLE:
+			case SENSORS_FEATURE_MAX:
+			case SENSORS_FEATURE_UNKNOWN:
+			default:
+				continue;
+			}
+			XdeFeature * xfeat = calloc(1, sizeof(*xfeat));
+			xfeat->name = strdup(feat->name);
+			xfeat->label = sensors_get_label(chip, feat);
+			xfeat->type = feat->type;
+			xchip->features = g_list_append(xchip->features, xfeat);
+
+			switch (feat->type) {
+			case SENSORS_FEATURE_IN:
+				xfeat->icon = "voltmeter";
+				xfeat->format = "<small>%s: %.3f V</small>";
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_INPUT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->input = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_MIN))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->minimum = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_MAX))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->maximum = xsubf;
+				}
+				break;
+			case SENSORS_FEATURE_FAN:
+				xfeat->icon = "fan";
+				xfeat->format = "<small>%s: %.0f RPM</small>";
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_INPUT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->input = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_MIN))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->minimum = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_MAX))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->maximum = xsubf;
+				}
+				break;
+			case SENSORS_FEATURE_TEMP:
+				xfeat->icon = "thermometer";
+				xfeat->format = "<small>%s: %.1f °C</small>";
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_INPUT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->input = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MIN))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->minimum = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MAX))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->maximum = xsubf;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
+}
+
+void
 init_applet(void)
 {
+	int err;
+
+	DPRINTF(1, "initializing sensors library\n");
+	if ((err = sensors_init(NULL))) {
+		EPRINTF("something went wrong\n");
+		exit(EXIT_FAILURE);
+	}
+	init_sensors();
 }
 
 static Window

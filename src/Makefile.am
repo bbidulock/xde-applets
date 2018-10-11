@@ -36,7 +36,7 @@ xde_hal_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM
 xde_lm_applet_CPPFLAGS = -DNAME=\"xde-lm-applet\"
 xde_lm_applet_SOURCES = xde-lm-applet.c
 xde_lm_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
-xde_lm_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_lm_applet_LDFLAGS = -lsensors $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_pk_applet_CPPFLAGS = -DNAME=\"xde-pk-applet\"
 xde_pk_applet_SOURCES = xde-pk-applet.c
