@@ -1020,7 +1020,7 @@ init_sensors(void)
 				}
 				break;
 			case SENSORS_FEATURE_TEMP:
-				xfeat->icon = "thermometer";
+				xfeat->icon = "flame";
 				xfeat->format = "<small>%s: %.1f °C</small>";
 				if ((subf =
 				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_INPUT))) {
