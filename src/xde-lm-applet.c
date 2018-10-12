@@ -388,6 +388,7 @@ typedef struct {
 	XdeSubfeature *input;
 	XdeSubfeature *minimum;
 	XdeSubfeature *maximum;
+	GtkWidget *image;
 } XdeFeature;
 
 typedef struct {
@@ -582,10 +583,30 @@ GtkWidget *tooltip_widget = NULL;
 void
 put_tooltip_widget(void)
 {
-	if (tooltip_widget) {
-		g_object_unref(tooltip_widget);
-		tooltip_widget = NULL;
+	GList *chip, *feat;
+
+	if (!tooltip_widget)
+		return;
+
+	for (chip = chips; chip; chip = chip->next) {
+		XdeChip *xchip = chip->data;
+
+		for (feat = xchip->features; feat; feat = feat->next) {
+			XdeFeature *xfeat = feat->data;
+			XdeSubfeature *xsubf;
+
+			xfeat->image = NULL;
+
+			if ((xsubf = xfeat->input))
+				xsubf->label = NULL;
+			if ((xsubf = xfeat->minimum))
+				xsubf->label = NULL;
+			if ((xsubf = xfeat->maximum))
+				xsubf->label = NULL;
+		}
 	}
+	g_object_unref(tooltip_widget);
+	tooltip_widget = NULL;
 }
 
 GtkWidget *
@@ -633,6 +654,7 @@ get_tooltip_widget(void)
 			XdeSubfeature *xsubf;
 
 			icon = gtk_image_new_from_icon_name(xfeat->icon, GTK_ICON_SIZE_MENU);
+			xfeat->image = icon;
 			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
 			gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
 			gtk_widget_show(icon);
@@ -640,6 +662,7 @@ get_tooltip_widget(void)
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
 				markup = g_strdup_printf(xfeat->format, xfeat->label, xsubf->value);
 				text = gtk_label_new(NULL);
+				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
@@ -652,6 +675,7 @@ get_tooltip_widget(void)
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
 				markup = g_strdup_printf(xfeat->format, "Min", xsubf->value);
 				text = gtk_label_new(NULL);
+				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
@@ -664,6 +688,7 @@ get_tooltip_widget(void)
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
 				markup = g_strdup_printf(xfeat->format, "Max", xsubf->value);
 				text = gtk_label_new(NULL);
+				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
@@ -895,31 +920,39 @@ update_sensors(void)
 		for (feat = xchip->features; feat; feat = feat->next) {
 			XdeFeature *xfeat = feat->data;
 			XdeSubfeature *xsubf;
-			char *value;
+			char *markup;
 
 			if ((xsubf = xfeat->input)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				value = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
 				if (xsubf->label)
-					gtk_label_set_text(GTK_LABEL(xsubf->label), value);
-				g_free(value);
+					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
+				g_free(markup);
 			}
 			if ((xsubf = xfeat->minimum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				value = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
 				if (xsubf->label)
-					gtk_label_set_text(GTK_LABEL(xsubf->label), value);
-				g_free(value);
+					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
+				g_free(markup);
 			}
 			if ((xsubf = xfeat->maximum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				value = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
 				if (xsubf->label)
-					gtk_label_set_text(GTK_LABEL(xsubf->label), value);
-				g_free(value);
+					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
+				g_free(markup);
 			}
+			/* FIXME: need to update icon based on read values */
 		}
 	}
+}
+
+gboolean
+update_sensors_timeout(gpointer user_data)
+{
+	update_sensors();
+	return G_SOURCE_CONTINUE;	/* keep event source */
 }
 
 void
@@ -1088,6 +1121,7 @@ init_applet(void)
 		exit(EXIT_FAILURE);
 	}
 	init_sensors();
+	g_timeout_add(500, update_sensors_timeout, NULL);
 }
 
 static Window
