@@ -298,11 +298,9 @@ typedef struct {
 } XdeScreen;
 
 typedef enum {
-	CommandDefault,	    /* just generate WM root menu */
-	CommandMenugen,    /* just generate WM root menu */
+	CommandDefault,	    /* just monitor */
 	CommandMonitor,	    /* run a new instance with monitoring */
 	CommandQuit,	    /* ask running instance to quit */
-	CommandPopMenu,	    /* ask running instance to pop menu */
 	CommandRefresh,	    /* ask running instance to refresh menu */
 	CommandRestart,	    /* ask running instance to restart */
 	CommandReplace,	    /* replace a running instance */
@@ -2836,11 +2834,7 @@ main(int argc, char *argv[])
 	saveArgc = argc;
 	saveArgv = argv;
 
-	if ((p = strstr(argv[0], "-menugen")) && !p[8])
-		defaults.command = options.command = CommandMenugen;
-	else if ((p = strstr(argv[0], "-popmenu")) && !p[6])
-		defaults.command = options.command = CommandPopMenu;
-	else if ((p = strstr(argv[0], "-monitor")) && !p[8])
+	if ((p = strstr(argv[0], "-monitor")) && !p[8])
 		defaults.command = options.command = CommandMonitor;
 	else if ((p = strstr(argv[0], "-replace")) && !p[8])
 		defaults.command = options.command = CommandReplace;
@@ -2859,54 +2853,21 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
-			{"wmname",	required_argument,	NULL,	'w'},
-			{"format",	required_argument,	NULL,	'f'},
-			{"fullmenu",	no_argument,		NULL,	'F'},
-			{"nofullmenu",	no_argument,		NULL,	'N'},
-			{"desktop",	required_argument,	NULL,	'd'},
-			{"charset",	required_argument,	NULL,	'c'},
-			{"language",	required_argument,	NULL,	'l'},
-			{"root-menu",	required_argument,	NULL,	'r'},
-			{"output",	optional_argument,	NULL,	'o'},
-			{"noicons",	no_argument,		NULL,	'n'},
-			{"theme",	required_argument,	NULL,	't'},
-			{"launch",	no_argument,		NULL,	'L'},
-			{"nolaunch",	no_argument,		NULL,	'0'},
-			{"style",	required_argument,	NULL,	's'},
-			{"menu",	required_argument,	NULL,	'M'},
+			{"display",	required_argument,	NULL,	'd'},
+			{"screen",	required_argument,	NULL,	's'},
+			{"notray",	no_argument,		NULL,	'Y'},
+			{"nodock",	no_argument,		NULL,	'K'},
+			{"tray",	no_argument,		NULL,	'y'},
+			{"dock",	no_argument,		NULL,	'k'},
 
-			{"button",	required_argument,	NULL,	'b'},
-			{"keypress",	optional_argument,	NULL,	'k'},
-			{"timestamp",	required_argument,	NULL,	'T'},
-			{"which",	required_argument,	NULL,	'i'},
-			{"where",	required_argument,	NULL,	'W'},
-
-			{"display",	required_argument,	NULL,	 1 },
-			{"screen",	required_argument,	NULL,	 4 },
-			{"die-on-error",no_argument,		NULL,	'e'},
-			{"notray",	no_argument,		NULL,	 2 },
-			{"nodock",	no_argument,		NULL,	 5 },
-			{"nogenerate",	no_argument,		NULL,	 3 },
-			{"verbose",	optional_argument,	NULL,	'v'},
-			{"debug",	optional_argument,	NULL,	'D'},
-
-			{"menugen",	no_argument,		NULL,	'G'},
-			{"popmenu",	no_argument,		NULL,	'P'},
 			{"monitor",	no_argument,		NULL,	'm'},
 			{"refresh",	no_argument,		NULL,	'E'},
 			{"restart",	no_argument,		NULL,	'S'},
 			{"replace",	no_argument,		NULL,	'R'},
 			{"quit",	no_argument,		NULL,	'q'},
 
-			{"excluded",	no_argument,		NULL,	 10},
-			{"nodisplay",	no_argument,		NULL,	 11},
-			{"unallocated",	no_argument,		NULL,	 12},
-			{"empty",	no_argument,		NULL,	 13},
-			{"separators",	no_argument,		NULL,	 14},
-			{"sort",	no_argument,		NULL,	 15},
-			{"tooltips",	no_argument,		NULL,	 16},
-			{"actions",	no_argument,		NULL,	 17},
-
+			{"verbose",	optional_argument,	NULL,	'v'},
+			{"debug",	optional_argument,	NULL,	'D'},
 			{"help",	no_argument,		NULL,	'h'},
 			{"version",	no_argument,		NULL,	'V'},
 			{"copying",	no_argument,		NULL,	'C'},
@@ -2915,11 +2876,9 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv,
-				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:ev::D::GPmFSRqhVCH?",
-				     long_options, &option_index);
+		c = getopt_long_only(argc, argv, "d:s:YKykmESRqv::D::hVCH?", long_options, &option_index);
 #else
-		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
+		c = getopt(argc, argv, "d:s:YKykmESRqvDhVCH?");
 #endif
 		if (c == -1) {
 			DPRINTF(1, "%s: done options processing\n", argv[0]);
@@ -2929,18 +2888,23 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
-
-		case 1:	/* --display DISPLAY */
+		case 'd':	/* --display DISPLAY */
 			free(options.display);
 			defaults.display = options.display = strdup(optarg);
 			break;
-		case 4:	/* --screen SCREEN */
+		case 's':	/* --screen SCREEN */
 			options.screen = atoi(optarg);
 			break;
-		case 2:	/* --notray */
+		case 'Y':	/* -Y, --notray */
 			options.tray = False;
 			break;
-		case 5: /* --nodock */
+		case 'K':	/* -K, --nodock */
+			options.dock = False;
+			break;
+		case 'y':	/* -y, --tray */
+			options.tray = False;
+			break;
+		case 'k':	/* -k, --dock */
 			options.dock = False;
 			break;
 
@@ -3070,7 +3034,7 @@ main(int argc, char *argv[])
 	switch (command) {
 	default:
 	case CommandDefault:
-		defaults.command = options.command = CommandMenugen;
+		defaults.command = options.command = CommandMonitor;
 	case CommandMonitor:
 		DPRINTF(1, "%s: running a new instance\n", argv[0]);
 		do_run(argc, argv, False);
