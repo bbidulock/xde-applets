@@ -292,6 +292,7 @@ typedef struct {
 	GdkWindow *iwin;
 	GtkStatusIcon *status;
 	GdkPixmap *pmap;
+	GtkWidget *table;
 	GtkWidget *tooltip;
 	GtkWidget *info;
 } XdeScreen;
@@ -573,30 +574,19 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 	return;
 }
 
-void
-put_tooltip_table(XdeScreen *xscr)
-{
-}
-
-void
-put_tooltip_widget(XdeScreen *xscr)
-{
-	if (xscr->tooltip) {
-		put_tooltip_table(xscr);
-		g_object_unref(xscr->tooltip);
-		xscr->tooltip = NULL;
-	}
-}
-
 GtkWidget *
 get_tooltip_table(XdeScreen *xscr)
 {
-	GtkWidget *vbox;
+	GtkWidget *table;
 	
-	vbox = gtk_vbox_new(TRUE, 2);
+	if (xscr->table) {
+		g_object_unref(G_OBJECT(xscr->table));
+		xscr->table = NULL;
+	}
+	table = gtk_vbox_new(TRUE, 2);
 	GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
 
-	gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(table), hbox, FALSE, TRUE, 0);
 	GtkWidget *icon = gtk_image_new_from_icon_name(LOGO_NAME, GTK_ICON_SIZE_SMALL_TOOLBAR);
 
 	gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
@@ -606,17 +596,17 @@ get_tooltip_table(XdeScreen *xscr)
 	gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
 	gtk_widget_show(text);
 	gtk_widget_show(hbox);
-	gtk_widget_show(vbox);
-	return (vbox);
+	gtk_widget_show(table);
+	g_object_ref(G_OBJECT(table));
+	xscr->table = table;
+	return (table);
 }
 
 GtkWidget *
 get_tooltip_widget(XdeScreen *xscr)
 {
-	if (!xscr->tooltip) {
+	if (!xscr->tooltip)
 		xscr->tooltip = get_tooltip_table(xscr);
-		g_object_ref(G_OBJECT(xscr->tooltip));
-	}
 	return (xscr->tooltip);
 }
 
@@ -642,8 +632,7 @@ get_status_window(XdeScreen *xscr)
 
 	if (xscr->info)
 		return put_status_window(xscr);
-	if (xscr->tooltip)
-		put_tooltip_widget(xscr); /* one or the other */
+	xscr->tooltip = NULL;
 	win = xscr->info = gtk_window_new(GTK_WINDOW_POPUP);
 	table = get_tooltip_table(xscr);
 	gtk_container_add(GTK_CONTAINER(win), table);

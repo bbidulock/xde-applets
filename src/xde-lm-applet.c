@@ -262,6 +262,8 @@ Atom _XA_XDE_APPLET_REQUEST;
 #define UPDATE_TIMEOUT 750
 #define CA_CONTEXT_ID	55
 
+#define NOTIFY_NORMAL_TIMEOUT	3500
+
 typedef enum {
 	CaEventWindowManager = CA_CONTEXT_ID,
 	CaEventWorkspaceChange,
@@ -292,6 +294,7 @@ typedef struct {
 	GdkWindow *iwin;
 	GtkStatusIcon *status;
 	GdkPixmap *pmap;
+	GtkWidget *table;
 	GtkWidget *tooltip;
 	GtkWidget *info;
 	GList *chips;
@@ -563,44 +566,6 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 	return;
 }
 
-void
-put_tooltip_table(XdeScreen *xscr)
-{
-	GList *chip, *feat;
-
-	for (chip = xscr->chips; chip; chip = chip->next) {
-		XdeChip *xchip = chip->data;
-
-		for (feat = xchip->features; feat; feat = feat->next) {
-			XdeFeature *xfeat = feat->data;
-			XdeSubfeature *xsubf;
-
-			xfeat->image = NULL;
-
-			if ((xsubf = xfeat->input))
-				xsubf->label = NULL;
-			if ((xsubf = xfeat->minimum))
-				xsubf->label = NULL;
-			if ((xsubf = xfeat->maximum))
-				xsubf->label = NULL;
-			if ((xsubf = xfeat->lowcrit))
-				xsubf->label = NULL;
-			if ((xsubf = xfeat->critical))
-				xsubf->label = NULL;
-		}
-	}
-}
-
-void
-put_tooltip_widget(XdeScreen *xscr)
-{
-	if (xscr->tooltip) {
-		put_tooltip_table(xscr);
-		g_object_unref(xscr->tooltip);
-		xscr->tooltip = NULL;
-	}
-}
-
 GtkWidget *
 get_tooltip_table(XdeScreen *xscr)
 {
@@ -610,6 +575,10 @@ get_tooltip_table(XdeScreen *xscr)
 	char *markup;
 	GList *chip, *feat;
 
+	if (xscr->table) {
+		g_object_unref(G_OBJECT(xscr->table));
+		xscr->table = NULL;
+	}
 	table = gtk_table_new(rows, cols, FALSE);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 2);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 0);
@@ -713,16 +682,16 @@ get_tooltip_table(XdeScreen *xscr)
 		}
 	}
 	gtk_widget_show(table);
+	g_object_ref(G_OBJECT(table));
+	xscr->table = table;
 	return (table);
 }
 
 GtkWidget *
 get_tooltip_widget(XdeScreen *xscr)
 {
-	if (!xscr->tooltip) {
+	if (!xscr->tooltip)
 		xscr->tooltip = get_tooltip_table(xscr);
-		g_object_ref(G_OBJECT(xscr->tooltip));
-	}
 	return (xscr->tooltip);
 }
 
@@ -748,8 +717,7 @@ get_status_window(XdeScreen *xscr)
 
 	if (xscr->info)
 		return put_status_window(xscr);
-	if (xscr->tooltip)
-		put_tooltip_widget(xscr); /* one or the other */
+	xscr->tooltip = NULL;
 	win = xscr->info = gtk_window_new(GTK_WINDOW_POPUP);
 	table = get_tooltip_table(xscr);
 	gtk_container_add(GTK_CONTAINER(win), table);

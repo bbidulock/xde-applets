@@ -292,6 +292,7 @@ typedef struct {
 	GdkWindow *iwin;
 	GtkStatusIcon *status;
 	GdkPixmap *pmap;
+	GtkWidget *table;
 	GtkWidget *tooltip;
 	GtkWidget *info;
 	GList *devices;
@@ -573,24 +574,13 @@ typedef struct {
 	gboolean display;
 	GDBusProxy *proxy;
 	NotifyNotification *notify;
+	GtkWidget *icon;
+	GtkWidget *type;
+	GtkWidget *native;
+	GtkWidget *vendor;
+	GtkWidget *model;
+	GtkWidget *serial;
 } XdeDevice;
-
-GtkWidget *tooltip_widget = NULL;
-
-void
-put_tooltip_table(XdeScreen *xscr)
-{
-}
-
-void
-put_tooltip_widget(XdeScreen *xscr)
-{
-	if (xscr->tooltip) {
-		put_tooltip_table(xscr);
-		g_object_unref(xscr->tooltip);
-		xscr->tooltip = NULL;
-	}
-}
 
 GtkWidget *
 get_tooltip_table(XdeScreen *xscr)
@@ -602,6 +592,10 @@ get_tooltip_table(XdeScreen *xscr)
 	GList *dev;
 	int i;
 
+	if (xscr->table) {
+		g_object_unref(G_OBJECT(xscr->table));
+		xscr->table = NULL;
+	}
 	table = gtk_table_new(rows, cols, FALSE);
 	gtk_table_set_col_spacings(GTK_TABLE(table), 2);
 	gtk_table_set_row_spacings(GTK_TABLE(table), 1);
@@ -617,6 +611,7 @@ get_tooltip_table(XdeScreen *xscr)
 			if ((p = strstr(name, "-symbolic")))
 				*p = '\0';
 			icon = gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_MENU);
+			xdev->icon = icon;
 			g_free(name);
 			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
 			gtk_table_attach_defaults(GTK_TABLE(table), icon, 0, 1, rows - 1, rows);
@@ -670,11 +665,13 @@ get_tooltip_table(XdeScreen *xscr)
 			}
 			if (imag) {
 				icon = gtk_image_new_from_icon_name(imag, GTK_ICON_SIZE_MENU);
+				xdev->type = icon;
 				gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
 				gtk_table_attach_defaults(GTK_TABLE(table), icon, 1, 2, rows - 1, rows);
 				gtk_widget_show(icon);
 			} else if (name) {
 				text = gtk_label_new(NULL);
+				xdev->type = text;
 				markup = g_strdup_printf("<small>%s</small>", name);
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				g_free(markup);
@@ -690,6 +687,7 @@ get_tooltip_table(XdeScreen *xscr)
 			g_variant_unref(prop);
 			p = (p = strrchr(path, '/')) ? p + 1 : path;
 			text = gtk_label_new(NULL);
+			xdev->native = text;
 			if (!*p && i == 0)
 				p = "MAIN";
 			markup = g_strdup_printf("<small>%s</small>", p);
@@ -701,6 +699,7 @@ get_tooltip_table(XdeScreen *xscr)
 			gtk_widget_show(text);
 		} else if (i == 0) {
 			text = gtk_label_new(NULL);
+			xdev->native = text;
 			markup = g_strdup_printf("<small>%s</small>", "MAIN");
 			gtk_label_set_markup(GTK_LABEL(text), markup);
 			g_free(markup);
@@ -713,6 +712,7 @@ get_tooltip_table(XdeScreen *xscr)
 
 			g_variant_unref(prop);
 			text = gtk_label_new(NULL);
+			xdev->vendor = text;
 			markup = g_strdup_printf("<small>%s</small>", name);
 			g_free(name);
 			gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -726,6 +726,7 @@ get_tooltip_table(XdeScreen *xscr)
 
 			g_variant_unref(prop);
 			text = gtk_label_new(NULL);
+			xdev->model = text;
 			markup = g_strdup_printf("<small>%s</small>", name);
 			g_free(name);
 			gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -739,6 +740,7 @@ get_tooltip_table(XdeScreen *xscr)
 
 			g_variant_unref(prop);
 			text = gtk_label_new(NULL);
+			xdev->serial = text;
 			markup = g_strdup_printf("<small>%s</small>", name);
 			g_free(name);
 			gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -749,16 +751,16 @@ get_tooltip_table(XdeScreen *xscr)
 		}
 	}
 	gtk_widget_show(table);
+	g_object_ref(G_OBJECT(table));
+	xscr->table = table;
 	return (table);
 }
 
 GtkWidget *
 get_tooltip_widget(XdeScreen *xscr)
 {
-	if (!xscr->tooltip) {
+	if (!xscr->tooltip)
 		xscr->tooltip = get_tooltip_table(xscr);
-		g_object_ref(G_OBJECT(xscr->tooltip));
-	}
 	return (xscr->tooltip);
 }
 
@@ -784,8 +786,7 @@ get_status_window(XdeScreen *xscr)
 
 	if (xscr->info)
 		return put_status_window(xscr);
-	if (xscr->tooltip)
-		put_tooltip_widget(xscr); /* one or the other */
+	xscr->tooltip = NULL;
 	win = xscr->info = gtk_window_new(GTK_WINDOW_POPUP);
 	table = get_tooltip_table(xscr);
 	gtk_container_add(GTK_CONTAINER(win), table);
@@ -1039,6 +1040,30 @@ xde_device_destroy(gpointer data)
 	g_free(xdev->path);
 	g_object_unref(G_OBJECT(xdev->proxy));
 	g_object_unref(G_OBJECT(xdev->notify));
+	if (xdev->icon) {
+		gtk_widget_destroy(xdev->icon);
+		xdev->icon = NULL;
+	}
+	if (xdev->type) {
+		gtk_widget_destroy(xdev->type);
+		xdev->type = NULL;
+	}
+	if (xdev->native) {
+		gtk_widget_destroy(xdev->native);
+		xdev->native = NULL;
+	}
+	if (xdev->vendor) {
+		gtk_widget_destroy(xdev->vendor);
+		xdev->vendor = NULL;
+	}
+	if (xdev->model) {
+		gtk_widget_destroy(xdev->model);
+		xdev->model = NULL;
+	}
+	if (xdev->serial) {
+		gtk_widget_destroy(xdev->serial);
+		xdev->serial = NULL;
+	}
 	free(xdev);
 }
 
