@@ -1,3 +1,4 @@
+SUBDIRS = icons
 
 dist_autostart_DATA = \
 	xde-av-applet.desktop \
@@ -20,5 +21,3 @@ dist_applications_DATA = \
 	xde-sd-applet.desktop \
 	xde-up-applet.desktop \
 	xde-wl-applet.desktop
-
-
