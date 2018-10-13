@@ -593,7 +593,7 @@ put_tooltip_widget(XdeScreen *xscr)
 }
 
 GtkWidget *
-get_tooltip_table(XdeScreen *xscr)
+get_tooltip_table_old(XdeScreen *xscr)
 {
 	GtkWidget *vbox;
 	GList *dev;
@@ -625,6 +625,166 @@ get_tooltip_table(XdeScreen *xscr)
 	}
 	gtk_widget_show(vbox);
 	return (vbox);
+}
+
+GtkWidget *
+get_tooltip_table(XdeScreen *xscr)
+{
+	GtkWidget *table;
+	GtkWidget *icon, *text;
+	guint rows = 0, cols = 8;
+	char *markup;
+	GList *dev;
+	int i;
+
+	table = gtk_table_new(rows, cols, FALSE);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 2);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 1);
+	for (i = 0, dev = xscr->devices; dev; dev = dev->next, i++) {
+		XdeDevice *xdev = dev->data;
+		GVariant *prop;
+
+		gtk_table_resize(GTK_TABLE(table), ++rows, cols);
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
+			gchar *p, *name = g_variant_dup_string(prop, NULL);
+
+			g_variant_unref(prop);
+			if ((p = strstr(name, "-symbolic")))
+				*p = '\0';
+			icon = gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_MENU);
+			g_free(name);
+			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), icon, 0, 1, rows - 1, rows);
+			gtk_widget_show(icon);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Type"))) {
+			const gchar *name = NULL, *imag = NULL;
+			guint type = g_variant_get_uint32(prop);
+
+			g_variant_unref(prop);
+			switch (type) {
+			case 0:
+				name = "Unknown";
+				imag = "unknown";
+				break;
+			case 1:
+				name = "Line Power";
+				imag = "ac-adapter";
+				break;
+			case 2:
+				name = "Battery";
+				imag = "battery";
+				break;
+			case 3:
+				name = "UPS";
+				break;
+				imag = "gpm-ups-100";
+				break;
+			case 4:
+				name = "Monitor";
+				imag = "video-display";
+				break;
+			case 5:
+				name = "Mouse";
+				imag = "mouse";
+				break;
+			case 6:
+				name = "Keyboard";
+				imag = "keyboard";
+				break;
+			case 7:
+				name = "PDA";
+				break;
+				imag = "pda";
+				break;
+			case 8:
+				name = "Phone";
+				break;
+				imag = "phone";
+				break;
+			}
+			if (imag) {
+				icon = gtk_image_new_from_icon_name(imag, GTK_ICON_SIZE_MENU);
+				gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
+				gtk_table_attach_defaults(GTK_TABLE(table), icon, 1, 2, rows - 1, rows);
+				gtk_widget_show(icon);
+			} else if (name) {
+				text = gtk_label_new(NULL);
+				markup = g_strdup_printf("<small>%s</small>", name);
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				g_free(markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 1, 2, rows - 1, rows);
+				gtk_widget_show(text);
+			}
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "NativePath"))) {
+			gchar *path = g_variant_dup_string(prop, NULL);
+			const gchar *p;
+
+			g_variant_unref(prop);
+			p = (p = strrchr(path, '/')) ? p + 1 : path;
+			text = gtk_label_new(NULL);
+			if (!*p && i == 0)
+				p = "MAIN";
+			markup = g_strdup_printf("<small>%s</small>", p);
+			g_free(path);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
+			gtk_widget_show(text);
+		} else if (i == 0) {
+			text = gtk_label_new(NULL);
+			markup = g_strdup_printf("<small>%s</small>", "MAIN");
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
+			gtk_widget_show(text);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Vendor"))) {
+			gchar *name = g_variant_dup_string(prop, NULL);
+
+			g_variant_unref(prop);
+			text = gtk_label_new(NULL);
+			markup = g_strdup_printf("<small>%s</small>", name);
+			g_free(name);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 3, 4, rows - 1, rows);
+			gtk_widget_show(text);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Model"))) {
+			gchar *name = g_variant_dup_string(prop, NULL);
+
+			g_variant_unref(prop);
+			text = gtk_label_new(NULL);
+			markup = g_strdup_printf("<small>%s</small>", name);
+			g_free(name);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 4, 5, rows - 1, rows);
+			gtk_widget_show(text);
+		}
+		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Serial"))) {
+			gchar *name = g_variant_dup_string(prop, NULL);
+
+			g_variant_unref(prop);
+			text = gtk_label_new(NULL);
+			markup = g_strdup_printf("<small>%s</small>", name);
+			g_free(name);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 5, 6, rows - 1, rows);
+			gtk_widget_show(text);
+		}
+	}
+	gtk_widget_show(table);
+	return (table);
 }
 
 GtkWidget *
