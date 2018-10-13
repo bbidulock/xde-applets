@@ -294,6 +294,7 @@ typedef struct {
 	GdkPixmap *pmap;
 	GtkWidget *tooltip;
 	GtkWidget *info;
+	GList *devices;
 } XdeScreen;
 
 typedef enum {
@@ -563,11 +564,11 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 
 GDBusProxy *up_manager = NULL;
 gchar *up_critical = NULL;
-GList *up_devices = NULL;
 gboolean battery_low = FALSE;
 
 
 typedef struct {
+	XdeScreen *xscr;
 	char *path;
 	gboolean display;
 	GDBusProxy *proxy;
@@ -598,7 +599,7 @@ get_tooltip_table(XdeScreen *xscr)
 	GList *dev;
 
 	vbox = gtk_vbox_new(TRUE, 2);
-	for (dev = up_devices; dev; dev = dev->next) {
+	for (dev = xscr->devices; dev; dev = dev->next) {
 		XdeDevice *xdev = dev->data;
 		GVariant *prop;
 		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
@@ -940,17 +941,12 @@ xde_manager_dump(GDBusProxy *proxy)
 }
 
 void
-update_display_icons(void)
+update_display_icons(XdeScreen *xscr)
 {
-	GdkDisplay *disp;
-	XdeScreen *xscr;
 	GList *dev;
-	int i, s, nscr;
+	int i;
 
-	disp = gdk_display_get_default();
-	nscr = gdk_display_get_n_screens(disp);
-
-	for (i = 0, dev = up_devices; dev && i < 5; dev = dev->next, i++) {
+	for (i = 0, dev = xscr->devices; dev && i < 5; dev = dev->next, i++) {
 		XdeDevice *xdev = dev->data;
 		GVariant *prop;
 		gchar *name, *p;
@@ -967,109 +963,60 @@ update_display_icons(void)
 			g_free(name);
 			continue;
 		}
-		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-			GtkIconTheme *theme;
-			GdkPixbuf *pixbuf;
-			double x, y;
 
-			theme = gtk_icon_theme_get_for_screen(xscr->scrn);
-			pixbuf = gtk_icon_theme_load_icon(theme, name, (i == 0) ? 48 : 16,
-							  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE,
-							  NULL);
-			if (!pixbuf)
-				continue;
-			if (i == 0 && xscr->status)
-				gtk_status_icon_set_from_icon_name(xscr->status, name);
-			switch (i) {
-			default:
-			case 0:
-				x = 0.0;
-				y = 8.0;
-				break;
-			case 1:
-				x = 48.0;
-				y = 0.0;
-				break;
-			case 2:
-				x = 48.0;
-				y = 16.0;
-				break;
-			case 3:
-				x = 48.0;
-				y = 32.0;
-				break;
-			case 4:
-				x = 48.0;
-				y = 48.0;
-				break;
-			}
-			if (xscr->cr2) {
-				gdk_cairo_set_source_pixbuf(xscr->cr2, pixbuf, x, y);
-				if (i == 0) {
-					cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_CLEAR);
-					cairo_paint(xscr->cr2);
-					cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_SOURCE);
-					cairo_paint(xscr->cr2);
-				} else {
-					cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_OVER);
-					cairo_paint(xscr->cr2);
-				}
-			}
+		GtkIconTheme *theme;
+		GdkPixbuf *pixbuf;
+		double x, y;
+
+		theme = gtk_icon_theme_get_for_screen(xscr->scrn);
+		pixbuf = gtk_icon_theme_load_icon(theme, name, (i == 0) ? 48 : 16,
+						  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+		if (!pixbuf)
+			continue;
+		if (i == 0 && xscr->status)
+			gtk_status_icon_set_from_icon_name(xscr->status, name);
+		switch (i) {
+		default:
+		case 0:
+			x = 0.0;
+			y = 8.0;
+			break;
+		case 1:
+			x = 48.0;
+			y = 0.0;
+			break;
+		case 2:
+			x = 48.0;
+			y = 16.0;
+			break;
+		case 3:
+			x = 48.0;
+			y = 32.0;
+			break;
+		case 4:
+			x = 48.0;
+			y = 48.0;
+			break;
 		}
-		g_free(name);
-	}
-	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-		if (xscr->cr) {
-			gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
-			gdk_window_clear(xscr->iwin);
-			cairo_paint(xscr->cr);
-		}
-	}
-}
-
-void
-update_display_icon(XdeDevice *xdev, const gchar *icon)
-{
-	GtkIconTheme *theme;
-	GdkPixbuf *pixbuf;
-	GdkDisplay *disp;
-	XdeScreen *xscr;
-	int s, nscr;
-	gchar *name;
-
-	if (!icon || !xdev->display || !(name = g_strdup(icon)))
-		return;
-	if (1) {
-		gchar *p;
-
-		if ((p = strstr(name, "-symbolic")))
-			*p = '\0';
-	}
-	/* using a 48x48 display icon, we can put 1x4 16x16 status icons along the right */
-	theme = gtk_icon_theme_get_default();
-	pixbuf = gtk_icon_theme_load_icon(theme, name, 48,
-					  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-	if (pixbuf) {
-		disp = gdk_display_get_default();
-		nscr = gdk_display_get_n_screens(disp);
-		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
-			if (xscr->status)
-				gtk_status_icon_set_from_icon_name(xscr->status, name);
-			if (xscr->cr2) {
-				gdk_cairo_set_source_pixbuf(xscr->cr2, pixbuf, 4.0, 8.0);
+		if (xscr->cr2) {
+			gdk_cairo_set_source_pixbuf(xscr->cr2, pixbuf, x, y);
+			if (i == 0) {
 				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_CLEAR);
 				cairo_paint(xscr->cr2);
 				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_SOURCE);
 				cairo_paint(xscr->cr2);
-			}
-			if (xscr->cr) {
-				gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
-				gdk_window_clear(xscr->iwin);
-				cairo_paint(xscr->cr);
+			} else {
+				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_OVER);
+				cairo_paint(xscr->cr2);
 			}
 		}
+		g_free(name);
 	}
-	g_free(name);
+	if (xscr->cr) {
+		gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
+		gdk_window_clear(xscr->iwin);
+		cairo_paint(xscr->cr);
+	}
 }
 
 const char *
@@ -1593,6 +1540,7 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 				 GStrv invalidated_properties, gpointer user_data)
 {
 	XdeDevice *xdev = user_data;
+	XdeScreen *xscr = xdev->xscr;
 	GVariantIter iter;
 	GVariant *prop;
 
@@ -1634,12 +1582,7 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 			continue;
 		}
 		if (!strcmp(name, "IconName")) {
-			if (0) {
-				if (xdev->display)
-					update_display_icon(xdev, g_variant_get_string(val, NULL));
-			} else {
-				update_display_icons();
-			}
+			update_display_icons(xscr);
 		} else if (!strcmp(name, "WarningLevel")) {
 			xde_device_warn(xdev, g_variant_get_uint32(val));
 		} else if (!strcmp(name, "Percentage")) {
@@ -1691,20 +1634,28 @@ xde_path_compare(gconstpointer a, gconstpointer b)
 void
 xde_remove_device(const gchar *dev)
 {
+	GdkDisplay *disp = gdk_display_get_default();
+	int s, nscr = gdk_display_get_n_screens(disp);
+	XdeScreen *xscr;
 	GList *found;
 
 	DPRINTF(1, "removing device %s\n", dev);
-	if ((found = g_list_find_custom(up_devices, dev, xde_path_compare))) {
-		xde_device_destroy(found->data);
-		up_devices = g_list_delete_link(up_devices, found);
+	for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+		if ((found = g_list_find_custom(xscr->devices, dev, xde_path_compare))) {
+			xde_device_destroy(found->data);
+			xscr->devices = g_list_delete_link(xscr->devices, found);
+		}
 	}
 }
 
 void
 xde_create_device(const gchar *dev, gboolean display)
 {
+	GdkDisplay *disp = gdk_display_get_default();
+	int s, nscr = gdk_display_get_n_screens(disp);
 	GDBusProxy *proxy;
 	GError *err = NULL;
+	XdeScreen *xscr;
 	XdeDevice *xdev;
 
 	DPRINTF(1, "creating device %s\n", dev);
@@ -1713,45 +1664,43 @@ xde_create_device(const gchar *dev, gboolean display)
 							   "org.freedesktop.UPower.Device", NULL, &err))) || err) {
 		GVariant *prop;
 
-		if (!(xdev = calloc(1, sizeof(*xdev)))) {
-			g_object_unref(G_OBJECT(proxy));
-			return;
-		}
-		xdev->path = g_strdup(dev);
-		xdev->proxy = proxy;
-		xdev->display = display;
-		xdev->notify = notify_notification_new("Warning", "The battery level is low.", "battery-low");
-		xde_remove_device(dev);
-		up_devices = g_list_append(up_devices, xdev);
-		g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
-				 G_CALLBACK(on_up_device_proxy_props_changed), xdev);
-		if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
-			if (0) {
-				if (xdev->display)
-					update_display_icon(xdev, g_variant_get_string(prop, NULL));
-			} else {
-				update_display_icons();
+		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+			if (!(xdev = calloc(1, sizeof(*xdev)))) {
+				g_object_unref(G_OBJECT(proxy));
+				return;
 			}
-			g_variant_unref(prop);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
-			xde_device_warn(xdev, g_variant_get_uint32(prop));
-			g_variant_unref(prop);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
-			double percent = g_variant_get_double(prop);
-
-			g_variant_unref(prop);
-			if ((prop = g_dbus_proxy_get_cached_property(proxy, "BatteryLevel"))) {
-				guint32 level = g_variant_get_uint32(prop);
+			xdev->xscr = xscr;
+			xdev->path = g_strdup(dev);
+			xdev->proxy = proxy;
+			xdev->display = display;
+			xdev->notify = notify_notification_new("Warning", "The battery level is low.", "battery-low");
+			xde_remove_device(dev);
+			xscr->devices = g_list_append(xscr->devices, xdev);
+			g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
+					 G_CALLBACK(on_up_device_proxy_props_changed), xdev);
+			if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
+				update_display_icons(xscr);
+				g_variant_unref(prop);
+			}
+			if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
+				xde_device_warn(xdev, g_variant_get_uint32(prop));
+				g_variant_unref(prop);
+			}
+			if ((prop = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
+				double percent = g_variant_get_double(prop);
 
 				g_variant_unref(prop);
-				xde_device_level(xdev, level, percent);
+				if ((prop = g_dbus_proxy_get_cached_property(proxy, "BatteryLevel"))) {
+					guint32 level = g_variant_get_uint32(prop);
+
+					g_variant_unref(prop);
+					xde_device_level(xdev, level, percent);
+				}
 			}
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(proxy, "State"))) {
-			xde_device_state(xdev, g_variant_get_uint32(prop));
-			g_variant_unref(prop);
+			if ((prop = g_dbus_proxy_get_cached_property(proxy, "State"))) {
+				xde_device_state(xdev, g_variant_get_uint32(prop));
+				g_variant_unref(prop);
+			}
 		}
 		if (options.debug > 1)
 			xde_device_dump(proxy);
