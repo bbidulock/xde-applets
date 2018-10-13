@@ -593,41 +593,6 @@ put_tooltip_widget(XdeScreen *xscr)
 }
 
 GtkWidget *
-get_tooltip_table_old(XdeScreen *xscr)
-{
-	GtkWidget *vbox;
-	GList *dev;
-
-	vbox = gtk_vbox_new(TRUE, 2);
-	for (dev = xscr->devices; dev; dev = dev->next) {
-		XdeDevice *xdev = dev->data;
-		GVariant *prop;
-		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
-
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
-			gchar *p, *name = g_variant_dup_string(prop, NULL);
-
-			if ((p = strstr(name, "-symbolic")))
-				*p = '\0';
-
-			GtkWidget *icon = gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_SMALL_TOOLBAR);
-
-			gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
-			gtk_widget_show(icon);
-
-			GtkWidget *text = gtk_label_new("Just some text...");
-
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-		}
-		gtk_widget_show(hbox);
-	}
-	gtk_widget_show(vbox);
-	return (vbox);
-}
-
-GtkWidget *
 get_tooltip_table(XdeScreen *xscr)
 {
 	GtkWidget *table;
