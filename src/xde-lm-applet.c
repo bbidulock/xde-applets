@@ -913,6 +913,8 @@ void
 update_sensors(void)
 {
 	GList *chip, *feat;
+	double temp_max = 0.0, fan_max = 0.0, in_max = 0.0, total_max = 0.0;
+	const char *temp_icon = NULL, *fan_icon = NULL, *in_icon = NULL, *total_icon = NULL;
 
 	for (chip = chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
@@ -921,6 +923,8 @@ update_sensors(void)
 			XdeFeature *xfeat = feat->data;
 			XdeSubfeature *xsubf;
 			char *markup;
+			double input, min, max, perc;
+			const char *name = NULL;
 
 			if ((xsubf = xfeat->input)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
@@ -943,7 +947,120 @@ update_sensors(void)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
-			/* FIXME: need to update icon based on read values */
+			switch (xfeat->type) {
+			case SENSORS_FEATURE_IN:
+				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value : 0.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value : 12.0;
+				perc = 100.0*(input - min)/(max - min);
+				if (perc < 20.0) {
+					name = "voltmeter-open";
+				} else if (20.0 <= perc && perc < 40.0) {
+					name = "voltmeter-low";
+				} else if (40.0 <= perc && perc < 60.0) {
+					name = "voltmeter-nominal";
+				} else if (60.0 <= perc && perc < 80.0) {
+					name = "voltmeter-high";
+				} else if (80.0 <= perc) {
+					name = "voltmeter-short";
+				}
+				if (in_max < perc) {
+					in_max = perc;
+					in_icon = name;
+				}
+				if (total_max < perc) {
+					total_max = perc;
+					total_icon = name;
+				}
+				break;
+			case SENSORS_FEATURE_FAN:
+				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value : 0.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value : 1000.0;
+				perc = 100.0*(input - min)/(max - min);
+				if (perc < 25.0) {
+					name = "fan-stopped";
+				} else if (25.0 <= perc && perc < 50.0) {
+					name = "fan-slow";
+				} else if (50.0 <= perc && perc < 75.0) {
+					name = "fan-medium";
+				} else if (75.0 <= perc) {
+					name = "fan-fast";
+				}
+				if (fan_max < perc) {
+					fan_max = perc;
+					fan_icon = name;
+				}
+				if (total_max < perc) {
+					total_max = perc;
+					total_icon = name;
+				}
+				break;
+			case SENSORS_FEATURE_TEMP:
+				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value : 25.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value : 80.0;
+				perc = 100.0*(input - min)/(max - min);
+				if (perc < 25.0) {
+					name = "flame-cold";
+				} else if (25.0 <= perc && perc < 50.0) {
+					name = "flame-cool";
+				} else if (50.0 <= perc && perc < 75.0) {
+					name = "flame-warm";
+				} else if (75.0 <= perc) {
+					name = "flame-hot";
+				}
+				if (temp_max < perc) {
+					temp_max = perc;
+					temp_icon = name;
+				}
+				if (total_max < perc) {
+					total_max = perc;
+					total_icon = name;
+				}
+				break;
+			default:
+				break;
+			}
+			if (!xfeat->image)
+				continue;
+			if (name)
+				gtk_image_set_from_icon_name(GTK_IMAGE(xfeat->image), name, GTK_ICON_SIZE_MENU);
+		}
+	}
+	(void) in_icon;
+	(void) fan_icon;
+	(void) temp_icon;
+
+	if (total_icon) {
+		GdkDisplay *disp = gdk_display_get_default();
+		int s, nscr = gdk_display_get_n_screens(disp);
+		XdeScreen *xscr;
+
+
+		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+			GtkIconTheme *theme;
+			GdkPixbuf *pixbuf;
+
+			theme = gtk_icon_theme_get_for_screen(xscr->scrn);
+			pixbuf = gtk_icon_theme_load_icon(theme, total_icon, 48,
+					      GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+			if (!pixbuf)
+				continue;
+			if (xscr->status)
+				gtk_status_icon_set_from_icon_name(xscr->status, total_icon);
+			if (xscr->cr2) {
+				gdk_cairo_set_source_pixbuf(xscr->cr2, pixbuf, 8.0, 8.0);
+				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_CLEAR);
+				cairo_paint(xscr->cr2);
+				cairo_set_operator(xscr->cr2, CAIRO_OPERATOR_SOURCE);
+				cairo_paint(xscr->cr2);
+			}
+			if (xscr->cr) {
+				gdk_cairo_set_source_pixmap(xscr->cr, xscr->pmap, 0.0, 0.0);
+				gdk_window_clear(xscr->iwin);
+				cairo_paint(xscr->cr);
+			}
 		}
 	}
 }
