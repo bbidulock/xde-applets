@@ -611,12 +611,14 @@ get_tooltip_table(XdeScreen *xscr)
 	GList *chip, *feat;
 
 	table = gtk_table_new(rows, cols, FALSE);
+	gtk_table_set_col_spacings(GTK_TABLE(table), 2);
+	gtk_table_set_row_spacings(GTK_TABLE(table), 0);
 	for (chip = xscr->chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
 		gtk_table_resize(GTK_TABLE(table), ++rows, cols);
 		icon = gtk_image_new_from_icon_name("chip", GTK_ICON_SIZE_MENU);
 		gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
-		gtk_table_attach(GTK_TABLE(table), icon, 0, 1, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+		gtk_table_attach_defaults(GTK_TABLE(table), icon, 0, 1, rows - 1, rows);
 		gtk_widget_show(icon);
 		if (xchip->name) {
 			text = gtk_label_new(NULL);
@@ -624,7 +626,7 @@ get_tooltip_table(XdeScreen *xscr)
 			gtk_label_set_markup(GTK_LABEL(text), markup);
 			g_free(markup);
 			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach(GTK_TABLE(table), text, 1, 4, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 1, 4, rows - 1, rows);
 			gtk_widget_show(text);
 		}
 		if (xchip->adapter) {
@@ -633,7 +635,7 @@ get_tooltip_table(XdeScreen *xscr)
 			gtk_label_set_markup(GTK_LABEL(text), markup);
 			g_free(markup);
 			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach(GTK_TABLE(table), text, 4, 7, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 4, 7, rows - 1, rows);
 			gtk_widget_show(text);
 		}
 		for (feat = xchip->features; feat; feat = feat->next) {
@@ -644,7 +646,7 @@ get_tooltip_table(XdeScreen *xscr)
 			icon = gtk_image_new_from_icon_name(xfeat->icon, GTK_ICON_SIZE_MENU);
 			xfeat->image = icon;
 			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
-			gtk_table_attach(GTK_TABLE(table), icon, 0, 1, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+			gtk_table_attach_defaults(GTK_TABLE(table), icon, 0, 1, rows - 1, rows);
 			gtk_widget_show(icon);
 			if ((xsubf = xfeat->input)) {
 				markup = g_strdup_printf("<small>%s:</small>", xfeat->name);
@@ -652,7 +654,7 @@ get_tooltip_table(XdeScreen *xscr)
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
-				gtk_table_attach(GTK_TABLE(table), text, 1, 2, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 1, 2, rows - 1, rows);
 				gtk_widget_show(text);
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
 				markup = g_strdup_printf(xfeat->format, xsubf->value, "");
@@ -661,7 +663,7 @@ get_tooltip_table(XdeScreen *xscr)
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
-				gtk_table_attach(GTK_TABLE(table), text, 2, 3, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
 				gtk_widget_show(text);
 			}
 			if ((xsubf = xfeat->minimum)) {
@@ -672,7 +674,7 @@ get_tooltip_table(XdeScreen *xscr)
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
-				gtk_table_attach(GTK_TABLE(table), text, 3, 4, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 3, 4, rows - 1, rows);
 				gtk_widget_show(text);
 			}
 			if ((xsubf = xfeat->maximum)) {
@@ -683,7 +685,7 @@ get_tooltip_table(XdeScreen *xscr)
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
-				gtk_table_attach(GTK_TABLE(table), text, 4, 5, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 4, 5, rows - 1, rows);
 				gtk_widget_show(text);
 			}
 			if ((xsubf = xfeat->lowcrit)) {
@@ -694,7 +696,7 @@ get_tooltip_table(XdeScreen *xscr)
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
-				gtk_table_attach(GTK_TABLE(table), text, 5, 6, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 5, 6, rows - 1, rows);
 				gtk_widget_show(text);
 			}
 			if ((xsubf = xfeat->critical)) {
@@ -705,7 +707,7 @@ get_tooltip_table(XdeScreen *xscr)
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
-				gtk_table_attach(GTK_TABLE(table), text, 5, 6, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_table_attach_defaults(GTK_TABLE(table), text, 5, 6, rows - 1, rows);
 				gtk_widget_show(text);
 			}
 		}
