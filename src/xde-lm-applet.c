@@ -259,6 +259,7 @@ Atom _XA_XDE_APPLET_RESTART;
 Atom _XA_XDE_APPLET_POPMENU;
 Atom _XA_XDE_APPLET_REQUEST;
 
+#define UPDATE_TIMEOUT 750
 #define CA_CONTEXT_ID	55
 
 typedef enum {
@@ -291,6 +292,9 @@ typedef struct {
 	GdkWindow *iwin;
 	GtkStatusIcon *status;
 	GdkPixmap *pmap;
+	GtkWidget *tooltip;
+	GtkWindow *info;
+	GList *chips;
 } XdeScreen;
 
 typedef enum {
@@ -368,8 +372,6 @@ char *xdg_config_path = NULL;
 char *xdg_config_last = NULL;
 
 GMainLoop *loop = NULL;
-
-GList *chips = NULL;
 
 typedef struct {
 	char *name;
@@ -580,17 +582,15 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 	return;
 }
 
-GtkWidget *tooltip_widget = NULL;
-
 void
-put_tooltip_widget(void)
+put_tooltip_widget(XdeScreen *xscr)
 {
 	GList *chip, *feat;
 
-	if (!tooltip_widget)
+	if (!xscr->tooltip)
 		return;
 
-	for (chip = chips; chip; chip = chip->next) {
+	for (chip = xscr->chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
 
 		for (feat = xchip->features; feat; feat = feat->next) {
@@ -605,14 +605,18 @@ put_tooltip_widget(void)
 				xsubf->label = NULL;
 			if ((xsubf = xfeat->maximum))
 				xsubf->label = NULL;
+			if ((xsubf = xfeat->lowcrit))
+				xsubf->label = NULL;
+			if ((xsubf = xfeat->critical))
+				xsubf->label = NULL;
 		}
 	}
-	g_object_unref(tooltip_widget);
-	tooltip_widget = NULL;
+	g_object_unref(xscr->tooltip);
+	xscr->tooltip = NULL;
 }
 
 GtkWidget *
-get_tooltip_widget(void)
+get_tooltip_table(XdeScreen *xscr)
 {
 	GtkWidget *table;
 	GtkWidget *icon, *text;
@@ -620,10 +624,10 @@ get_tooltip_widget(void)
 	char *markup;
 	GList *chip, *feat;
 
-	if (tooltip_widget)
-		return (tooltip_widget);
+	put_tooltip_widget(xscr);
+
 	table = gtk_table_new(rows, cols, FALSE);
-	for (chip = chips; chip; chip = chip->next) {
+	for (chip = xscr->chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
 		gtk_table_resize(GTK_TABLE(table), ++rows, cols);
 		icon = gtk_image_new_from_icon_name("chip", GTK_ICON_SIZE_MENU);
@@ -723,9 +727,17 @@ get_tooltip_widget(void)
 		}
 	}
 	gtk_widget_show(table);
-	g_object_ref(G_OBJECT(table));
-	tooltip_widget = table;
-	return (tooltip_widget);
+	return (table);
+}
+
+GtkWidget *
+get_tooltip_widget(XdeScreen *xscr)
+{
+	if (!xscr->tooltip) {
+		xscr->tooltip = get_tooltip_table(xscr);
+		g_object_ref(G_OBJECT(xscr->tooltip));
+	}
+	return (xscr->tooltip);
 }
 
 static gboolean
@@ -734,8 +746,10 @@ on_status_query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_m
 {
 	XdeScreen *xscr = user_data;
 
-	(void) xscr;
-	gtk_tooltip_set_custom(tooltip, get_tooltip_widget());
+	/* do not show tooltip when info window is shown */
+	if (xscr->info)
+		return FALSE;
+	gtk_tooltip_set_custom(tooltip, get_tooltip_widget(xscr));
 	return TRUE;
 }
 
@@ -930,13 +944,13 @@ get_default_ca_context(void)
 }
 
 void
-update_sensors(void)
+update_sensors(XdeScreen *xscr)
 {
 	GList *chip, *feat;
 	double temp_max = 0.0, fan_max = 0.0, in_max = 0.0, total_max = 0.0;
 	const char *temp_icon = NULL, *fan_icon = NULL, *in_icon = NULL, *total_icon = NULL;
 
-	for (chip = chips; chip; chip = chip->next) {
+	for (chip = xscr->chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
 
 		for (feat = xchip->features; feat; feat = feat->next) {
@@ -1130,12 +1144,14 @@ update_sensors(void)
 gboolean
 update_sensors_timeout(gpointer user_data)
 {
-	update_sensors();
+	XdeScreen *xscr = user_data;
+
+	update_sensors(xscr);
 	return G_SOURCE_CONTINUE;	/* keep event source */
 }
 
 void
-init_sensors(void)
+init_sensors(XdeScreen *xscr)
 {
 	const struct sensors_chip_name *chip;
 	const struct sensors_feature *feat;
@@ -1150,7 +1166,7 @@ init_sensors(void)
 		xchip->adapter = strdup(sensors_get_adapter_name(&chip->bus));
 		xchip->chip = chip;
 
-		chips = g_list_append(chips, xchip);
+		xscr->chips = g_list_append(xscr->chips, xchip);
 
 		for (nr2 = 0; (feat = sensors_get_features(chip, &nr2));) {
 			switch (feat->type) {
@@ -1330,17 +1346,21 @@ init_sensors(void)
 }
 
 void
-init_applet(void)
+init_applet(XdeScreen *xscr)
 {
+	static int initialized = FALSE;
 	int err;
 
-	DPRINTF(1, "initializing sensors library\n");
-	if ((err = sensors_init(NULL))) {
-		EPRINTF("something went wrong\n");
-		exit(EXIT_FAILURE);
+	if (!initialized) {
+		DPRINTF(1, "initializing sensors library\n");
+		if ((err = sensors_init(NULL))) {
+			EPRINTF("something went wrong\n");
+			exit(EXIT_FAILURE);
+		}
+		initialized = TRUE;
 	}
-	init_sensors();
-	g_timeout_add(500, update_sensors_timeout, NULL);
+	init_sensors(xscr);
+	g_timeout_add(UPDATE_TIMEOUT, update_sensors_timeout, xscr);
 }
 
 static Window
@@ -1670,7 +1690,7 @@ setup_x11(Bool replace)
 			init_statusicon(xscr);
 		if (options.dock)
 			init_dockapp(xscr);
-		init_applet();
+		init_applet(xscr);
 	}
 }
 
