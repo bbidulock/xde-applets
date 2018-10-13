@@ -838,19 +838,16 @@ xde_manager_dump(GDBusProxy *proxy)
 void
 update_display_icons(void)
 {
-	GtkIconTheme *theme;
 	GdkDisplay *disp;
 	XdeScreen *xscr;
 	GList *dev;
 	int i, s, nscr;
 
-	theme = gtk_icon_theme_get_default();
 	disp = gdk_display_get_default();
 	nscr = gdk_display_get_n_screens(disp);
 
 	for (i = 0, dev = up_devices; dev && i < 5; dev = dev->next, i++) {
 		XdeDevice *xdev = dev->data;
-		GdkPixbuf *pixbuf;
 		GVariant *prop;
 		gchar *name, *p;
 
@@ -866,15 +863,17 @@ update_display_icons(void)
 			g_free(name);
 			continue;
 		}
-		pixbuf = gtk_icon_theme_load_icon(theme, name, (i == 0) ? 48 : 16,
-					  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
-		if (!pixbuf) {
-			g_free(name);
-			continue;
-		}
 		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
+			GtkIconTheme *theme;
+			GdkPixbuf *pixbuf;
 			double x, y;
 
+			theme = gtk_icon_theme_get_for_screen(xscr->scrn);
+			pixbuf = gtk_icon_theme_load_icon(theme, name, (i == 0) ? 48 : 16,
+							  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE,
+							  NULL);
+			if (!pixbuf)
+				continue;
 			if (i == 0 && xscr->status)
 				gtk_status_icon_set_from_icon_name(xscr->status, name);
 			switch (i) {
