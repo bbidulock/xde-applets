@@ -1051,7 +1051,7 @@ update_sensors(void)
 				min = (xsubf = xfeat->minimum) ? xsubf->value :
 				    (xsubf = xfeat->lowcrit) ? xsubf->value : 25.0;
 				max = (xsubf = xfeat->maximum) ? xsubf->value :
-				    (xsubf = xfeat->critical) ? xsubf->value : 80.0;
+				    (xsubf = xfeat->critical) ? xsubf->value : 100.0;
 				low = (xsubf = xfeat->lowcrit) ? xsubf->value :
 				    (xsubf = xfeat->minimum) ? xsubf->value : -30.0;
 				cri = (xsubf = xfeat->critical) ? xsubf->value :
