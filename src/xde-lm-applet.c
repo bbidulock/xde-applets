@@ -293,7 +293,7 @@ typedef struct {
 	GtkStatusIcon *status;
 	GdkPixmap *pmap;
 	GtkWidget *tooltip;
-	GtkWindow *info;
+	GtkWidget *info;
 	GList *chips;
 } XdeScreen;
 
@@ -402,10 +402,15 @@ typedef struct {
 	GList *features;
 } XdeChip;
 
+void get_status_window(XdeScreen *xscr);
+
 static void
 on_status_activate(GtkStatusIcon *icon, gpointer user_data)
 {
+	XdeScreen *xscr = user_data;
+
 	DPRINTF(1, "static icon received activate signal\n");
+	get_status_window(xscr);
 
 	/* The reason we might want to use button press instead is if we want more
 	   detailed information about the event that caused the activation. */
@@ -583,12 +588,9 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 }
 
 void
-put_tooltip_widget(XdeScreen *xscr)
+put_tooltip_table(XdeScreen *xscr)
 {
 	GList *chip, *feat;
-
-	if (!xscr->tooltip)
-		return;
 
 	for (chip = xscr->chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
@@ -611,8 +613,16 @@ put_tooltip_widget(XdeScreen *xscr)
 				xsubf->label = NULL;
 		}
 	}
-	g_object_unref(xscr->tooltip);
-	xscr->tooltip = NULL;
+}
+
+void
+put_tooltip_widget(XdeScreen *xscr)
+{
+	if (xscr->tooltip) {
+		put_tooltip_table(xscr);
+		g_object_unref(xscr->tooltip);
+		xscr->tooltip = NULL;
+	}
 }
 
 GtkWidget *
@@ -623,8 +633,6 @@ get_tooltip_table(XdeScreen *xscr)
 	guint rows = 0, cols = 7;
 	char *markup;
 	GList *chip, *feat;
-
-	put_tooltip_widget(xscr);
 
 	table = gtk_table_new(rows, cols, FALSE);
 	for (chip = xscr->chips; chip; chip = chip->next) {
@@ -738,6 +746,72 @@ get_tooltip_widget(XdeScreen *xscr)
 		g_object_ref(G_OBJECT(xscr->tooltip));
 	}
 	return (xscr->tooltip);
+}
+
+void
+put_info_window(XdeScreen *xscr)
+{
+	if (xscr->info) {
+		gtk_widget_destroy(xscr->info);
+		xscr->info = NULL;
+	}
+	if (!xscr->tooltip)
+		get_tooltip_widget(xscr);
+}
+
+void
+get_status_window(XdeScreen *xscr)
+{
+	GtkWidget *table, *win;
+	GdkScreen *scrn;
+	GdkRectangle status, alloc;
+	GtkOrientation orient;
+	int xpos, ypos;
+
+	if (xscr->info)
+		return put_info_window(xscr);
+	if (xscr->tooltip)
+		put_tooltip_widget(xscr); /* one or the other */
+	win = xscr->info = gtk_window_new(GTK_WINDOW_POPUP);
+	table = get_tooltip_table(xscr);
+	gtk_container_add(GTK_CONTAINER(win), table);
+	gtk_window_set_screen(GTK_WINDOW(win), xscr->scrn);
+	gtk_status_icon_get_geometry(xscr->status, &scrn, &status, &orient);
+	gtk_widget_realize(win);
+	gtk_widget_get_allocation(win, &alloc);
+	switch (orient) {
+	default:
+	case GTK_ORIENTATION_HORIZONTAL:
+		if (status.y > alloc.height) {
+			ypos = status.y - alloc.height;
+		} else {
+			ypos = status.y + status.height;
+		}
+		xpos = status.x + status.width / 2 - alloc.width / 2;
+		break;
+	case GTK_ORIENTATION_VERTICAL:
+		if (status.x > alloc.width) {
+			xpos = status.x - alloc.width;
+		} else {
+			xpos = status.x + status.width;
+		}
+		ypos = status.y + status.height / 2 - alloc.height / 2;
+		break;
+	}
+	/* should probably use work area instead of whole screen */
+	if (ypos + alloc.height > gdk_screen_get_height(scrn)) {
+		ypos = gdk_screen_get_height(scrn) - alloc.height;
+	} else if (ypos < 0) {
+		ypos = 0;
+	}
+	/* should probably use work area instead of whole screen */
+	if (xpos + alloc.width > gdk_screen_get_width(scrn)) {
+		xpos = gdk_screen_get_width(scrn) - alloc.width;
+	} else if (xpos < 0) {
+		xpos = 0;
+	}
+	gtk_window_move(GTK_WINDOW(win), xpos, ypos);
+	gtk_widget_show(win);
 }
 
 static gboolean
