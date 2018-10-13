@@ -205,7 +205,7 @@ const char *program = NAME;
 
 #define XA_PREFIX		"_XDE_LM_APPLET"
 #define XA_SELECTION_NAME	XA_PREFIX "_S%d"
-#define LOGO_NAME		"gnome-monitor"
+#define LOGO_NAME		"utilities-system-monitor"
 
 int saveArgc;
 char **saveArgv;
@@ -447,18 +447,10 @@ on_status_scroll_event(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 }
 
 void
-on_services_selected(GtkMenuItem *item, gpointer user_data)
+on_sensors_selected(GtkMenuItem *item, gpointer user_data)
 {
-}
-
-void
-on_ssh_selected(GtkMenuItem *item, gpointer user_data)
-{
-}
-
-void
-on_vnc_selected(GtkMenuItem *item, gpointer user_data)
-{
+	XdeScreen *xscr = user_data;
+	get_status_window(xscr);
 }
 
 void
@@ -533,24 +525,10 @@ get_popup_menu(XdeScreen *xscr)
 
 	menu = gtk_menu_new();
 
-	item = gtk_image_menu_item_new_with_label("Services...");
-	imag = gtk_image_new_from_icon_name("applications-system", GTK_ICON_SIZE_MENU);
+	item = gtk_image_menu_item_new_with_label("Sensors...");
+	imag = gtk_image_new_from_icon_name(LOGO_NAME, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_services_selected), xscr);
-	gtk_widget_show(item);
-	gtk_menu_append(menu, item);
-
-	item = gtk_image_menu_item_new_with_label("SSH...");
-	imag = gtk_image_new_from_icon_name("system-file-manager", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_ssh_selected), xscr);
-	gtk_widget_show(item);
-	gtk_menu_append(menu, item);
-
-	item = gtk_image_menu_item_new_with_label("VNC...");
-	imag = gtk_image_new_from_icon_name("system-file-manager", GTK_ICON_SIZE_MENU);
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_vnc_selected), xscr);
+	g_signal_connect(item, "activate", G_CALLBACK(on_sensors_selected), xscr);
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
