@@ -445,7 +445,7 @@ on_status_scroll_event(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 }
 
 void
-on_sensors_selected(GtkMenuItem *item, gpointer user_data)
+on_status_selected(GtkMenuItem *item, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
 	get_status_window(xscr);
@@ -523,10 +523,10 @@ get_popup_menu(XdeScreen *xscr)
 
 	menu = gtk_menu_new();
 
-	item = gtk_image_menu_item_new_with_label("Sensors...");
+	item = gtk_image_menu_item_new_with_label("Status...");
 	imag = gtk_image_new_from_icon_name(LOGO_NAME, GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
-	g_signal_connect(item, "activate", G_CALLBACK(on_sensors_selected), xscr);
+	g_signal_connect(item, "activate", G_CALLBACK(on_status_selected), xscr);
 	gtk_widget_show(item);
 	gtk_menu_append(menu, item);
 
@@ -725,7 +725,7 @@ get_tooltip_widget(XdeScreen *xscr)
 }
 
 void
-put_info_window(XdeScreen *xscr)
+put_status_window(XdeScreen *xscr)
 {
 	if (xscr->info) {
 		gtk_widget_destroy(xscr->info);
@@ -745,7 +745,7 @@ get_status_window(XdeScreen *xscr)
 	int xpos, ypos;
 
 	if (xscr->info)
-		return put_info_window(xscr);
+		return put_status_window(xscr);
 	if (xscr->tooltip)
 		put_tooltip_widget(xscr); /* one or the other */
 	win = xscr->info = gtk_window_new(GTK_WINDOW_POPUP);

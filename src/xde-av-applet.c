@@ -257,7 +257,10 @@ Atom _XA_XDE_APPLET_RESTART;
 Atom _XA_XDE_APPLET_POPMENU;
 Atom _XA_XDE_APPLET_REQUEST;
 
+#define UPDATE_TIMEOUT 750
 #define CA_CONTEXT_ID	55
+
+#define NOTIFY_NORMAL_TIMEOUT	3500
 
 typedef enum {
 	CaEventWindowManager = CA_CONTEXT_ID,
@@ -289,14 +292,14 @@ typedef struct {
 	GdkWindow *iwin;
 	GtkStatusIcon *status;
 	GdkPixmap *pmap;
+	GtkWidget *tooltip;
+	GtkWidget *info;
 } XdeScreen;
 
 typedef enum {
-	CommandDefault,	    /* just generate WM root menu */
-	CommandMenugen,    /* just generate WM root menu */
+	CommandDefault,	    /* just monitor */
 	CommandMonitor,	    /* run a new instance with monitoring */
 	CommandQuit,	    /* ask running instance to quit */
-	CommandPopMenu,	    /* ask running instance to pop menu */
 	CommandRefresh,	    /* ask running instance to refresh menu */
 	CommandRestart,	    /* ask running instance to restart */
 	CommandReplace,	    /* replace a running instance */
@@ -367,10 +370,15 @@ char *xdg_config_last = NULL;
 
 GMainLoop *loop = NULL;
 
+void get_status_window(XdeScreen *xscr);
+
 static void
 on_status_activate(GtkStatusIcon *icon, gpointer user_data)
 {
+	XdeScreen *xscr = user_data;
+
 	DPRINTF(1, "static icon received activate signal\n");
+	get_status_window(xscr);
 
 	/* The reason we might want to use button press instead is if we want more
 	   detailed information about the event that caused the activation. */
@@ -404,6 +412,13 @@ on_status_scroll_event(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 {
 	DPRINTF(1, "static icon received scoll-event signal\n");
 	return GTK_EVENT_PROPAGATE;
+}
+
+void
+on_status_selected(GtkMenuItem *item, gpointer user_data)
+{
+	XdeScreen *xscr = user_data;
+	get_status_window(xscr);
 }
 
 void
@@ -493,6 +508,17 @@ get_popup_menu(XdeScreen *xscr)
 
 	menu = gtk_menu_new();
 
+	item = gtk_image_menu_item_new_with_label("Status...");
+	imag = gtk_image_new_from_icon_name(LOGO_NAME, GTK_ICON_SIZE_MENU);
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
+	g_signal_connect(item, "activate", G_CALLBACK(on_status_selected), xscr);
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
+	item = gtk_separator_menu_item_new();
+	gtk_widget_show(item);
+	gtk_menu_append(menu, item);
+
 	item = gtk_image_menu_item_new_with_label("Services...");
 	imag = gtk_image_new_from_icon_name("applications-system", GTK_ICON_SIZE_MENU);
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(item), imag);
@@ -547,26 +573,26 @@ on_status_popup_menu(GtkStatusIcon *icon, guint button, guint time, gpointer use
 	return;
 }
 
-GDBusProxy *dh_manager = NULL;
-
-GtkWidget *tooltip_widget = NULL;
+void
+put_tooltip_table(XdeScreen *xscr)
+{
+}
 
 void
-put_tooltip_widget(void)
+put_tooltip_widget(XdeScreen *xscr)
 {
-	if (tooltip_widget) {
-		g_object_unref(tooltip_widget);
-		tooltip_widget = NULL;
+	if (xscr->tooltip) {
+		put_tooltip_table(xscr);
+		g_object_unref(xscr->tooltip);
+		xscr->tooltip = NULL;
 	}
 }
 
 GtkWidget *
-get_tooltip_widget(void)
+get_tooltip_table(XdeScreen *xscr)
 {
 	GtkWidget *vbox;
 	
-	if (tooltip_widget)
-		return (tooltip_widget);
 	vbox = gtk_vbox_new(TRUE, 2);
 	GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
 
@@ -581,9 +607,83 @@ get_tooltip_widget(void)
 	gtk_widget_show(text);
 	gtk_widget_show(hbox);
 	gtk_widget_show(vbox);
-	g_object_ref(G_OBJECT(vbox));
-	tooltip_widget = vbox;
-	return (tooltip_widget);
+	return (vbox);
+}
+
+GtkWidget *
+get_tooltip_widget(XdeScreen *xscr)
+{
+	if (!xscr->tooltip) {
+		xscr->tooltip = get_tooltip_table(xscr);
+		g_object_ref(G_OBJECT(xscr->tooltip));
+	}
+	return (xscr->tooltip);
+}
+
+void
+put_status_window(XdeScreen *xscr)
+{
+	if (xscr->info) {
+		gtk_widget_destroy(xscr->info);
+		xscr->info = NULL;
+	}
+	if (!xscr->tooltip)
+		get_tooltip_widget(xscr);
+}
+
+void
+get_status_window(XdeScreen *xscr)
+{
+	GtkWidget *table, *win;
+	GdkScreen *scrn;
+	GdkRectangle status, alloc;
+	GtkOrientation orient;
+	int xpos, ypos;
+
+	if (xscr->info)
+		return put_status_window(xscr);
+	if (xscr->tooltip)
+		put_tooltip_widget(xscr); /* one or the other */
+	win = xscr->info = gtk_window_new(GTK_WINDOW_POPUP);
+	table = get_tooltip_table(xscr);
+	gtk_container_add(GTK_CONTAINER(win), table);
+	gtk_window_set_screen(GTK_WINDOW(win), xscr->scrn);
+	gtk_status_icon_get_geometry(xscr->status, &scrn, &status, &orient);
+	gtk_widget_realize(win);
+	gtk_widget_get_allocation(win, &alloc);
+	switch (orient) {
+	default:
+	case GTK_ORIENTATION_HORIZONTAL:
+		if (status.y > alloc.height) {
+			ypos = status.y - alloc.height;
+		} else {
+			ypos = status.y + status.height;
+		}
+		xpos = status.x + status.width / 2 - alloc.width / 2;
+		break;
+	case GTK_ORIENTATION_VERTICAL:
+		if (status.x > alloc.width) {
+			xpos = status.x - alloc.width;
+		} else {
+			xpos = status.x + status.width;
+		}
+		ypos = status.y + status.height / 2 - alloc.height / 2;
+		break;
+	}
+	/* should probably use work area instead of whole screen */
+	if (ypos + alloc.height > gdk_screen_get_height(scrn)) {
+		ypos = gdk_screen_get_height(scrn) - alloc.height;
+	} else if (ypos < 0) {
+		ypos = 0;
+	}
+	/* should probably use work area instead of whole screen */
+	if (xpos + alloc.width > gdk_screen_get_width(scrn)) {
+		xpos = gdk_screen_get_width(scrn) - alloc.width;
+	} else if (xpos < 0) {
+		xpos = 0;
+	}
+	gtk_window_move(GTK_WINDOW(win), xpos, ypos);
+	gtk_widget_show(win);
 }
 
 static gboolean
@@ -592,8 +692,10 @@ on_status_query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_m
 {
 	XdeScreen *xscr = user_data;
 
-	(void) xscr;
-	gtk_tooltip_set_custom(tooltip, get_tooltip_widget());
+	/* do not show tooltip when info window is shown */
+	if (xscr->info)
+		return FALSE;
+	gtk_tooltip_set_custom(tooltip, get_tooltip_widget(xscr));
 	return TRUE;
 }
 
@@ -787,10 +889,14 @@ get_default_ca_context(void)
 	return (ca);
 }
 
-
 void
-init_applet(void)
+init_applet(XdeScreen *xscr)
 {
+	static int initialized = FALSE;
+
+	if (!initialized) {
+		initialized = TRUE;
+	}
 }
 
 static Window
@@ -1120,7 +1226,7 @@ setup_x11(Bool replace)
 			init_statusicon(xscr);
 		if (options.dock)
 			init_dockapp(xscr);
-		init_applet();
+		init_applet(xscr);
 	}
 }
 
@@ -2214,11 +2320,7 @@ main(int argc, char *argv[])
 	saveArgc = argc;
 	saveArgv = argv;
 
-	if ((p = strstr(argv[0], "-menugen")) && !p[8])
-		defaults.command = options.command = CommandMenugen;
-	else if ((p = strstr(argv[0], "-popmenu")) && !p[6])
-		defaults.command = options.command = CommandPopMenu;
-	else if ((p = strstr(argv[0], "-monitor")) && !p[8])
+	if ((p = strstr(argv[0], "-monitor")) && !p[8])
 		defaults.command = options.command = CommandMonitor;
 	else if ((p = strstr(argv[0], "-replace")) && !p[8])
 		defaults.command = options.command = CommandReplace;
@@ -2237,54 +2339,21 @@ main(int argc, char *argv[])
 		int option_index = 0;
 		/* *INDENT-OFF* */
 		static struct option long_options[] = {
-			{"wmname",	required_argument,	NULL,	'w'},
-			{"format",	required_argument,	NULL,	'f'},
-			{"fullmenu",	no_argument,		NULL,	'F'},
-			{"nofullmenu",	no_argument,		NULL,	'N'},
-			{"desktop",	required_argument,	NULL,	'd'},
-			{"charset",	required_argument,	NULL,	'c'},
-			{"language",	required_argument,	NULL,	'l'},
-			{"root-menu",	required_argument,	NULL,	'r'},
-			{"output",	optional_argument,	NULL,	'o'},
-			{"noicons",	no_argument,		NULL,	'n'},
-			{"theme",	required_argument,	NULL,	't'},
-			{"launch",	no_argument,		NULL,	'L'},
-			{"nolaunch",	no_argument,		NULL,	'0'},
-			{"style",	required_argument,	NULL,	's'},
-			{"menu",	required_argument,	NULL,	'M'},
+			{"display",	required_argument,	NULL,	'd'},
+			{"screen",	required_argument,	NULL,	's'},
+			{"notray",	no_argument,		NULL,	'Y'},
+			{"nodock",	no_argument,		NULL,	'K'},
+			{"tray",	no_argument,		NULL,	'y'},
+			{"dock",	no_argument,		NULL,	'k'},
 
-			{"button",	required_argument,	NULL,	'b'},
-			{"keypress",	optional_argument,	NULL,	'k'},
-			{"timestamp",	required_argument,	NULL,	'T'},
-			{"which",	required_argument,	NULL,	'i'},
-			{"where",	required_argument,	NULL,	'W'},
-
-			{"display",	required_argument,	NULL,	 1 },
-			{"screen",	required_argument,	NULL,	 4 },
-			{"die-on-error",no_argument,		NULL,	'e'},
-			{"notray",	no_argument,		NULL,	 2 },
-			{"nodock",	no_argument,		NULL,	 5 },
-			{"nogenerate",	no_argument,		NULL,	 3 },
-			{"verbose",	optional_argument,	NULL,	'v'},
-			{"debug",	optional_argument,	NULL,	'D'},
-
-			{"menugen",	no_argument,		NULL,	'G'},
-			{"popmenu",	no_argument,		NULL,	'P'},
 			{"monitor",	no_argument,		NULL,	'm'},
 			{"refresh",	no_argument,		NULL,	'E'},
 			{"restart",	no_argument,		NULL,	'S'},
 			{"replace",	no_argument,		NULL,	'R'},
 			{"quit",	no_argument,		NULL,	'q'},
 
-			{"excluded",	no_argument,		NULL,	 10},
-			{"nodisplay",	no_argument,		NULL,	 11},
-			{"unallocated",	no_argument,		NULL,	 12},
-			{"empty",	no_argument,		NULL,	 13},
-			{"separators",	no_argument,		NULL,	 14},
-			{"sort",	no_argument,		NULL,	 15},
-			{"tooltips",	no_argument,		NULL,	 16},
-			{"actions",	no_argument,		NULL,	 17},
-
+			{"verbose",	optional_argument,	NULL,	'v'},
+			{"debug",	optional_argument,	NULL,	'D'},
 			{"help",	no_argument,		NULL,	'h'},
 			{"version",	no_argument,		NULL,	'V'},
 			{"copying",	no_argument,		NULL,	'C'},
@@ -2293,11 +2362,9 @@ main(int argc, char *argv[])
 		};
 		/* *INDENT-ON* */
 
-		c = getopt_long_only(argc, argv,
-				     "w:f:FNd:c:l:r:o::nt:L0s:M:b:k::T:W:ev::D::GPmFSRqhVCH?",
-				     long_options, &option_index);
+		c = getopt_long_only(argc, argv, "d:s:YKykmESRqv::D::hVCH?", long_options, &option_index);
 #else
-		c = getopt(argc, argv, "w:f:FNd:c:l:r:o:nt:L0s:M:b:k:T:W:ev:D:GPmFSRqhVCH?");
+		c = getopt(argc, argv, "d:s:YKykmESRqvDhVCH?");
 #endif
 		if (c == -1) {
 			DPRINTF(1, "%s: done options processing\n", argv[0]);
@@ -2307,18 +2374,23 @@ main(int argc, char *argv[])
 		case 0:
 			goto bad_usage;
 
-
-		case 1:	/* --display DISPLAY */
+		case 'd':	/* --display DISPLAY */
 			free(options.display);
 			defaults.display = options.display = strdup(optarg);
 			break;
-		case 4:	/* --screen SCREEN */
+		case 's':	/* --screen SCREEN */
 			options.screen = atoi(optarg);
 			break;
-		case 2:	/* --notray */
+		case 'Y':	/* -Y, --notray */
 			options.tray = False;
 			break;
-		case 5: /* --nodock */
+		case 'K':	/* -K, --nodock */
+			options.dock = False;
+			break;
+		case 'y':	/* -y, --tray */
+			options.tray = False;
+			break;
+		case 'k':	/* -k, --dock */
 			options.dock = False;
 			break;
 
@@ -2448,7 +2520,7 @@ main(int argc, char *argv[])
 	switch (command) {
 	default:
 	case CommandDefault:
-		defaults.command = options.command = CommandMenugen;
+		defaults.command = options.command = CommandMonitor;
 	case CommandMonitor:
 		DPRINTF(1, "%s: running a new instance\n", argv[0]);
 		do_run(argc, argv, False);
