@@ -388,6 +388,8 @@ typedef struct {
 	XdeSubfeature *input;
 	XdeSubfeature *minimum;
 	XdeSubfeature *maximum;
+	XdeSubfeature *lowcrit;
+	XdeSubfeature *critical;
 	GtkWidget *image;
 } XdeFeature;
 
@@ -697,6 +699,32 @@ get_tooltip_widget(void)
 			}
 			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
 			gtk_widget_show(text);
+			if ((xsubf = xfeat->lowcrit)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Low", xsubf->value);
+				text = gtk_label_new(NULL);
+				xsubf->label = text;
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
+				g_free(markup);
+			} else {
+				text = gtk_label_new(NULL);
+			}
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
+			if ((xsubf = xfeat->critical)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Crit", xsubf->value);
+				text = gtk_label_new(NULL);
+				xsubf->label = text;
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
+				g_free(markup);
+			} else {
+				text = gtk_label_new(NULL);
+			}
+			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
+			gtk_widget_show(text);
 
 			gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
 			gtk_widget_show(hbox);
@@ -923,26 +951,40 @@ update_sensors(void)
 			XdeFeature *xfeat = feat->data;
 			XdeSubfeature *xsubf;
 			char *markup;
-			double input, min, max, perc;
+			double input, min, max, low, cri, perc;
 			const char *name = NULL;
 
 			if ((xsubf = xfeat->input)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xfeat->label, xsubf->value);
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
 			if ((xsubf = xfeat->minimum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Min", xsubf->value);
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
 			if ((xsubf = xfeat->maximum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, xsubf->name, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Max", xsubf->value);
+				if (xsubf->label)
+					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
+				g_free(markup);
+			}
+			if ((xsubf = xfeat->lowcrit)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Low", xsubf->value);
+				if (xsubf->label)
+					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
+				g_free(markup);
+			}
+			if ((xsubf = xfeat->critical)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, "Crit", xsubf->value);
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
@@ -950,10 +992,16 @@ update_sensors(void)
 			switch (xfeat->type) {
 			case SENSORS_FEATURE_IN:
 				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
-				min = (xsubf = xfeat->minimum) ? xsubf->value : 0.0;
-				max = (xsubf = xfeat->maximum) ? xsubf->value : 12.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value : (xsubf = xfeat->lowcrit ) ? xsubf->value : 0.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value : (xsubf = xfeat->critical) ? xsubf->value : 12.0;
+				low = (xsubf = xfeat->lowcrit ) ? xsubf->value : (xsubf = xfeat->minimum ) ? xsubf->value : 0.0;
+				cri = (xsubf = xfeat->critical) ? xsubf->value : (xsubf = xfeat->maximum) ? xsubf->value : 24.0;
+				(void) low;
+				(void) cri;
 				perc = 100.0*(input - min)/(max - min);
-				if (perc < 20.0) {
+				if (input == 0.0) {
+					name = "voltmeter-missing";
+				} else if (perc < 20.0) {
 					name = "voltmeter-open";
 				} else if (20.0 <= perc && perc < 40.0) {
 					name = "voltmeter-low";
@@ -978,7 +1026,9 @@ update_sensors(void)
 				min = (xsubf = xfeat->minimum) ? xsubf->value : 0.0;
 				max = (xsubf = xfeat->maximum) ? xsubf->value : 1000.0;
 				perc = 100.0*(input - min)/(max - min);
-				if (perc < 25.0) {
+				if (input == 0.0) {
+					name = "fan-missing";
+				} else if (perc < 25.0) {
 					name = "fan-stopped";
 				} else if (25.0 <= perc && perc < 50.0) {
 					name = "fan-slow";
@@ -998,10 +1048,16 @@ update_sensors(void)
 				break;
 			case SENSORS_FEATURE_TEMP:
 				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
-				min = (xsubf = xfeat->minimum) ? xsubf->value : 25.0;
-				max = (xsubf = xfeat->maximum) ? xsubf->value : 80.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value : (xsubf = xfeat->lowcrit ) ? xsubf->value : 25.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value : (xsubf = xfeat->critical) ? xsubf->value : 80.0;
+				low = (xsubf = xfeat->lowcrit ) ? xsubf->value : (xsubf = xfeat->minimum ) ? xsubf->value : -30.0;
+				cri = (xsubf = xfeat->critical) ? xsubf->value : (xsubf = xfeat->maximum) ? xsubf->value : 150.0;
+				(void) low;
+				(void) cri;
 				perc = 100.0*(input - min)/(max - min);
-				if (perc < 25.0) {
+				if (input == 0.0 || (input == 127.0 && cri == 128.0)) {
+					name = "flame-missing";
+				} else if (perc < 25.0) {
 					name = "flame-cold";
 				} else if (25.0 <= perc && perc < 50.0) {
 					name = "flame-cool";
@@ -1150,6 +1206,26 @@ init_sensors(void)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->maximum = xsubf;
 				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_LCRIT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->lowcrit = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_CRIT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->critical = xsubf;
+				}
 				break;
 			case SENSORS_FEATURE_FAN:
 				xfeat->icon = "fan";
@@ -1217,6 +1293,26 @@ init_sensors(void)
 					xsubf->number = subf->number;
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->maximum = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_LCRIT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->lowcrit = xsubf;
+				}
+				if ((subf =
+				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_CRIT))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->critical = xsubf;
 				}
 				break;
 			default:
