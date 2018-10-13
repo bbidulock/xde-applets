@@ -24,6 +24,9 @@
 -ss
 -hnl
 -nbc
+-TXdeChip
+-TXdeFeature
+-TXdeSubfeature
 -TXdeDevice
 -Tca_context
 -Tca_proplist
