@@ -1,5 +1,502 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 0a64e45d7896fd9cc2659c779583113302a1125a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 02:55:16 2018 -0600
+
+    update icons based on read settings
+
+ src/xde-lm-applet.c | 119 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 118 insertions(+), 1 deletion(-)
+
+commit e1798c6d993a88c1b42a2e2e3d449f6a095b9cc6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 11 18:44:10 2018 -0600
+
+    update tooltip window dynamically
+
+ src/xde-lm-applet.c | 60 ++++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 47 insertions(+), 13 deletions(-)
+
+commit a126d6f7c8f10d35a55f491ea3cafde76765f307
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 11 15:31:53 2018 -0600
+
+    provide mechanism for updating tooltip widget
+
+ src/xde-av-applet.c  | 20 ++++++++++++++++----
+ src/xde-bt-applet.c  | 20 ++++++++++++++++----
+ src/xde-dh-applet.c  | 20 ++++++++++++++++----
+ src/xde-hal-applet.c | 20 ++++++++++++++++----
+ src/xde-lm-applet.c  | 20 ++++++++++++++++----
+ src/xde-pk-applet.c  | 20 ++++++++++++++++----
+ src/xde-sd-applet.c  | 20 ++++++++++++++++----
+ src/xde-up-applet.c  | 21 +++++++++++++++++----
+ src/xde-wl-applet.c  | 20 ++++++++++++++++----
+ 9 files changed, 145 insertions(+), 36 deletions(-)
+
+commit 1bf1ce9502206977204e8769c1c7df5b8561e6ff
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 11 15:19:00 2018 -0600
+
+    keep tooltip widgets around
+
+ src/xde-av-applet.c  | 7 ++++++-
+ src/xde-bt-applet.c  | 7 ++++++-
+ src/xde-dh-applet.c  | 7 ++++++-
+ src/xde-hal-applet.c | 7 ++++++-
+ src/xde-lm-applet.c  | 6 +++++-
+ src/xde-pk-applet.c  | 7 ++++++-
+ src/xde-sd-applet.c  | 7 ++++++-
+ src/xde-up-applet.c  | 7 +++++--
+ src/xde-wl-applet.c  | 7 ++++++-
+ 9 files changed, 52 insertions(+), 10 deletions(-)
+
+commit 8e85c042320d8ac2fc0ee5b11b29d66d404f22d7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 11 14:18:39 2018 -0600
+
+    icons for xde-lm-applet
+
+ data/icons/chip.svg              | 120 +++++++++++++++++++++
+ data/icons/fan-fast.svg          | 158 +++++++++++++++++++++++++++
+ data/icons/fan-medium.svg        | 158 +++++++++++++++++++++++++++
+ data/icons/fan-slow.svg          | 158 +++++++++++++++++++++++++++
+ data/icons/fan-stopped.svg       | 158 +++++++++++++++++++++++++++
+ data/icons/fan.svg               | 157 +++++++++++++++++++++++++++
+ data/icons/flame-cold.svg        |  97 +++++++++++++++++
+ data/icons/flame-cool.svg        |  97 +++++++++++++++++
+ data/icons/flame-hot.svg         |  97 +++++++++++++++++
+ data/icons/flame-warm.svg        |  45 ++++++++
+ data/icons/flame.svg             |  45 ++++++++
+ data/icons/ram-memory.svg        |  79 ++++++++++++++
+ data/icons/voltmeter-high.svg    | 201 +++++++++++++++++++++++++++++++++++
+ data/icons/voltmeter-low.svg     | 201 +++++++++++++++++++++++++++++++++++
+ data/icons/voltmeter-nominal.svg | 200 ++++++++++++++++++++++++++++++++++
+ data/icons/voltmeter-open.svg    | 201 +++++++++++++++++++++++++++++++++++
+ data/icons/voltmeter-short.svg   | 201 +++++++++++++++++++++++++++++++++++
+ data/icons/voltmeter.svg         | 200 ++++++++++++++++++++++++++++++++++
+ src/xde-lm-applet.c              |   2 +-
+ 19 files changed, 2574 insertions(+), 1 deletion(-)
+
+commit fd14267d6852ab1b649601a9179fcaa239e7ef64
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 11 12:47:49 2018 -0600
+
+    a first stab at lm_sensors applet
+
+ configure.ac        |   6 +-
+ src/Makefile.am     |   2 +-
+ src/xde-lm-applet.c | 325 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 317 insertions(+), 16 deletions(-)
+
+commit b085c30f0ecc4f5d337b6c43d04f0b58145b6787
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Oct 11 07:25:16 2018 -0600
+
+    use libpackagekit-glib2 for the pk applet
+
+ configure.ac        |  1 +
+ introspect.sh       | 13 +++++++++++++
+ src/Makefile.am     |  4 ++--
+ src/xde-pk-applet.c |  3 +++
+ 4 files changed, 19 insertions(+), 2 deletions(-)
+
+commit c487fa226bb6b265e39af2d9104f19361f126dd1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 17:38:54 2018 -0600
+
+    correct notification timeout
+
+ src/xde-up-applet.c | 36 +++++++++++++++++++-----------------
+ 1 file changed, 19 insertions(+), 17 deletions(-)
+
+commit 13a30df3ca0fa73d12a56949235a5f8968a7c293
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 05:11:38 2018 -0600
+
+    rationalize new status icon tooltip approach
+
+ src/xde-av-applet.c  | 76 ++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-bt-applet.c  | 74 +++++++++++++++++++++++++++++++++++++++-----
+ src/xde-dh-applet.c  | 80 ++++++++++++++++++++++++++++++++++++++++++------
+ src/xde-hal-applet.c | 76 ++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-lm-applet.c  | 76 ++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-pk-applet.c  | 74 +++++++++++++++++++++++++++++++++++++++-----
+ src/xde-sd-applet.c  | 74 +++++++++++++++++++++++++++++++++++++++-----
+ src/xde-wl-applet.c  | 74 +++++++++++++++++++++++++++++++++++++++-----
+ 8 files changed, 543 insertions(+), 61 deletions(-)
+
+commit c02f03954a046fe6f7c1a1f452ea0ce10c786a71
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 04:46:28 2018 -0600
+
+    process additional status icon signals
+
+ src/xde-up-applet.c | 49 +++++++++++++++++++++++++++++++++++--------------
+ 1 file changed, 35 insertions(+), 14 deletions(-)
+
+commit 2f8c7726458b2c242afbb7af47a880ca3e2b0411
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 04:24:57 2018 -0600
+
+    might be other signals of interest on statusicon
+
+ src/xde-up-applet.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit d2fe81669a83f138813279faa7f43554d4bccf3a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 04:18:16 2018 -0600
+
+    remove cruft
+
+ src/xde-up-applet.c | 31 +------------------------------
+ 1 file changed, 1 insertion(+), 30 deletions(-)
+
+commit 1d29ad57220641244f8b1df6188cd755c3c227b0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 04:17:02 2018 -0600
+
+    use a custom tooltip window
+
+ src/xde-up-applet.c | 110 +++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 94 insertions(+), 16 deletions(-)
+
+commit 09fef64c836cc6818a1ac6216296e61bb5ee7dda
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 10 04:16:48 2018 -0600
+
+    start creating applet
+
+ src/xde-dh-applet.c | 32 ++++++++++++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+
+commit 4e2a830e01e4b4d3cb3744e5114f72d516a7f0fd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 9 07:17:21 2018 -0600
+
+    rationalize popup menus
+
+ src/xde-av-applet.c  |  73 +++++++++++++-------
+ src/xde-bt-applet.c  |  72 +++++++++++++-------
+ src/xde-dh-applet.c  |  71 ++++++++++++-------
+ src/xde-hal-applet.c |  70 ++++++++++++-------
+ src/xde-lm-applet.c  |  70 ++++++++++++-------
+ src/xde-pk-applet.c  |  72 +++++++++++++-------
+ src/xde-sd-applet.c  |  72 +++++++++++++-------
+ src/xde-up-applet.c  | 173 +++++++++++++++++++++++++++++++++--------------
+ src/xde-wl-applet.c  |  72 +++++++++++++-------
+ 9 files changed, 491 insertions(+), 254 deletions(-)
+
+commit af75de0f8bfdf7b9ca436b5935fd83bfc9d4e544
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 23:47:04 2018 -0600
+
+    rationalize approach between applets
+
+ src/xde-av-applet.c  | 64 ++++++++++++++++++++++++++++++++++++------------
+ src/xde-bt-applet.c  | 64 ++++++++++++++++++++++++++++++++++++------------
+ src/xde-dh-applet.c  | 63 +++++++++++++++++++++++++++++++++++------------
+ src/xde-hal-applet.c | 64 ++++++++++++++++++++++++++++++++++++------------
+ src/xde-lm-applet.c  | 64 ++++++++++++++++++++++++++++++++++++------------
+ src/xde-pk-applet.c  | 64 ++++++++++++++++++++++++++++++++++++------------
+ src/xde-sd-applet.c  | 64 ++++++++++++++++++++++++++++++++++++------------
+ src/xde-wl-applet.c  | 64 ++++++++++++++++++++++++++++++++++++------------
+ 8 files changed, 391 insertions(+), 120 deletions(-)
+
+commit 48d1c0e85ed7da2ae0525351e74d350664035483
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 23:18:34 2018 -0600
+
+    display additional batteries (mouse, keyboard)
+
+ src/xde-up-applet.c | 105 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 101 insertions(+), 4 deletions(-)
+
+commit 7b0efb6fd37c0ac5b6ca4d542ef903881f7ab978
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 22:10:23 2018 -0600
+
+    use offscreen pixmap for compositing dockapps
+
+ src/xde-up-applet.c | 63 ++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 44 insertions(+), 19 deletions(-)
+
+commit 0077dc8030b1e41d8b40dbcca573ef59b1d15967
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 07:42:27 2018 -0600
+
+    show desktop notificaitons
+
+ src/xde-up-applet.c | 94 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 85 insertions(+), 9 deletions(-)
+
+commit a43cc071ee5e0501a2b668da6b57c4305db86fa5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 07:05:15 2018 -0600
+
+    play sound on battery level events
+
+ src/xde-up-applet.c | 122 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 119 insertions(+), 3 deletions(-)
+
+commit 2916786b75b6ce709f4ffca05243bb37a7e2d1bd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 07:04:55 2018 -0600
+
+    add a type
+
+ .indent.pro | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit 5d3ca7f0e0167096a933929f2dd12463b997599b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 06:22:56 2018 -0600
+
+    quiet down debugs
+
+ src/xde-up-applet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit ca81bb1e3482c680245fa2de53b2df323c9fa029
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 06:22:00 2018 -0600
+
+    more factoring
+
+ src/xde-up-applet.c | 163 +++++++++++++++++++++---------------------------
+ 1 file changed, 71 insertions(+), 92 deletions(-)
+
+commit 5911b522a98afa47d01c093ab9f149004c384622
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 06:04:12 2018 -0600
+
+    a little factoring
+
+ src/xde-up-applet.c | 309 +++++++++++++++++-------------------------------
+ 1 file changed, 107 insertions(+), 202 deletions(-)
+
+commit 0673ee49e5b545f8f2a29af5141e2fdea4a47996
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 05:18:30 2018 -0600
+
+    add more events
+
+ src/xde-up-applet.c | 137 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 132 insertions(+), 5 deletions(-)
+
+commit 95f394e76102c87a9884aff3f1ba8b9eab4c7ee3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 8 01:13:53 2018 -0600
+
+    start using libnotify
+
+ src/Makefile.am     | 4 ++--
+ src/xde-up-applet.c | 7 +++++++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+commit fee7c738e0c1d9eb2c862b7d8c87c29791cad9bd
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 16:34:04 2018 -0600
+
+    factor icon updates
+
+ src/xde-up-applet.c | 89 ++++++++++++++++++++-----------------------------
+ 1 file changed, 37 insertions(+), 52 deletions(-)
+
+commit 451e4a225cc1d08aef5482c00f5b301004649f20
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 16:17:26 2018 -0600
+
+    change dockapp icon with battery too
+
+ src/xde-up-applet.c | 46 +++++++++++++++++++++++++++++++++-------------
+ 1 file changed, 33 insertions(+), 13 deletions(-)
+
+commit 4e33ec37aaed2ff9c2463080374a49db97f387ff
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 15:44:59 2018 -0600
+
+    change status icon with display battery
+
+ src/xde-up-applet.c | 85 +++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 83 insertions(+), 2 deletions(-)
+
+commit bb19355f07a3168cd18517c7f5d66fb6db055b45
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 14:49:47 2018 -0600
+
+    correct logic
+
+ src/xde-up-applet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 3ae8c78b6ac299688232d0e96c8e04b05718e7b9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 14:32:52 2018 -0600
+
+    breakout enumerations
+
+ src/xde-up-applet.c | 143 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 138 insertions(+), 5 deletions(-)
+
+commit 5ba0eca4467cee66fe9d3e3fe97e0f27144cc021
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 14:19:34 2018 -0600
+
+    working up xde-up-applet
+
+ src/xde-up-applet.c | 348 +++++++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 333 insertions(+), 15 deletions(-)
+
+commit 69acc6a4303b08718ff6eaeff2cefad099a021ce
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 7 14:19:14 2018 -0600
+
+    add indent specification
+
+ .indent.pro | 364 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 364 insertions(+)
+
+commit 39cf892106c62374152a0e58f26cb87dba6e7bb8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 6 23:21:11 2018 -0600
+
+    rationalize headers and debug
+
+ configure.ac         |  53 ++++++-
+ src/Makefile.am      |  36 ++---
+ src/xde-av-applet.c  | 243 +++++++++++++++++++-----------
+ src/xde-bt-applet.c  | 241 +++++++++++++++++++-----------
+ src/xde-dh-applet.c  | 243 +++++++++++++++++++-----------
+ src/xde-hal-applet.c | 243 +++++++++++++++++++-----------
+ src/xde-lm-applet.c  | 243 +++++++++++++++++++-----------
+ src/xde-pk-applet.c  | 243 +++++++++++++++++++-----------
+ src/xde-sd-applet.c  | 243 +++++++++++++++++++-----------
+ src/xde-up-applet.c  | 381 ++++++++++++++++++++++++++++++++++++-----------
+ src/xde-wl-applet.c  | 243 +++++++++++++++++++-----------
+ 11 files changed, 1618 insertions(+), 794 deletions(-)
+
+commit 164a131624853c691cf7573e6002ab650a3caf58
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 6 21:24:45 2018 -0600
+
+    parent relative all
+
+ src/xde-av-applet.c  | 5 +++++
+ src/xde-bt-applet.c  | 5 +++++
+ src/xde-dh-applet.c  | 5 +++++
+ src/xde-hal-applet.c | 5 +++++
+ src/xde-lm-applet.c  | 5 +++++
+ src/xde-pk-applet.c  | 5 +++++
+ src/xde-sd-applet.c  | 5 +++++
+ src/xde-up-applet.c  | 4 +---
+ src/xde-wl-applet.c  | 5 +++++
+ 9 files changed, 41 insertions(+), 3 deletions(-)
+
+commit 8499f15e28060b6713d11085ecd24ad2bb5f1669
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 5 22:39:54 2018 -0600
+
+    set backgrund pixmap to parentrelative
+
+ src/xde-up-applet.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+commit 87dbdc77580418135591977252fbb029f0009106
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Oct 5 11:48:33 2018 -0600
+
+    update copyright headers
+
+ configure.ac         |  6 +++---
+ src/xde-av-applet.c  | 10 +++++-----
+ src/xde-bt-applet.c  | 10 +++++-----
+ src/xde-dh-applet.c  | 10 +++++-----
+ src/xde-hal-applet.c | 10 +++++-----
+ src/xde-lm-applet.c  | 10 +++++-----
+ src/xde-pk-applet.c  | 10 +++++-----
+ src/xde-sd-applet.c  | 10 +++++-----
+ src/xde-up-applet.c  | 10 +++++-----
+ src/xde-wl-applet.c  | 10 +++++-----
+ 10 files changed, 48 insertions(+), 48 deletions(-)
+
+commit 6ae236e66893269b75f8f592b8ec0f0fabf86799
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 3 01:11:44 2018 -0600
+
+    dockapps for all
+
+ src/xde-bt-applet.c  | 159 +++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-dh-applet.c  | 159 +++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-hal-applet.c | 159 +++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-lm-applet.c  | 161 ++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-pk-applet.c  | 159 +++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-sd-applet.c  | 159 +++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-up-applet.c  | 161 ++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-wl-applet.c  | 159 +++++++++++++++++++++++++++++++++++++++++++++-
+ 8 files changed, 1258 insertions(+), 18 deletions(-)
+
+commit a66ba80327cf61d595e47b22a7570d4cd1f2ac93
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 3 00:14:52 2018 -0600
+
+    simplify dock app some more
+
+ src/xde-av-applet.c | 53 ++++++++++++++++---------------------------------
+ 1 file changed, 17 insertions(+), 36 deletions(-)
+
+commit fa32f47cd687b4311d625053c48e9df776febe44
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Wed Oct 3 00:09:41 2018 -0600
+
+    simplified dock app
+
+ src/xde-av-applet.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
+
+commit b682badf3dc0eea618344b86975ca5b96c7a95c1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 23:41:39 2018 -0600
+
+    working dockapp icon
+
+ src/xde-av-applet.c | 87 +++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 77 insertions(+), 10 deletions(-)
+
+commit 5383b1c007d57f23fd92aabca087246f558da2e3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 18:36:57 2018 -0600
+
+    taking a stab at dock app
+
+ src/xde-av-applet.c | 115 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 113 insertions(+), 2 deletions(-)
+
+commit 1118c5e389e7a68c086d4a965533d54f6ab396e2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Oct 2 05:15:26 2018 -0600
+
+    update release files for new build
+
+ .gitignore           |   3 +-
+ AUTHORS              |   2 +-
+ ChangeLog            | 178 ++++++++++++++++++++++++++++++++++++++++++++++-
+ NEWS                 |  24 ++++++-
+ README.md            |   6 +-
+ configure.ac         |   6 +-
+ src/xde-av-applet.c  |   2 +-
+ src/xde-bt-applet.c  |   2 +-
+ src/xde-dh-applet.c  |   2 +-
+ src/xde-hal-applet.c |   2 +-
+ src/xde-lm-applet.c  |   2 +-
+ src/xde-pk-applet.c  |   2 +-
+ src/xde-sd-applet.c  |   2 +-
+ src/xde-up-applet.c  |   2 +-
+ src/xde-wl-applet.c  |   2 +-
+ 15 files changed, 217 insertions(+), 20 deletions(-)
+
 commit d4633de6c9a6ac5d4f06085d07419a2fa04a0abf
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Oct 2 05:07:39 2018 -0600

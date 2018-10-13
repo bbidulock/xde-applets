@@ -1,11 +1,11 @@
-xde-applets -- history of user-visible changes.  2018-10-02
+xde-applets -- history of user-visible changes.  2018-10-13
 
-Release xde-applets-0.4.11 released 2018-10-02
+Release xde-applets-0.4.54 released 2018-10-13
 ----------------------------------------------
 
 git shortlog -e -n -w80,6,8 0.4...HEAD
 
-Brian Bidulock <bidulock@openss7.org> (11):
+Brian Bidulock <bidulock@openss7.org> (54):
       git hates trailing space
       better formatting
       better formatting
@@ -17,6 +17,49 @@ Brian Bidulock <bidulock@openss7.org> (11):
       add two new applets
       more additions for new applets
       update build system
+      update release files for new build
+      taking a stab at dock app
+      working dockapp icon
+      simplified dock app
+      simplify dock app some more
+      dockapps for all
+      update copyright headers
+      set backgrund pixmap to parentrelative
+      parent relative all
+      rationalize headers and debug
+      add indent specification
+      working up xde-up-applet
+      breakout enumerations
+      correct logic
+      change status icon with display battery
+      change dockapp icon with battery too
+      factor icon updates
+      start using libnotify
+      add more events
+      a little factoring
+      more factoring
+      quiet down debugs
+      add a type
+      play sound on battery level events
+      show desktop notificaitons
+      use offscreen pixmap for compositing dockapps
+      display additional batteries (mouse, keyboard)
+      rationalize approach between applets
+      rationalize popup menus
+      start creating applet
+      use a custom tooltip window
+      remove cruft
+      might be other signals of interest on statusicon
+      process additional status icon signals
+      rationalize new status icon tooltip approach
+      correct notification timeout
+      use libpackagekit-glib2 for the pk applet
+      a first stab at lm_sensors applet
+      icons for xde-lm-applet
+      keep tooltip widgets around
+      provide mechanism for updating tooltip widget
+      update tooltip window dynamically
+      update icons based on read settings
 
 
 Release xde-applets-0.4 released 2016-07-09
