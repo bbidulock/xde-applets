@@ -992,87 +992,101 @@ update_sensors(void)
 			switch (xfeat->type) {
 			case SENSORS_FEATURE_IN:
 				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
-				min = (xsubf = xfeat->minimum) ? xsubf->value : (xsubf = xfeat->lowcrit ) ? xsubf->value : 0.0;
-				max = (xsubf = xfeat->maximum) ? xsubf->value : (xsubf = xfeat->critical) ? xsubf->value : 12.0;
-				low = (xsubf = xfeat->lowcrit ) ? xsubf->value : (xsubf = xfeat->minimum ) ? xsubf->value : 0.0;
-				cri = (xsubf = xfeat->critical) ? xsubf->value : (xsubf = xfeat->maximum) ? xsubf->value : 24.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value :
+				    (xsubf = xfeat->lowcrit) ? xsubf->value : 0.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value :
+				    (xsubf = xfeat->critical) ? xsubf->value : 12.0;
+				low = (xsubf = xfeat->lowcrit) ? xsubf->value :
+				    (xsubf = xfeat->minimum) ? xsubf->value : 0.0;
+				cri = (xsubf = xfeat->critical) ? xsubf->value :
+				    (xsubf = xfeat->maximum) ? xsubf->value : 24.0;
 				(void) low;
 				(void) cri;
-				perc = 100.0*(input - min)/(max - min);
+				perc = 100.0 * (input - min) / (max - min);
 				if (input == 0.0) {
 					name = "voltmeter-missing";
-				} else if (perc < 20.0) {
-					name = "voltmeter-open";
-				} else if (20.0 <= perc && perc < 40.0) {
-					name = "voltmeter-low";
-				} else if (40.0 <= perc && perc < 60.0) {
-					name = "voltmeter-nominal";
-				} else if (60.0 <= perc && perc < 80.0) {
-					name = "voltmeter-high";
-				} else if (80.0 <= perc) {
-					name = "voltmeter-short";
-				}
-				if (in_max < perc) {
-					in_max = perc;
-					in_icon = name;
-				}
-				if (total_max < perc) {
-					total_max = perc;
-					total_icon = name;
+				} else {
+					if (perc < 20.0) {
+						name = "voltmeter-open";
+					} else if (20.0 <= perc && perc < 40.0) {
+						name = "voltmeter-low";
+					} else if (40.0 <= perc && perc < 60.0) {
+						name = "voltmeter-nominal";
+					} else if (60.0 <= perc && perc < 80.0) {
+						name = "voltmeter-high";
+					} else if (80.0 <= perc) {
+						name = "voltmeter-short";
+					}
+					if (in_max < perc) {
+						in_max = perc;
+						in_icon = name;
+					}
+					if (total_max < perc) {
+						total_max = perc;
+						total_icon = name;
+					}
 				}
 				break;
 			case SENSORS_FEATURE_FAN:
 				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
 				min = (xsubf = xfeat->minimum) ? xsubf->value : 0.0;
 				max = (xsubf = xfeat->maximum) ? xsubf->value : 1000.0;
-				perc = 100.0*(input - min)/(max - min);
+				perc = 100.0 * (input - min) / (max - min);
 				if (input == 0.0) {
 					name = "fan-missing";
-				} else if (perc < 25.0) {
-					name = "fan-stopped";
-				} else if (25.0 <= perc && perc < 50.0) {
-					name = "fan-slow";
-				} else if (50.0 <= perc && perc < 75.0) {
-					name = "fan-medium";
-				} else if (75.0 <= perc) {
-					name = "fan-fast";
-				}
-				if (fan_max < perc) {
-					fan_max = perc;
-					fan_icon = name;
-				}
-				if (total_max < perc) {
-					total_max = perc;
-					total_icon = name;
+				} else {
+					if (perc < 25.0) {
+						name = "fan-stopped";
+					} else if (25.0 <= perc && perc < 50.0) {
+						name = "fan-slow";
+					} else if (50.0 <= perc && perc < 75.0) {
+						name = "fan-medium";
+					} else if (75.0 <= perc) {
+						name = "fan-fast";
+					}
+					if (fan_max < perc) {
+						fan_max = perc;
+						fan_icon = name;
+					}
+					if (total_max < perc) {
+						total_max = perc;
+						total_icon = name;
+					}
 				}
 				break;
 			case SENSORS_FEATURE_TEMP:
 				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
-				min = (xsubf = xfeat->minimum) ? xsubf->value : (xsubf = xfeat->lowcrit ) ? xsubf->value : 25.0;
-				max = (xsubf = xfeat->maximum) ? xsubf->value : (xsubf = xfeat->critical) ? xsubf->value : 80.0;
-				low = (xsubf = xfeat->lowcrit ) ? xsubf->value : (xsubf = xfeat->minimum ) ? xsubf->value : -30.0;
-				cri = (xsubf = xfeat->critical) ? xsubf->value : (xsubf = xfeat->maximum) ? xsubf->value : 150.0;
+				min = (xsubf = xfeat->minimum) ? xsubf->value :
+				    (xsubf = xfeat->lowcrit) ? xsubf->value : 25.0;
+				max = (xsubf = xfeat->maximum) ? xsubf->value :
+				    (xsubf = xfeat->critical) ? xsubf->value : 80.0;
+				low = (xsubf = xfeat->lowcrit) ? xsubf->value :
+				    (xsubf = xfeat->minimum) ? xsubf->value : -30.0;
+				cri = (xsubf = xfeat->critical) ? xsubf->value :
+				    (xsubf = xfeat->maximum) ? xsubf->value : 150.0;
 				(void) low;
 				(void) cri;
-				perc = 100.0*(input - min)/(max - min);
+				perc = 100.0 * (input - min) / (max - min);
 				if (input == 0.0 || (input == 127.0 && cri == 128.0)) {
 					name = "flame-missing";
-				} else if (perc < 25.0) {
-					name = "flame-cold";
-				} else if (25.0 <= perc && perc < 50.0) {
-					name = "flame-cool";
-				} else if (50.0 <= perc && perc < 75.0) {
-					name = "flame-warm";
-				} else if (75.0 <= perc) {
-					name = "flame-hot";
-				}
-				if (temp_max < perc) {
-					temp_max = perc;
-					temp_icon = name;
-				}
-				if (total_max < perc) {
-					total_max = perc;
-					total_icon = name;
+				} else {
+					if (perc < 25.0) {
+						name = "flame-cold";
+					} else if (25.0 <= perc && perc < 50.0) {
+						name = "flame-cool";
+					} else if (50.0 <= perc && perc < 75.0) {
+						name = "flame-warm";
+					} else if (75.0 <= perc) {
+						name = "flame-hot";
+					}
+					if (temp_max < perc) {
+						temp_max = perc;
+						temp_icon = name;
+					}
+					if (total_max < perc) {
+						total_max = perc;
+						total_icon = name;
+					}
 				}
 				break;
 			default:
@@ -1093,14 +1107,14 @@ update_sensors(void)
 		int s, nscr = gdk_display_get_n_screens(disp);
 		XdeScreen *xscr;
 
-
 		for (s = 0, xscr = screens; s < nscr; s++, xscr++) {
 			GtkIconTheme *theme;
 			GdkPixbuf *pixbuf;
 
 			theme = gtk_icon_theme_get_for_screen(xscr->scrn);
 			pixbuf = gtk_icon_theme_load_icon(theme, total_icon, 48,
-					      GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE, NULL);
+							  GTK_ICON_LOOKUP_USE_BUILTIN | GTK_ICON_LOOKUP_FORCE_SIZE,
+							  NULL);
 			if (!pixbuf)
 				continue;
 			if (xscr->status)
