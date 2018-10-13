@@ -614,134 +614,9 @@ put_tooltip_widget(void)
 GtkWidget *
 get_tooltip_widget(void)
 {
-	GtkWidget *vbox;
-	GtkWidget *icon, *text;
-	char *markup;
-	GList *chip, *feat;
-
-	if (tooltip_widget)
-		return (tooltip_widget);
-	vbox = gtk_vbox_new(TRUE, 2);
-	for (chip = chips; chip; chip = chip->next) {
-		GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
-		XdeChip *xchip = chip->data;
-		icon = gtk_image_new_from_icon_name("chip", GTK_ICON_SIZE_MENU);
-		gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
-		gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
-		gtk_widget_show(icon);
-		if (xchip->name) {
-			text = gtk_label_new(NULL);
-			markup = g_strdup_printf("<small>%s</small>", xchip->name);
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-		}
-		if (xchip->adapter) {
-			text = gtk_label_new(NULL);
-			markup = g_strdup_printf("<small>%s</small>", xchip->adapter);
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-		}
-		gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-		gtk_widget_show(hbox);
-
-		for (feat = xchip->features; feat; feat = feat->next) {
-			GtkWidget *hbox = gtk_hbox_new(FALSE, 2);
-			XdeFeature *xfeat = feat->data;
-			XdeSubfeature *xsubf;
-
-			icon = gtk_image_new_from_icon_name(xfeat->icon, GTK_ICON_SIZE_MENU);
-			xfeat->image = icon;
-			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
-			gtk_box_pack_start(GTK_BOX(hbox), icon, FALSE, TRUE, 0);
-			gtk_widget_show(icon);
-			if ((xsubf = xfeat->input)) {
-				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, xfeat->label, xsubf->value);
-				text = gtk_label_new(NULL);
-				xsubf->label = text;
-				gtk_label_set_markup(GTK_LABEL(text), markup);
-				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
-				g_free(markup);
-			} else {
-				text = gtk_label_new(NULL);
-			}
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-			if ((xsubf = xfeat->minimum)) {
-				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Min", xsubf->value);
-				text = gtk_label_new(NULL);
-				xsubf->label = text;
-				gtk_label_set_markup(GTK_LABEL(text), markup);
-				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
-				g_free(markup);
-			} else {
-				text = gtk_label_new(NULL);
-			}
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-			if ((xsubf = xfeat->maximum)) {
-				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Max", xsubf->value);
-				text = gtk_label_new(NULL);
-				xsubf->label = text;
-				gtk_label_set_markup(GTK_LABEL(text), markup);
-				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
-				g_free(markup);
-			} else {
-				text = gtk_label_new(NULL);
-			}
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-			if ((xsubf = xfeat->lowcrit)) {
-				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Low", xsubf->value);
-				text = gtk_label_new(NULL);
-				xsubf->label = text;
-				gtk_label_set_markup(GTK_LABEL(text), markup);
-				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
-				g_free(markup);
-			} else {
-				text = gtk_label_new(NULL);
-			}
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-			if ((xsubf = xfeat->critical)) {
-				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Crit", xsubf->value);
-				text = gtk_label_new(NULL);
-				xsubf->label = text;
-				gtk_label_set_markup(GTK_LABEL(text), markup);
-				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
-				g_free(markup);
-			} else {
-				text = gtk_label_new(NULL);
-			}
-			gtk_box_pack_start(GTK_BOX(hbox), text, TRUE, TRUE, 0);
-			gtk_widget_show(text);
-
-			gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, TRUE, 0);
-			gtk_widget_show(hbox);
-		}
-	}
-	gtk_widget_show(vbox);
-	g_object_ref(G_OBJECT(vbox));
-	tooltip_widget = vbox;
-	return (tooltip_widget);
-}
-
-GtkWidget *
-get_tooltip_widget2(void)
-{
 	GtkWidget *table;
 	GtkWidget *icon, *text;
-	guint rows = 0, cols = 6;
+	guint rows = 0, cols = 7;
 	char *markup;
 	GList *chip, *feat;
 
@@ -770,7 +645,7 @@ get_tooltip_widget2(void)
 			gtk_label_set_markup(GTK_LABEL(text), markup);
 			g_free(markup);
 			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach(GTK_TABLE(table), text, 3, 6, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+			gtk_table_attach(GTK_TABLE(table), text, 4, 7, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
 			gtk_widget_show(text);
 		}
 		for (feat = xchip->features; feat; feat = feat->next) {
@@ -784,19 +659,15 @@ get_tooltip_widget2(void)
 			gtk_table_attach(GTK_TABLE(table), icon, 0, 1, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
 			gtk_widget_show(icon);
 			if ((xsubf = xfeat->input)) {
-				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, xfeat->label, xsubf->value);
+				markup = g_strdup_printf("<small>%s:</small>", xfeat->name);
 				text = gtk_label_new(NULL);
-				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
 				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
 				g_free(markup);
 				gtk_table_attach(GTK_TABLE(table), text, 1, 2, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
 				gtk_widget_show(text);
-			}
-			if ((xsubf = xfeat->minimum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Min", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "cur");
 				text = gtk_label_new(NULL);
 				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -805,9 +676,9 @@ get_tooltip_widget2(void)
 				gtk_table_attach(GTK_TABLE(table), text, 2, 3, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
 				gtk_widget_show(text);
 			}
-			if ((xsubf = xfeat->maximum)) {
+			if ((xsubf = xfeat->minimum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Max", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "min");
 				text = gtk_label_new(NULL);
 				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -816,9 +687,9 @@ get_tooltip_widget2(void)
 				gtk_table_attach(GTK_TABLE(table), text, 3, 4, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
 				gtk_widget_show(text);
 			}
-			if ((xsubf = xfeat->lowcrit)) {
+			if ((xsubf = xfeat->maximum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Low", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "max");
 				text = gtk_label_new(NULL);
 				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -827,9 +698,20 @@ get_tooltip_widget2(void)
 				gtk_table_attach(GTK_TABLE(table), text, 4, 5, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
 				gtk_widget_show(text);
 			}
+			if ((xsubf = xfeat->lowcrit)) {
+				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "low");
+				text = gtk_label_new(NULL);
+				xsubf->label = text;
+				gtk_label_set_markup(GTK_LABEL(text), markup);
+				gtk_misc_set_alignment(GTK_MISC(text), 1.0, 0.5);
+				g_free(markup);
+				gtk_table_attach(GTK_TABLE(table), text, 5, 6, rows - 1, rows, GTK_FILL|GTK_EXPAND, GTK_FILL|GTK_EXPAND, 2, 0);
+				gtk_widget_show(text);
+			}
 			if ((xsubf = xfeat->critical)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Crit", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "crit");
 				text = gtk_label_new(NULL);
 				xsubf->label = text;
 				gtk_label_set_markup(GTK_LABEL(text), markup);
@@ -853,7 +735,7 @@ on_status_query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_m
 	XdeScreen *xscr = user_data;
 
 	(void) xscr;
-	gtk_tooltip_set_custom(tooltip, get_tooltip_widget2());
+	gtk_tooltip_set_custom(tooltip, get_tooltip_widget());
 	return TRUE;
 }
 
@@ -1066,35 +948,35 @@ update_sensors(void)
 
 			if ((xsubf = xfeat->input)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, xfeat->label, xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "cur");
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
 			if ((xsubf = xfeat->minimum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Min", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "min");
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
 			if ((xsubf = xfeat->maximum)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Max", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "max");
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
 			if ((xsubf = xfeat->lowcrit)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Low", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "low");
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
 			}
 			if ((xsubf = xfeat->critical)) {
 				sensors_get_value(xchip->chip, xsubf->number, &xsubf->value);
-				markup = g_strdup_printf(xfeat->format, "Crit", xsubf->value);
+				markup = g_strdup_printf(xfeat->format, xsubf->value, "crit");
 				if (xsubf->label)
 					gtk_label_set_markup(GTK_LABEL(xsubf->label), markup);
 				g_free(markup);
@@ -1299,7 +1181,7 @@ init_sensors(void)
 			switch (feat->type) {
 			case SENSORS_FEATURE_IN:
 				xfeat->icon = "voltmeter";
-				xfeat->format = "<small>%s: %.3f V</small>";
+				xfeat->format = "<small>%.3f V (%s)</small>";
 				if ((subf =
 				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_INPUT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
@@ -1353,7 +1235,7 @@ init_sensors(void)
 				break;
 			case SENSORS_FEATURE_FAN:
 				xfeat->icon = "fan";
-				xfeat->format = "<small>%s: %.0f RPM</small>";
+				xfeat->format = "<small>%.0f RPM (%s)</small>";
 				if ((subf =
 				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_INPUT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
@@ -1387,7 +1269,7 @@ init_sensors(void)
 				break;
 			case SENSORS_FEATURE_TEMP:
 				xfeat->icon = "flame";
-				xfeat->format = "<small>%s: %.1f °C</small>";
+				xfeat->format = "<small>%.1f °C (%s)</small>";
 				if ((subf =
 				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_INPUT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
