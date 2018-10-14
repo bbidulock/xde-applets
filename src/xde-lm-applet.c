@@ -1366,9 +1366,36 @@ init_sensors(XdeScreen *xscr)
 }
 
 void
+init_canberra(void)
+{
+	ca_context *ca = get_default_ca_context();
+	ca_proplist *pl;
+
+	ca_proplist_create(&pl);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_ID, "com.unexicon." RESNAME);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_VERSION, VERSION);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_ICON_NAME, LOGO_NAME);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_LANGUAGE, "C");
+	{
+		char pidstring[64];
+
+		snprintf(pidstring, 64, "%d", getpid());
+		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_ID, pidstring);
+	}
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_USER, getenv("USER"));
+	{
+		char hostname[64];
+
+		gethostname(hostname, 64);
+		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_HOST, hostname);
+	}
+	ca_context_change_props_full(ca, pl);
+}
+
+void
 init_applet(XdeScreen *xscr)
 {
-	static int initialized = FALSE;
+	static gboolean initialized = FALSE;
 	int err;
 
 	if (!initialized) {
@@ -1712,6 +1739,7 @@ setup_x11(Bool replace)
 			init_dockapp(xscr);
 		init_applet(xscr);
 	}
+	init_canberra();
 }
 
 static GdkFilterReturn
