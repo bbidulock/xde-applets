@@ -574,6 +574,7 @@ typedef struct {
 	gboolean display;
 	GDBusProxy *proxy;
 	NotifyNotification *notify;
+	guint row;
 	GtkWidget *icon;
 	GtkWidget *type;
 	GtkWidget *native;
@@ -582,13 +583,172 @@ typedef struct {
 	GtkWidget *serial;
 } XdeDevice;
 
+void
+add_tooltip_row(XdeScreen *xscr, XdeDevice *xdev, GtkWidget *table, gboolean display)
+{
+	GtkWidget *icon, *text;
+	guint rows = 1, cols = 8;
+	GVariant *prop;
+	char *markup;
+
+	if (!table)
+		return;
+	gtk_table_get_size(GTK_TABLE(table), &rows, &cols);
+	gtk_table_resize(GTK_TABLE(table), ++rows, cols);
+	xdev->row = rows;
+
+	if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
+		gchar *p, *name = g_variant_dup_string(prop, NULL);
+
+		g_variant_unref(prop);
+		if ((p = strstr(name, "-symbolic")))
+			*p = '\0';
+		icon = gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_MENU);
+		xdev->icon = icon;
+		g_free(name);
+		gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
+		gtk_table_attach_defaults(GTK_TABLE(table), icon, 0, 1, rows - 1, rows);
+		gtk_widget_show(icon);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Type"))) {
+		const gchar *name = NULL, *imag = NULL;
+		guint type = g_variant_get_uint32(prop);
+
+		g_variant_unref(prop);
+		switch (type) {
+		case 0:
+			name = "Unknown";
+			imag = "unknown";
+			break;
+		case 1:
+			name = "Line Power";
+			imag = "ac-adapter";
+			break;
+		case 2:
+			name = "Battery";
+			imag = "battery";
+			break;
+		case 3:
+			name = "UPS";
+			break;
+			imag = "gpm-ups-100";
+			break;
+		case 4:
+			name = "Monitor";
+			imag = "video-display";
+			break;
+		case 5:
+			name = "Mouse";
+			imag = "mouse";
+			break;
+		case 6:
+			name = "Keyboard";
+			imag = "keyboard";
+			break;
+		case 7:
+			name = "PDA";
+			break;
+			imag = "pda";
+			break;
+		case 8:
+			name = "Phone";
+			break;
+			imag = "phone";
+			break;
+		}
+		if (imag) {
+			icon = gtk_image_new_from_icon_name(imag, GTK_ICON_SIZE_MENU);
+			xdev->type = icon;
+			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), icon, 1, 2, rows - 1, rows);
+			gtk_widget_show(icon);
+		} else if (name) {
+			text = gtk_label_new(NULL);
+			xdev->type = text;
+			markup = g_strdup_printf("<small>%s</small>", name);
+			gtk_label_set_markup(GTK_LABEL(text), markup);
+			g_free(markup);
+			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+			gtk_table_attach_defaults(GTK_TABLE(table), text, 1, 2, rows - 1, rows);
+			gtk_widget_show(text);
+		}
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "NativePath"))) {
+		gchar *path = g_variant_dup_string(prop, NULL);
+		const gchar *p;
+
+		g_variant_unref(prop);
+		p = (p = strrchr(path, '/')) ? p + 1 : path;
+		text = gtk_label_new(NULL);
+		xdev->native = text;
+		if (!*p && display)
+			p = "MAIN";
+		markup = g_strdup_printf("<small>%s</small>", p);
+		g_free(path);
+		gtk_label_set_markup(GTK_LABEL(text), markup);
+		g_free(markup);
+		gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+		gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
+		gtk_widget_show(text);
+	} else if (display) {
+		text = gtk_label_new(NULL);
+		xdev->native = text;
+		markup = g_strdup_printf("<small>%s</small>", "MAIN");
+		gtk_label_set_markup(GTK_LABEL(text), markup);
+		g_free(markup);
+		gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+		gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
+		gtk_widget_show(text);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Vendor"))) {
+		gchar *name = g_variant_dup_string(prop, NULL);
+
+		g_variant_unref(prop);
+		text = gtk_label_new(NULL);
+		xdev->vendor = text;
+		markup = g_strdup_printf("<small>%s</small>", name);
+		g_free(name);
+		gtk_label_set_markup(GTK_LABEL(text), markup);
+		g_free(markup);
+		gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+		gtk_table_attach_defaults(GTK_TABLE(table), text, 3, 4, rows - 1, rows);
+		gtk_widget_show(text);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Model"))) {
+		gchar *name = g_variant_dup_string(prop, NULL);
+
+		g_variant_unref(prop);
+		text = gtk_label_new(NULL);
+		xdev->model = text;
+		markup = g_strdup_printf("<small>%s</small>", name);
+		g_free(name);
+		gtk_label_set_markup(GTK_LABEL(text), markup);
+		g_free(markup);
+		gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+		gtk_table_attach_defaults(GTK_TABLE(table), text, 4, 5, rows - 1, rows);
+		gtk_widget_show(text);
+	}
+	if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Serial"))) {
+		gchar *name = g_variant_dup_string(prop, NULL);
+
+		g_variant_unref(prop);
+		text = gtk_label_new(NULL);
+		xdev->serial = text;
+		markup = g_strdup_printf("<small>%s</small>", name);
+		g_free(name);
+		gtk_label_set_markup(GTK_LABEL(text), markup);
+		g_free(markup);
+		gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
+		gtk_table_attach_defaults(GTK_TABLE(table), text, 5, 6, rows - 1, rows);
+		gtk_widget_show(text);
+	}
+}
+
 GtkWidget *
 get_tooltip_table(XdeScreen *xscr)
 {
 	GtkWidget *table;
-	GtkWidget *icon, *text;
 	guint rows = 0, cols = 8;
-	char *markup;
 	GList *dev;
 	int i;
 
@@ -601,154 +761,8 @@ get_tooltip_table(XdeScreen *xscr)
 	gtk_table_set_row_spacings(GTK_TABLE(table), 1);
 	for (i = 0, dev = xscr->devices; dev; dev = dev->next, i++) {
 		XdeDevice *xdev = dev->data;
-		GVariant *prop;
 
-		gtk_table_resize(GTK_TABLE(table), ++rows, cols);
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "IconName"))) {
-			gchar *p, *name = g_variant_dup_string(prop, NULL);
-
-			g_variant_unref(prop);
-			if ((p = strstr(name, "-symbolic")))
-				*p = '\0';
-			icon = gtk_image_new_from_icon_name(name, GTK_ICON_SIZE_MENU);
-			xdev->icon = icon;
-			g_free(name);
-			gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
-			gtk_table_attach_defaults(GTK_TABLE(table), icon, 0, 1, rows - 1, rows);
-			gtk_widget_show(icon);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Type"))) {
-			const gchar *name = NULL, *imag = NULL;
-			guint type = g_variant_get_uint32(prop);
-
-			g_variant_unref(prop);
-			switch (type) {
-			case 0:
-				name = "Unknown";
-				imag = "unknown";
-				break;
-			case 1:
-				name = "Line Power";
-				imag = "ac-adapter";
-				break;
-			case 2:
-				name = "Battery";
-				imag = "battery";
-				break;
-			case 3:
-				name = "UPS";
-				break;
-				imag = "gpm-ups-100";
-				break;
-			case 4:
-				name = "Monitor";
-				imag = "video-display";
-				break;
-			case 5:
-				name = "Mouse";
-				imag = "mouse";
-				break;
-			case 6:
-				name = "Keyboard";
-				imag = "keyboard";
-				break;
-			case 7:
-				name = "PDA";
-				break;
-				imag = "pda";
-				break;
-			case 8:
-				name = "Phone";
-				break;
-				imag = "phone";
-				break;
-			}
-			if (imag) {
-				icon = gtk_image_new_from_icon_name(imag, GTK_ICON_SIZE_MENU);
-				xdev->type = icon;
-				gtk_misc_set_alignment(GTK_MISC(icon), 0.5, 0.5);
-				gtk_table_attach_defaults(GTK_TABLE(table), icon, 1, 2, rows - 1, rows);
-				gtk_widget_show(icon);
-			} else if (name) {
-				text = gtk_label_new(NULL);
-				xdev->type = text;
-				markup = g_strdup_printf("<small>%s</small>", name);
-				gtk_label_set_markup(GTK_LABEL(text), markup);
-				g_free(markup);
-				gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-				gtk_table_attach_defaults(GTK_TABLE(table), text, 1, 2, rows - 1, rows);
-				gtk_widget_show(text);
-			}
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "NativePath"))) {
-			gchar *path = g_variant_dup_string(prop, NULL);
-			const gchar *p;
-
-			g_variant_unref(prop);
-			p = (p = strrchr(path, '/')) ? p + 1 : path;
-			text = gtk_label_new(NULL);
-			xdev->native = text;
-			if (!*p && i == 0)
-				p = "MAIN";
-			markup = g_strdup_printf("<small>%s</small>", p);
-			g_free(path);
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
-			gtk_widget_show(text);
-		} else if (i == 0) {
-			text = gtk_label_new(NULL);
-			xdev->native = text;
-			markup = g_strdup_printf("<small>%s</small>", "MAIN");
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach_defaults(GTK_TABLE(table), text, 2, 3, rows - 1, rows);
-			gtk_widget_show(text);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Vendor"))) {
-			gchar *name = g_variant_dup_string(prop, NULL);
-
-			g_variant_unref(prop);
-			text = gtk_label_new(NULL);
-			xdev->vendor = text;
-			markup = g_strdup_printf("<small>%s</small>", name);
-			g_free(name);
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach_defaults(GTK_TABLE(table), text, 3, 4, rows - 1, rows);
-			gtk_widget_show(text);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Model"))) {
-			gchar *name = g_variant_dup_string(prop, NULL);
-
-			g_variant_unref(prop);
-			text = gtk_label_new(NULL);
-			xdev->model = text;
-			markup = g_strdup_printf("<small>%s</small>", name);
-			g_free(name);
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach_defaults(GTK_TABLE(table), text, 4, 5, rows - 1, rows);
-			gtk_widget_show(text);
-		}
-		if ((prop = g_dbus_proxy_get_cached_property(xdev->proxy, "Serial"))) {
-			gchar *name = g_variant_dup_string(prop, NULL);
-
-			g_variant_unref(prop);
-			text = gtk_label_new(NULL);
-			xdev->serial = text;
-			markup = g_strdup_printf("<small>%s</small>", name);
-			g_free(name);
-			gtk_label_set_markup(GTK_LABEL(text), markup);
-			g_free(markup);
-			gtk_misc_set_alignment(GTK_MISC(text), 0.0, 0.5);
-			gtk_table_attach_defaults(GTK_TABLE(table), text, 5, 6, rows - 1, rows);
-			gtk_widget_show(text);
-		}
+		add_tooltip_row(xscr, xdev, table, (i == 0));
 	}
 	gtk_widget_show(table);
 	g_object_ref(G_OBJECT(table));
@@ -1036,34 +1050,33 @@ void
 xde_device_destroy(gpointer data)
 {
 	XdeDevice *xdev = data;
+	XdeScreen *xscr = xdev->xscr;
 
 	g_free(xdev->path);
 	g_object_unref(G_OBJECT(xdev->proxy));
 	g_object_unref(G_OBJECT(xdev->notify));
-	if (xdev->icon) {
-		gtk_widget_destroy(xdev->icon);
-		xdev->icon = NULL;
+	if (xscr->table) {
+		if (xdev->icon)
+			gtk_widget_destroy(xdev->icon);
+		if (xdev->type)
+			gtk_widget_destroy(xdev->type);
+		if (xdev->native)
+			gtk_widget_destroy(xdev->native);
+		if (xdev->vendor)
+			gtk_widget_destroy(xdev->vendor);
+		if (xdev->model)
+			gtk_widget_destroy(xdev->model);
+		if (xdev->serial)
+			gtk_widget_destroy(xdev->serial);
+		if (xdev->row > 0)
+			gtk_table_set_row_spacing(GTK_TABLE(xscr->table), xdev->row - 1, 0);
 	}
-	if (xdev->type) {
-		gtk_widget_destroy(xdev->type);
-		xdev->type = NULL;
-	}
-	if (xdev->native) {
-		gtk_widget_destroy(xdev->native);
-		xdev->native = NULL;
-	}
-	if (xdev->vendor) {
-		gtk_widget_destroy(xdev->vendor);
-		xdev->vendor = NULL;
-	}
-	if (xdev->model) {
-		gtk_widget_destroy(xdev->model);
-		xdev->model = NULL;
-	}
-	if (xdev->serial) {
-		gtk_widget_destroy(xdev->serial);
-		xdev->serial = NULL;
-	}
+	xdev->icon = NULL;
+	xdev->type = NULL;
+	xdev->native = NULL;
+	xdev->vendor = NULL;
+	xdev->model = NULL;
+	xdev->serial = NULL;
 	free(xdev);
 }
 
@@ -1828,6 +1841,9 @@ xde_create_device(const gchar *dev, gboolean display)
 			xscr->devices = g_list_append(xscr->devices, xdev);
 			g_signal_connect(G_OBJECT(proxy), "g-properties-changed",
 					 G_CALLBACK(on_up_device_proxy_props_changed), xdev);
+
+			add_tooltip_row(xscr, xdev, xscr->table, display);
+
 			if ((prop = g_dbus_proxy_get_cached_property(proxy, "IconName"))) {
 				update_display_icons(xscr);
 				g_variant_unref(prop);
