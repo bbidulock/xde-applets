@@ -1533,6 +1533,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 			if (xdev->display && percent != 0.0) {
 				battery_low = TRUE;
 				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+				ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is critically low.");
 				notify_notification_update(xdev->notify,
 						"Warning",
 						"The battery level is critically low.",
@@ -1543,6 +1544,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 			if (xdev->display && percent != 0.0) {
 				battery_low = TRUE;
 				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+				ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery is low.");
 				notify_notification_update(xdev->notify,
 						"Warning",
 						"The battery level is low.",
@@ -1558,6 +1560,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 			if (xdev->display && percent != 0.0) {
 				battery_low = FALSE;
 				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+				ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery is full.");
 				notify_notification_update(xdev->notify,
 						"Notice",
 						"The battery is full.",
@@ -1571,6 +1574,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 		if (xdev->display && percent != 0.0) {
 			battery_low = TRUE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
+			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is low.");
 			notify_notification_update(xdev->notify,
 					"Warning",
 					"The battery level is low.",
@@ -1583,9 +1587,10 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 		if (xdev->display && percent != 0.0) {
 			battery_low = TRUE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
+			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is critically low.");
 			notify_notification_update(xdev->notify,
 					"Warning",
-					"The battery level is low.",
+					"The battery level is critically low.",
 					"battery-low");
 			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
@@ -1606,6 +1611,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 		if (xdev->display && percent != 0.0) {
 			battery_low = FALSE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is high.");
 			notify_notification_update(xdev->notify,
 					"Notice",
 					"The battery level is high.",
@@ -1618,6 +1624,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 		if (xdev->display && percent != 0.0) {
 			battery_low = FALSE;
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
+			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery is full.");
 			notify_notification_update(xdev->notify,
 					"Notice",
 					"The battery is full.",
@@ -1985,30 +1992,61 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 }
 
 void
+init_canberra(void)
+{
+	ca_context *ca = get_default_ca_context();
+	ca_proplist *pl;
+
+	ca_proplist_create(&pl);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_ID, "com.unexicon." RESNAME);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_VERSION, VERSION);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_ICON_NAME, LOGO_NAME);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_LANGUAGE, "C");
+	{
+		char pidstring[64];
+
+		snprintf(pidstring, 64, "%d", getpid());
+		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_ID, pidstring);
+	}
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_USER, getenv("USER"));
+	{
+		char hostname[64];
+
+		gethostname(hostname, 64);
+		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_HOST, hostname);
+	}
+	ca_context_change_props_full(ca, pl);
+}
+
+void
 init_applet(XdeScreen *xscr)
 {
+	static gboolean initialized = FALSE;
 	GVariant *result;
 	GError *err = NULL;
 	gchar *device = NULL;
 
 	DPRINTF(1, "creating UPower manager proxy\n");
-	if (!(up_manager = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
-							 "org.freedesktop.UPower",
-							 "/org/freedesktop/UPower",
-							 "org.freedesktop.UPower", NULL, &err)) || err) {
-		EPRINTF("could not create DBUS proxy up_manager: %s\n", err ? err->message : NULL);
-		g_clear_error(&err);
-		return;
-	} else {
-		if (options.debug > 1)
-			xde_manager_dump(up_manager);
+	if (!initialized) {
+		if (!(up_manager = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM, 0, NULL,
+								 "org.freedesktop.UPower",
+								 "/org/freedesktop/UPower",
+								 "org.freedesktop.UPower", NULL, &err)) || err) {
+			EPRINTF("could not create DBUS proxy up_manager: %s\n", err ? err->message : NULL);
+			g_clear_error(&err);
+			return;
+		} else {
+			if (options.debug > 1)
+				xde_manager_dump(up_manager);
+		}
+		g_signal_connect(G_OBJECT(up_manager), "g-signal", G_CALLBACK(on_up_manager_proxy_signal), NULL);
+		g_signal_connect(G_OBJECT(up_manager), "g-properties-changed",
+				 G_CALLBACK(on_up_manager_proxy_props_changed), NULL);
+		initialized = TRUE;
 	}
-	g_signal_connect(G_OBJECT(up_manager), "g-signal", G_CALLBACK(on_up_manager_proxy_signal), NULL);
-	g_signal_connect(G_OBJECT(up_manager), "g-properties-changed",
-			 G_CALLBACK(on_up_manager_proxy_props_changed), NULL);
 
 	if ((result = g_dbus_proxy_call_sync(up_manager, "GetCriticalAction", NULL,
-					G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
+					     G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
 		g_variant_get(result, "(s)", &up_critical);
 		DPRINTF(1, "UPower manager critical action: %s\n", up_critical);
 	} else {
@@ -2028,7 +2066,7 @@ init_applet(XdeScreen *xscr)
 	xde_create_device("/org/freedesktop/UPower/devices/DisplayDevice", TRUE);
 	DPRINTF(1, "enumerating UPower manager devices\n");
 	if ((result = g_dbus_proxy_call_sync(up_manager, "EnumerateDevices", NULL,
-					G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
+					     G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
 		GVariantIter iter;
 		GVariant *array;
 
@@ -2380,6 +2418,7 @@ setup_x11(Bool replace)
 			init_dockapp(xscr);
 		init_applet(xscr);
 	}
+	init_canberra();
 }
 
 static GdkFilterReturn
