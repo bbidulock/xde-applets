@@ -193,6 +193,81 @@ AC_MSG_CHECKING([for libcanberra sound support])
 AC_MSG_RESULT([${enable_canberra:-yes}])
 AM_CONDITIONAL([HAVE_CANBERRA_SOUND],[test "x$enable_canberra" != "xno"])
 
+AC_ARG_ENABLE([cpupower],
+	AC_HELP_STRING([--disable-cpupower],
+		[Disable cpupower @<:@default=auto@:>@]))
+if test "x$enable_cpupower" != xno ; then
+	AC_CHECK_HEADER([cpufreq.h],
+		[AC_DEFINE([USE_CPUPOWER],[1],[Define to 1 to support cpupower.])],
+		[enable_cpupower=no])
+	AC_CHECK_LIB([cpupower], [cpufreq_get_driver],
+		[AC_DEFINE([USE_CPUPOWER],[1],[Define to 1 to support cpupower.])],
+		[enable_cpupower=no])
+fi
+AC_MSG_CHECKING([for cpupower support])
+if test "x$enable_cpupower" != xno ; then
+	CPU_CFLAGS=
+	AC_SUBST([CPU_CFLAGS])
+	CPU_LIBS=-lcpupower
+	AC_SUBST([CPU_LIBS])
+fi
+AC_MSG_RESULT([${enable_cpupower:-yes}])
+AM_CONDITIONAL([HAVE_CPUPOWER],[test "x$enable_cpupower" != "xno"])
+
+AC_ARG_ENABLE([upower],
+	AC_HELP_STRING([--disable-upower],
+		[Disable upower @<:@default=auto@:>@]))
+if test "x$enable_upower" != xno ; then
+	PKG_CHECK_MODULES([UPOWER],[upower-glib],
+		[AC_DEFINE([USE_UPOWER],[1],[Define to 1 to support libupower-glib.])],
+		[enable_upower=no])
+fi
+AC_MSG_CHECKING([for libupower-glib support])
+AC_MSG_RESULT([${enable_upower:-yes}])
+AM_CONDITIONAL([HAVE_UPOWER_GLIB],[test "x$enable_upower" != "xno"])
+
+AC_ARG_ENABLE([libdnet],
+	AC_HELP_STRING([--disable-libdnet],
+		[Disable libdnet @<:@default=auto@:>@]))
+if test "x$enable_libdnet" != xno ; then
+	AC_CHECK_HEADER([dnet.h],
+		[AC_DEFINE([USE_LIBDNET],[1],[Define to 1 to support libdnet.])],
+		[enable_libdnet=no])
+	AC_CHECK_LIB([dnet], [eth_open],
+		[AC_DEFINE([USE_LIBDNET],[1],[Define to 1 to support libdnet.])],
+		[enable_libdnet=no])
+fi
+AC_MSG_CHECKING([for libdnet support])
+if test "x$enable_libdnet" != xno ; then
+	DNET_CFLAGS=
+	AC_SUBST([DNET_CFLAGS])
+	DNET_LIBS=-ldnet
+	AC_SUBST([DNET_LIBS])
+fi
+AC_MSG_RESULT([${enable_libdnet:-yes}])
+AM_CONDITIONAL([HAVE_LIBDNET],[test "x$enable_libdnet" != "xno"])
+
+AC_ARG_ENABLE([sensors],
+	AC_HELP_STRING([--disable-sensors],
+		[Disable lm-sensors @<:@default=auto@:>@]))
+if test "x$enable_sensors" != xno ; then
+	AC_CHECK_HEADER([sensors/sensors.h],
+		[AC_DEFINE([USE_LM_SENSORS],[1],[Define to 1 to support lm sensors.])],
+		[enable_sensors=no])
+	AC_CHECK_LIB([sensors], [sensors_init],
+		[AC_DEFINE([USE_LM_SENSORS],[1],[Define to 1 to support lm sensors.])],
+		[enable_sensors=no])
+fi
+AC_MSG_CHECKING([for lm-sensors support])
+if test "x$enable_sensors" != xno ; then
+	SENSOR_CFLAGS=
+	AC_SUBST([SENSOR_CFLAGS])
+	SENSOR_LIBS=-lsensors
+	AC_SUBST([SENSOR_LIBS])
+fi
+AC_MSG_RESULT([${enable_sensors:-yes}])
+AM_CONDITIONAL([HAVE_LM_SENSORS],[test "x$enable_sensors" != "xno"])
+
 AC_ARG_ENABLE([debug],
 	AC_HELP_STRING([--enable-debug],
 		[Enable debugging support @<:@default=disabled@:>@]))

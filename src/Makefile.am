@@ -7,11 +7,26 @@ bin_PROGRAMS = \
 	xde-bt-applet \
 	xde-dh-applet \
 	xde-hal-applet \
-	xde-lm-applet \
 	xde-pk-applet \
 	xde-sd-applet \
-	xde-up-applet \
 	xde-wl-applet
+
+EXTRA_PROGRAMS = \
+	xde-cpu-applet \
+	xde-lm-applet \
+	xde-up-applet
+
+if HAVE_CPUPOWER
+bin_PROGRAMS += xde-cpu-applet
+endif
+
+if HAVE_LM_SENSORS
+bin_PROGRAMS += xde-lm-applet
+endif
+
+if HAVE_UPOWER_GLIB
+bin_PROGRAMS += xde-up-applet
+endif
 
 xde_av_applet_CPPFLAGS = -DNAME=\"xde-av-applet\"
 xde_av_applet_SOURCES = xde-av-applet.c
@@ -22,6 +37,11 @@ xde_bt_applet_CPPFLAGS = -DNAME=\"xde-bt-applet\"
 xde_bt_applet_SOURCES = xde-bt-applet.c
 xde_bt_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
 xde_bt_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+
+xde_cpu_applet_CPPFLAGS = -DNAME=\"xde-cpu-applet\"
+xde_cpu_applet_SOURCES = xde-cpu-applet.c
+xde_cpu_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS) $(CPU_CFLAGS)
+xde_cpu_applet_LDFLAGS = $(CPU_LIBS) $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_dh_applet_CPPFLAGS = -DNAME=\"xde-dh-applet\"
 xde_dh_applet_SOURCES = xde-dh-applet.c
@@ -50,8 +70,8 @@ xde_sd_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_
 
 xde_up_applet_CPPFLAGS = -DNAME=\"xde-up-applet\"
 xde_up_applet_SOURCES = xde-up-applet.c
-xde_up_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
-xde_up_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+xde_up_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS) $(UPOWER_CFLAGS)
+xde_up_applet_LDFLAGS = $(UPOWER_LIBS) $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_wl_applet_CPPFLAGS = -DNAME=\"xde-wl-applet\"
 xde_wl_applet_SOURCES = xde-wl-applet.c
