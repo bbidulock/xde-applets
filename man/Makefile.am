@@ -1,6 +1,7 @@
 
 xde_man1_files = \
 	xde-av-applet.man \
+	xde-bl-applet.man \
 	xde-bt-applet.man \
 	xde-dh-applet.man \
 	xde-hal-applet.man \
@@ -26,6 +27,7 @@ CLEANFILES = $(xde_man1_files)
 
 EXTRA_DIST = \
 	xde-av-applet.pod \
+	xde-bl-applet.pod \
 	xde-bt-applet.pod \
 	xde-cpu-applet.pod \
 	xde-dh-applet.pod \

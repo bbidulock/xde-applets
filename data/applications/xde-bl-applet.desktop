@@ -1,0 +1,23 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=Backlight Applet
+GenericName=Tray Icon
+Comment=A Backlight System Tray Icon
+Icon=display
+TryExec=xde-bl-applet
+Exec=xde-bl-applet --replace
+Terminal=false
+Categories=XDE;System;Utilities;TrayIcon;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=XDE-BL-Applet
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Application
+Actions=Tray;Dock;
+
+[Desktop Action Tray]
+Exec=xde-bl-applet --replace --nodock
+
+[Desktop Action Dock]
+Exec=xde-bl-applet --replace --notray
