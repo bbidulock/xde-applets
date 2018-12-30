@@ -6,10 +6,18 @@ GenericName=Tray Icon
 Comment=A UPower System Tray Icon
 Icon=utilities-system-monitor
 TryExec=xde-up-applet
-Exec=xde-up-applet
+Exec=xde-up-applet --replace
+Terminal=false
 Categories=XDE;System;Utilities;TrayIcon;
 NotShowIn=GNOME;KDE;XFCE;LXDE;
 StartupNotify=true
 StartupWMClass=XDE-UP-Applet
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Phase=Application
+Actions=Tray;Dock;
+
+[Desktop Action Tray]
+Exec=xde-up-applet --replace --nodock
+
+[Desktop Action Dock]
+Exec=xde-up-applet --replace --notray
