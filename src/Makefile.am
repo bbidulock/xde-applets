@@ -4,6 +4,7 @@ AM_LDFLAGS = $(WNCK_LIBS) $(NOTIFY_LIBS) $(GTK_LIBS) $(GDK_LIBS) $(GIO_UNIX_LIBS
 
 bin_PROGRAMS = \
 	xde-av-applet \
+	xde-bl-applet \
 	xde-bt-applet \
 	xde-dh-applet \
 	xde-hal-applet \
@@ -32,6 +33,11 @@ xde_av_applet_CPPFLAGS = -DNAME=\"xde-av-applet\"
 xde_av_applet_SOURCES = xde-av-applet.c
 xde_av_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
 xde_av_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
+
+xde_bl_applet_CPPFLAGS = -DNAME=\"xde-bl-applet\"
+xde_bl_applet_SOURCES = xde-bl-applet.c
+xde_bl_applet_CFLAGS = $(AM_CFLAGS) $(ICE_CFLAGS) $(SMLIB_CFLAGS) $(SN_CFLAGS) $(SOUND_CFLAGS)
+xde_bl_applet_LDFLAGS = $(SOUND_LIBS) $(SN_LIBS) $(SMLIB_LIBS) $(ICE_LIBS) $(AM_LDFLAGS)
 
 xde_bt_applet_CPPFLAGS = -DNAME=\"xde-bt-applet\"
 xde_bt_applet_SOURCES = xde-bt-applet.c
