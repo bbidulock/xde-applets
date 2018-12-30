@@ -1,0 +1,16 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=systemd Applet
+GenericName=Tray Icon
+Comment=A systemd System Tray Icon
+Icon=applications-system
+TryExec=xde-sd-applet
+Exec=xde-sd-applet --replace --nodock
+Terminal=false
+Categories=XDE;System;Utilities;TrayIcon;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=XDE-SD-Applet
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Application

@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-applets],[0.4.54],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
-AC_REVISION([0.4.54])
+AC_INIT([xde-applets],[0.4.81],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
+AC_REVISION([0.4.81])
 
 AC_CONFIG_SRCDIR([src/xde-av-applet.c])
 AC_CONFIG_HEADERS([autoconf.h])
@@ -12,7 +12,7 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2018-10-13'
+DATE='2018-10-15'
 AC_SUBST([DATE])
 
 BRANCH='master'
@@ -316,6 +316,8 @@ AC_CONFIG_FILES([Makefile
 		 man/Makefile
 		 data/Makefile
 		 data/icons/Makefile
+		 data/autostart/Makefile
+		 data/applications/Makefile
 		 ])
 AC_OUTPUT
 
