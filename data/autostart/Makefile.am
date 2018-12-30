@@ -1,6 +1,7 @@
 dist_autostart_DATA = \
 	xde-av-applet.desktop \
 	xde-bt-applet.desktop \
+	xde-cpu-applet.desktop \
 	xde-dh-applet.desktop \
 	xde-hal-applet.desktop \
 	xde-lm-applet.desktop \

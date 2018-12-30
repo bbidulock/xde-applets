@@ -1,0 +1,23 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=CPU Applet
+GenericName=Tray Icon
+Comment=A CPU System Tray Icon
+Icon=utilities-system-monitor
+TryExec=xde-cpu-applet
+Exec=xde-cpu-applet --replace
+Terminal=false
+Categories=XDE;System;Utilities;TrayIcon;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=XDE-CPU-Applet
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Application
+Actions=Tray;Dock;
+
+[Desktop Action Tray]
+Exec=xde-cpu-applet --replace --nodock
+
+[Desktop Action Dock]
+Exec=xde-cpu-applet --replace --notray
