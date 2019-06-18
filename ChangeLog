@@ -1,5 +1,291 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit ffee51af70555c4f7dbd9476b271d5f50fa1b34b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 15 19:11:40 2018 -0600
+
+    add in library checks and new cpu applet
+
+ configure.ac           |   75 ++
+ introspect.sh          |    8 +-
+ man/Makefile.am        |   15 +-
+ man/xde-cpu-applet.pod |  150 +++
+ src/Makefile.am        |   28 +-
+ src/xde-cpu-applet.c   | 2547 ++++++++++++++++++++++++++++++++++++++++++++
+ 6 files changed, 2814 insertions(+), 9 deletions(-)
+
+commit 95e5aca2b21c4fa3d45d1912385811af968b9d37
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Oct 15 09:56:26 2018 -0600
+
+    start completing documentation
+
+ man/xde-av-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-bt-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-dh-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-hal-applet.pod | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-lm-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-pk-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-sd-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-up-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ man/xde-wl-applet.pod  | 82 ++++++++++++++++++++++++++++++++++++++++++++++
+ 9 files changed, 738 insertions(+)
+
+commit b4daf66f007e939a7bcf1a8cdd3009ee37eedb1c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 14 14:42:29 2018 -0600
+
+    rationalize to other applets
+
+ src/xde-bt-applet.c  | 71 ++++++++++++++++++++++++++++++------------------
+ src/xde-dh-applet.c  | 71 ++++++++++++++++++++++++++++++------------------
+ src/xde-hal-applet.c | 71 ++++++++++++++++++++++++++++++------------------
+ src/xde-lm-applet.c  | 30 +++++++++++++++++++-
+ src/xde-pk-applet.c  | 71 ++++++++++++++++++++++++++++++------------------
+ src/xde-sd-applet.c  | 71 ++++++++++++++++++++++++++++++------------------
+ src/xde-wl-applet.c  | 69 ++++++++++++++++++++++++++++------------------
+ 7 files changed, 297 insertions(+), 157 deletions(-)
+
+commit 72a4ecfb4eacfe8b009fa9ece58d25f7f38605a3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 14 14:15:42 2018 -0600
+
+    test dhcp again
+
+ introspect.sh | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+commit 238879936285e0b81a45eb69eb543c9bedc2c4f3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 14 14:15:00 2018 -0600
+
+    more properties for canberra
+
+ src/xde-av-applet.c | 30 ++++++++++++++++++++-
+ src/xde-up-applet.c | 71 ++++++++++++++++++++++++++++++++++++++-----------
+ 2 files changed, 84 insertions(+), 17 deletions(-)
+
+commit 35a500cd329aa72d69f70aad71b72b0e4fe36ba8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Oct 14 03:04:42 2018 -0600
+
+    add and delete rows as required
+
+ src/xde-up-applet.c | 362 +++++++++++++++++++++++++-----------------------
+ 1 file changed, 189 insertions(+), 173 deletions(-)
+
+commit 0406f2f460c5a327bc4ad1bdac72d2a0c50b06e6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 16:09:33 2018 -0600
+
+    keep track of table for updates
+
+ src/xde-av-applet.c | 39 ++++++++++------------------
+ src/xde-lm-applet.c | 54 ++++++++------------------------------
+ src/xde-up-applet.c | 69 +++++++++++++++++++++++++++++++++----------------
+ 3 files changed, 72 insertions(+), 90 deletions(-)
+
+commit 62c062c7e9f4e6fa15b19f7e9f00c0942f177bcb
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 15:20:21 2018 -0600
+
+    use default spacings for tables
+
+ src/xde-lm-applet.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
+
+commit 3a324698a71aaf5391236c591c5829bbe0dc16a1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 15:20:06 2018 -0600
+
+    use table for tooltips (first cut)
+
+ src/xde-up-applet.c | 35 -----------------------------------
+ 1 file changed, 35 deletions(-)
+
+commit 5479a907df8b4ad1d22906005977366dd6c5cf11
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 15:18:53 2018 -0600
+
+    use default table spacing
+
+ src/xde-up-applet.c | 162 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 161 insertions(+), 1 deletion(-)
+
+commit 996f7a8a5403768e71fb1ff8699452994b497d28
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 13:28:32 2018 -0600
+
+    need a device tree per screen
+
+ src/xde-up-applet.c | 243 +++++++++++++++++++-----------------------------
+ 1 file changed, 96 insertions(+), 147 deletions(-)
+
+commit 9170f05b48ff50dd9bdfbed3e96ced25473e9b28
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 10:26:53 2018 -0600
+
+    rationalize changes back to other applets
+
+ src/xde-av-applet.c  | 226 ++++++++++++++++++++++++++++---------------
+ src/xde-bt-applet.c  | 223 ++++++++++++++++++++++++++++---------------
+ src/xde-dh-applet.c  | 242 ++++++++++++++++++++++++++++++-----------------
+ src/xde-hal-applet.c | 221 ++++++++++++++++++++++++++++---------------
+ src/xde-lm-applet.c  |  10 +-
+ src/xde-pk-applet.c  | 221 ++++++++++++++++++++++++++++---------------
+ src/xde-sd-applet.c  | 221 ++++++++++++++++++++++++++++---------------
+ src/xde-up-applet.c  | 216 ++++++++++++++++++++++++++++--------------
+ src/xde-wl-applet.c  | 223 ++++++++++++++++++++++++++++---------------
+ 9 files changed, 1192 insertions(+), 611 deletions(-)
+
+commit e37901fbcf03b5501d95f99e803d90cdab10ce8a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 09:55:34 2018 -0600
+
+    correct options and commands
+
+ src/xde-lm-applet.c | 82 ++++++++++++++-----------------------------------
+ 1 file changed, 23 insertions(+), 59 deletions(-)
+
+commit 170242078eb327203557cd345fedb8eb987af480
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 09:43:41 2018 -0600
+
+    pop status window when requested by menu
+
+ src/xde-lm-applet.c | 36 +++++++-----------------------------
+ 1 file changed, 7 insertions(+), 29 deletions(-)
+
+commit 67d8162d5179f4b034309a82324b7989795234b2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 09:36:12 2018 -0600
+
+    pop and position status window on activate
+
+ src/xde-lm-applet.c | 92 ++++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 83 insertions(+), 9 deletions(-)
+
+commit 0e1d0a1b469ae3f82971b16d6cf6bcb19fd31c99
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 08:43:58 2018 -0600
+
+    one chip structure per screen
+
+ src/xde-lm-applet.c | 82 ++++++++++++++++++++++++++++++-------------------
+ 1 file changed, 51 insertions(+), 31 deletions(-)
+
+commit d1fa4e42ee9dbba3534dc5a2b652b129e47799f9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 08:15:19 2018 -0600
+
+    set default max temp to boiling
+
+ src/xde-lm-applet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit a5c9ad847a31b49cc8645989c079293c24de9e52
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 08:11:21 2018 -0600
+
+    tighter table formatting
+
+ src/xde-lm-applet.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+commit c47e2451071ea87c4560c77d4a6a60e5724c0a33
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 08:04:21 2018 -0600
+
+    better label alignment in tooltip
+
+ src/xde-lm-applet.c | 172 ++++++++----------------------------------------
+ 1 file changed, 27 insertions(+), 145 deletions(-)
+
+commit 07c12763eff2b1c0f4b2fee0944e3456857bd3a6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 07:46:53 2018 -0600
+
+    use table for tooltip
+
+ src/xde-lm-applet.c | 112 +++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 111 insertions(+), 1 deletion(-)
+
+commit 55a05f35df011cad570aa8b3ec6f5017dfcd2a05
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 06:08:04 2018 -0600
+
+    don't include missing sensors in calculations
+
+ src/xde-lm-applet.c | 140 ++++++++++++++++++++++++++----------------------
+ 1 file changed, 77 insertions(+), 63 deletions(-)
+
+commit 2cfd629c2014692b2d5b14bdb8c130c1992bacc7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 06:03:37 2018 -0600
+
+    show missing inputs and proper labels
+
+ src/xde-lm-applet.c | 118 +++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 107 insertions(+), 11 deletions(-)
+
+commit 6e97d522eaa26d06dfcc83565b8c99dd2003bbf1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 06:03:28 2018 -0600
+
+    add missing types
+
+ .indent.pro | 3 +++
+ 1 file changed, 3 insertions(+)
+
+commit 29bc746bc4e346822f866e8447c71cd1605e94d5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 05:52:59 2018 -0600
+
+    add missing symbols
+
+ data/icons/Makefile.am                       |   5 +-
+ data/icons/fan-fast.svg                      |  15 +-
+ data/icons/fan-medium.svg                    |  13 +-
+ data/icons/{fan-slow.svg => fan-missing.svg} |  62 +++----
+ data/icons/fan-slow.svg                      |  13 +-
+ data/icons/fan-stopped.svg                   |  13 +-
+ data/icons/fan.svg                           |  17 +-
+ data/icons/flame-missing.svg                 |  97 +++++++++++
+ data/icons/voltmeter-missing.svg             | 196 +++++++++++++++++++++++
+ 9 files changed, 346 insertions(+), 85 deletions(-)
+
+commit b4fb93f4bfa99fb3dfb4f39a170e0ce01d477f95
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 03:09:22 2018 -0600
+
+    update release files
+
+ AUTHORS   |   2 +-
+ ChangeLog | 497 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS      |  49 +++++-
+ README.md |   6 +-
+ 4 files changed, 547 insertions(+), 7 deletions(-)
+
+commit d53995e2db97fc5b4b3d2afb2d53f9b96e6196d3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 03:08:42 2018 -0600
+
+    install icons
+
+ configure.ac           | 13 ++++++++++---
+ data/Makefile.am       |  3 +--
+ data/icons/Makefile.am | 23 +++++++++++++++++++++++
+ 3 files changed, 34 insertions(+), 5 deletions(-)
+
+commit de332e26b63c68bba92628691136fb91a28856c7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Oct 13 03:07:13 2018 -0600
+
+    statis icons and dockapps are per screen
+
+ src/xde-up-applet.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
 commit 0a64e45d7896fd9cc2659c779583113302a1125a
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Oct 13 02:55:16 2018 -0600

@@ -1,9 +1,9 @@
-[xde-applets -- read me first file.  2018-10-13]: #
+[xde-applets -- read me first file.  2018-10-15]: #
 
 xde-applets
 ===============
 
-Package `xde-applets-0.4.54` was released under GPLv3 license 2018-10-13.
+Package `xde-applets-0.4.81` was released under GPLv3 license 2018-10-15.
 
 This package provides a number of "C"-language applets for the system
 tray that provide various functions from package management to wireless
@@ -15,7 +15,7 @@ and to provide access to libraries not available from `perl(1)`.
 Release
 -------
 
-This is the `xde-applets-0.4.54` package, released 2018-10-13.  This
+This is the `xde-applets-0.4.81` package, released 2018-10-15.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 
