@@ -15,11 +15,14 @@ AC_CANONICAL_TARGET
 DATE='2018-12-30'
 AC_SUBST([DATE])
 
+MDOCDATE='December 30, 2018'
+AC_SUBST([MDOCDATE])
+
 BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([1.14 dist-xz no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 AC_PREFIX_DEFAULT([/usr])
