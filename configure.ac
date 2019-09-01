@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-applets],[0.4.87],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
-AC_REVISION([0.4.87])
+AC_INIT([xde-applets],[0.5],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
+AC_REVISION([0.5])
 
 AC_CONFIG_SRCDIR([src/xde-av-applet.c])
 AC_CONFIG_HEADERS([autoconf.h])
@@ -12,13 +12,13 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2018-12-30'
+DATE='2019-08-31'
 AC_SUBST([DATE])
 
-MDOCDATE='December 30, 2018'
+MDOCDATE='August 31, 2019'
 AC_SUBST([MDOCDATE])
 
-BRANCH='master'
+BRANCH='0.5'
 AC_SUBST([BRANCH])
 
 # Initialize Automake

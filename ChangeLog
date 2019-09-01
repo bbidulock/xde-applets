@@ -1,5 +1,222 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit ce41479b29a45d458ebc5287d8e6607dec28002d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 20:03:05 2019 -0600
+
+    don't need gnits in this package
+
+ autogen.sh | 1 +
+ 1 file changed, 1 insertion(+)
+
+commit b7e40d8dd63eba53339863f11fbf92dbca3ca637
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 19:20:00 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 41 +++++++++++++++++------------------------
+ 1 file changed, 17 insertions(+), 24 deletions(-)
+
+commit a9aec843fb2808b2a13d18958f3566b0d8fc8f67
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 19:19:28 2019 -0600
+
+    get rid of gcc 9.1 string warnings
+
+ src/xde-av-applet.c  | 4 ++--
+ src/xde-bl-applet.c  | 4 ++--
+ src/xde-bt-applet.c  | 4 ++--
+ src/xde-cpu-applet.c | 4 ++--
+ src/xde-dh-applet.c  | 4 ++--
+ src/xde-hal-applet.c | 4 ++--
+ src/xde-lm-applet.c  | 4 ++--
+ src/xde-pk-applet.c  | 4 ++--
+ src/xde-sd-applet.c  | 4 ++--
+ src/xde-up-applet.c  | 4 ++--
+ src/xde-wl-applet.c  | 4 ++--
+ 11 files changed, 22 insertions(+), 22 deletions(-)
+
+commit 8a43ef86422db1a6bc36e287663cfe2a65c3c652
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 18:17:00 2019 -0600
+
+    add moc date and lzip compression
+
+ configure.ac | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+commit 91cb8bdd5ac7705d296b49652af87bf9b519a7a4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 18:16:14 2019 -0600
+
+    add RELEASE files to ignore
+
+ .gitignore | 2 ++
+ 1 file changed, 2 insertions(+)
+
+commit 14f3f832612fbcc470f7d98ce1ada6df653d5627
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 18:15:55 2019 -0600
+
+    better html to txt conversion
+
+ Makefile.am | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit ce1ed9f7fefb7df5bff66f6723fe02bd4a6f10d4
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 18:15:22 2019 -0600
+
+    place filename last in sed command
+
+ autogen.sh | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+commit 694fa5fe1f8383c4f9461832cf5fbfcc39d8e699
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 01:44:01 2019 -0600
+
+    generate NEWS better
+
+ gennews.sh | 19 +++++++++++++++++--
+ 1 file changed, 17 insertions(+), 2 deletions(-)
+
+commit 5c3490149442c778ec9a79a91cc2e3406b263429
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 17 23:06:26 2019 -0600
+
+    update for gettext 0.20.1
+
+ autogen.sh | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+commit e8d788712ba7cd9013feb28f0fbe5666b0db3bd2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Jun 17 23:06:17 2019 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 286 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         |  33 ++++++-
+ README.md    |   6 +-
+ configure.ac |   6 +-
+ 5 files changed, 323 insertions(+), 10 deletions(-)
+
+commit 2b934dd75d13db303a384be692234c4d2141c5c6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 18 10:45:25 2019 -0700
+
+    reformat TODO
+
+ TODO | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
+
+commit c3e0ffd9d8e779fff9412d0a99665f2f874d9419
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 30 03:30:21 2018 -0700
+
+    add backlight applet skeleton
+
+ data/applications/xde-bl-applet.desktop |    2 +-
+ data/autostart/xde-bl-applet.desktop    |    2 +-
+ src/Makefile.am                         |    6 +
+ src/xde-bl-applet.c                     | 2547 +++++++++++++++++++++++++++
+ 4 files changed, 2555 insertions(+), 2 deletions(-)
+
+commit 9bbbc4ac6b2308ea5fd92ad6044380d68decca5a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 30 03:14:06 2018 -0700
+
+    add backlight applet support
+
+ data/applications/Makefile.am           |   1 +
+ data/applications/xde-bl-applet.desktop |  23 +++++
+ data/autostart/Makefile.am              |   1 +
+ data/autostart/xde-bl-applet.desktop    |  16 +++
+ man/Makefile.am                         |   2 +
+ man/xde-bl-applet.pod                   | 150 ++++++++++++++++++++++++++++
+ 6 files changed, 193 insertions(+)
+
+commit a80c5d8bb98c3c2783322b1d584bd3f4ad427e3b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 30 03:01:14 2018 -0700
+
+    add missing desktop entry
+
+ data/applications/Makefile.am            |  1 +
+ data/applications/xde-cpu-applet.desktop | 23 +++++++++++++++++++++++
+ data/autostart/Makefile.am               |  1 +
+ data/autostart/xde-cpu-applet.desktop    | 16 ++++++++++++++++
+ 4 files changed, 41 insertions(+)
+
+commit 711670842663a161a088fac12abeae1cd9971163
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 30 01:31:11 2018 -0700
+
+    rearrange desktop files
+
+    - only autostart system tray status icons
+
+ configure.ac                                   |  8 +++++---
+ data/Makefile.am                               | 24 +---------------------
+ data/applications/Makefile.am                  | 10 +++++++++
+ data/{ => applications}/xde-av-applet.desktop  |  0
+ data/{ => applications}/xde-bt-applet.desktop  |  0
+ data/{ => applications}/xde-dh-applet.desktop  |  0
+ data/{ => applications}/xde-hal-applet.desktop |  0
+ data/{ => applications}/xde-lm-applet.desktop  |  0
+ data/{ => applications}/xde-pk-applet.desktop  |  0
+ data/{ => applications}/xde-sd-applet.desktop  |  0
+ data/{ => applications}/xde-up-applet.desktop  |  0
+ data/{ => applications}/xde-wl-applet.desktop  |  0
+ data/autostart/Makefile.am                     | 10 +++++++++
+ data/{ => autostart}/xde-av-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-bt-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-dh-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-hal-applet.desktop    |  9 +-------
+ data/{ => autostart}/xde-lm-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-pk-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-sd-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-up-applet.desktop     |  9 +-------
+ data/{ => autostart}/xde-wl-applet.desktop     |  9 +-------
+ 22 files changed, 35 insertions(+), 98 deletions(-)
+
+commit 303ed2870c7c2c5c911d499e89637bae30dea418
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 30 01:23:55 2018 -0700
+
+    update desktop files
+
+ data/xde-av-applet.desktop  |  9 ++++++++-
+ data/xde-bt-applet.desktop  | 10 +++++++++-
+ data/xde-dh-applet.desktop  | 10 +++++++++-
+ data/xde-hal-applet.desktop | 10 +++++++++-
+ data/xde-lm-applet.desktop  | 10 +++++++++-
+ data/xde-pk-applet.desktop  | 10 +++++++++-
+ data/xde-sd-applet.desktop  | 10 +++++++++-
+ data/xde-up-applet.desktop  | 10 +++++++++-
+ data/xde-wl-applet.desktop  | 10 +++++++++-
+ 9 files changed, 80 insertions(+), 9 deletions(-)
+
+commit 0f05feb9ecc7c0f3928e8b9200b02ebcc44f66a1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Dec 30 00:29:04 2018 -0700
+
+    update desktop entry files
+
+ data/xde-av-applet.desktop  |  6 +++---
+ data/xde-bt-applet.desktop  |  6 +++---
+ data/xde-dh-applet.desktop  |  6 +++---
+ data/xde-hal-applet.desktop |  6 +++---
+ data/xde-lm-applet.desktop  | 15 +++++++++++++++
+ data/xde-pk-applet.desktop  |  6 +++---
+ data/xde-sd-applet.desktop  |  6 +++---
+ data/xde-up-applet.desktop  | 15 +++++++++++++++
+ data/xde-wl-applet.desktop  |  6 +++---
+ 9 files changed, 51 insertions(+), 21 deletions(-)
+
 commit ffee51af70555c4f7dbd9476b271d5f50fa1b34b
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Mon Oct 15 19:11:40 2018 -0600
