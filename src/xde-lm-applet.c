@@ -2420,8 +2420,8 @@ startup(int argc, char *argv[], Command command)
 	home = getenv("HOME") ? : ".";
 	len = strlen(home) + strlen(suffix) + 1;
 	file = calloc(len + 1, sizeof(*file));
-	strncpy(file, home, len);
-	strncat(file, suffix, len);
+	strcpy(file, home);
+	strcat(file, suffix);
 	gtk_rc_add_default_file(file);
 	free(file);
 
