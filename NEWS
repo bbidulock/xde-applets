@@ -1,4 +1,37 @@
-xde-applets -- history of user-visible changes.  2019-08-31
+xde-applets -- history of user-visible changes.  2019-09-03
+
+Release xde-applets-0.6 released 2019-09-03
+-------------------------------------------
+
+git tag -n100 -l 0.6
+
+0.6             Preliminary Release 0.6
+
+    This is the fifth release of the xde-applets package. This package
+    provides a number of "C"-language applets for the system tray that
+    provide various functions from package management to wireless
+    connections. Some of these applets were originally written in perl(1)
+    as separate applications. They have now been converted to "C" for speed
+    and to provide access to libraries not available from perl(1).
+
+    This release is a preliminary release that simply sets autoconf
+    directory defaults better and improves the build system more.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.5...0.6
+
+Brian Bidulock <bidulock@openss7.org> (7):
+      add license file to git
+      correct Category missspelling
+      keep gnits
+      set better directory defaults
+      better defaults now
+      build release notes with distribution
+      update release notes
+
 
 Release xde-applets-0.5 released 2019-08-31
 -------------------------------------------
@@ -26,7 +59,7 @@ git tag -n100 -l 0.5
 
 git shortlog -e -n -w80,6,8 0.4...0.5
 
-Brian Bidulock <bidulock@openss7.org> (98):
+Brian Bidulock <bidulock@openss7.org> (99):
       git hates trailing space
       better formatting
       better formatting
@@ -125,6 +158,7 @@ Brian Bidulock <bidulock@openss7.org> (98):
       get rid of gcc 9.1 string warnings
       update release notes
       don't need gnits in this package
+      update release files
 
 
 Release xde-applets-0.4 released 2016-07-09

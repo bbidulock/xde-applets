@@ -1,5 +1,103 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 9535aa3a8e6431cabbe8ff59de4a922db469a611
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 03:58:13 2019 -0600
+
+    update release notes
+
+ RELEASE.md | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+commit 76c029df34ae212011ef254e8409259395ef8253
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 03:56:29 2019 -0600
+
+    build release notes with distribution
+
+ dist.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit b5a786c2768c4d5febdc3724e13cc5c61a7ede20
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 03:56:04 2019 -0600
+
+    better defaults now
+
+ configure.sh | 3 ---
+ 1 file changed, 3 deletions(-)
+
+commit d714ef252420d5efbe9b6b2a339d014bfbf0cbca
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 03:55:55 2019 -0600
+
+    set better directory defaults
+
+ configure.ac | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+commit a1da889dbf9cdcf0f2246a8e67161e9052209ed5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 03:55:38 2019 -0600
+
+    keep gnits
+
+ autogen.sh | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 67870c68f60630eebcc506701fbfa9d65d83d427
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Sep 3 01:11:04 2019 -0600
+
+    correct Category missspelling
+
+ data/applications/xde-av-applet.desktop  | 2 +-
+ data/applications/xde-bl-applet.desktop  | 2 +-
+ data/applications/xde-bt-applet.desktop  | 2 +-
+ data/applications/xde-cpu-applet.desktop | 2 +-
+ data/applications/xde-dh-applet.desktop  | 2 +-
+ data/applications/xde-hal-applet.desktop | 2 +-
+ data/applications/xde-lm-applet.desktop  | 2 +-
+ data/applications/xde-pk-applet.desktop  | 2 +-
+ data/applications/xde-sd-applet.desktop  | 2 +-
+ data/applications/xde-up-applet.desktop  | 2 +-
+ data/applications/xde-wl-applet.desktop  | 2 +-
+ data/autostart/xde-av-applet.desktop     | 2 +-
+ data/autostart/xde-bl-applet.desktop     | 2 +-
+ data/autostart/xde-bt-applet.desktop     | 2 +-
+ data/autostart/xde-cpu-applet.desktop    | 2 +-
+ data/autostart/xde-dh-applet.desktop     | 2 +-
+ data/autostart/xde-hal-applet.desktop    | 2 +-
+ data/autostart/xde-lm-applet.desktop     | 2 +-
+ data/autostart/xde-pk-applet.desktop     | 2 +-
+ data/autostart/xde-sd-applet.desktop     | 2 +-
+ data/autostart/xde-up-applet.desktop     | 2 +-
+ data/autostart/xde-wl-applet.desktop     | 2 +-
+ 22 files changed, 22 insertions(+), 22 deletions(-)
+
+commit fd46ad51a6c256da255f96fc057b7b4e3b806c2b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sun Sep 1 01:00:56 2019 -0600
+
+    add license file to git
+
+ .gitignore |   1 -
+ COPYING    | 674 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 674 insertions(+), 1 deletion(-)
+
+commit afb179e4cd59ccb7c596142176e3e9279296c41b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 31 21:34:13 2019 -0600
+
+    update release files
+
+ AUTHORS      |   2 +-
+ ChangeLog    | 217 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ NEWS         |  48 ++++++++++--
+ README.md    |  20 ++---
+ configure.ac |  10 +--
+ 5 files changed, 276 insertions(+), 21 deletions(-)
+
 commit ce41479b29a45d458ebc5287d8e6607dec28002d
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Aug 31 20:03:05 2019 -0600

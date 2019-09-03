@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-applets],[0.5],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
-AC_REVISION([0.5])
+AC_INIT([xde-applets],[0.6],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
+AC_REVISION([0.6])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,17 +20,17 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2019-08-31'
+DATE='2019-09-03'
 AC_SUBST([DATE])
 
-MDOCDATE='August 31, 2019'
+MDOCDATE='September 3, 2019'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.5'
+BRANCH='0.6'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 
