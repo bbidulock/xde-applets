@@ -23,7 +23,7 @@ git tag -n100 -l 0.6
 
 git shortlog -e -n -w80,6,8 0.5...0.6
 
-Brian Bidulock <bidulock@openss7.org> (7):
+Brian Bidulock <bidulock@openss7.org> (8):
       add license file to git
       correct Category missspelling
       keep gnits
@@ -31,6 +31,7 @@ Brian Bidulock <bidulock@openss7.org> (7):
       better defaults now
       build release notes with distribution
       update release notes
+      update release files
 
 
 Release xde-applets-0.5 released 2019-08-31
