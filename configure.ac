@@ -109,7 +109,6 @@ AC_CHECK_FUNCS([gethostname memmove select strcasecmp strchr strcspn strdup stre
 PKG_CHECK_MODULES([X11],[x11])
 PKG_CHECK_MODULES([XEXT],[xext])
 PKG_CHECK_MODULES([XAU],[xau])
-PKG_CHECK_MODULES([XSCRNSAVER],[xscrnsaver])
 PKG_CHECK_MODULES([XDMCP],[xdmcp])
 PKG_CHECK_MODULES([ICE],[ice])
 PKG_CHECK_MODULES([SMLIB],[sm])
