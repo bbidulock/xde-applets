@@ -1,5 +1,51 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 99574324a4a695c01844dbc598b1351786c89f22
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 21 03:42:30 2019 -0700
+
+    remove libxss
+
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit ae2034ee9d6c4e78dd8b7156402ebc5b2bffc553
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 21 02:14:30 2019 -0700
+
+    no longer require xf86misc
+
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit f51be8431f38e257252b9a1a3274a0f4474b1f4a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Sep 23 23:58:29 2019 -0600
+
+    gtk2 has to use deprecated glib declarations
+
+ configure.sh | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 55a0a98a494ad717b2e5823112707704d1051a09
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 05:11:27 2019 -0600
+
+    remove deprecated m4 macro from configure.ac
+
+ configure.ac | 1 -
+ 1 file changed, 1 deletion(-)
+
+commit 2fe199f8bcc378f38acb5ae18eb425ee39644281
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Sep 5 05:11:14 2019 -0600
+
+    post-release update
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
 commit 8d57dff6727b09f2c9fed21789be7b2bbcfaf18b
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Sep 3 04:00:36 2019 -0600

@@ -1,4 +1,35 @@
-xde-applets -- history of user-visible changes.  2019-09-03
+xde-applets -- history of user-visible changes.  2019-12-21
+
+Release xde-applets-0.7 released 2019-12-21
+-------------------------------------------
+
+git tag -n100 -l 0.7
+
+0.7             Preliminary Release 0.7
+
+    This is the seventh release of the xde-applets package. This package
+    provides a number of "C"-language applets for the system tray that
+    provide various functions from package management to wireless
+    connections. Some of these applets were originally written in perl(1)
+    as separate applications. They have now been converted to "C" for speed
+    and to provide access to libraries not available from perl(1).
+
+    This release is a preliminary release that removes unneeded
+    dependencies on libxss and libxxf86misc.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.6...0.7
+
+Brian Bidulock <bidulock@openss7.org> (5):
+      post-release update
+      remove deprecated m4 macro from configure.ac
+      gtk2 has to use deprecated glib declarations
+      no longer require xf86misc
+      remove libxss
+
 
 Release xde-applets-0.6 released 2019-09-03
 -------------------------------------------
