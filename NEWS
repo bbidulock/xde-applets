@@ -23,12 +23,14 @@ git tag -n100 -l 0.7
 
 git shortlog -e -n -w80,6,8 0.6...0.7
 
-Brian Bidulock <bidulock@openss7.org> (5):
+Brian Bidulock <bidulock@openss7.org> (7):
       post-release update
       remove deprecated m4 macro from configure.ac
       gtk2 has to use deprecated glib declarations
       no longer require xf86misc
       remove libxss
+      new release
+      update release files
 
 
 Release xde-applets-0.6 released 2019-09-03
