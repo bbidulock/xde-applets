@@ -23,7 +23,7 @@ git tag -n100 -l 0.8
 
 git shortlog -e -n -w80,6,8 0.7...0.8
 
-Brian Bidulock <bidulock@openss7.org> (14):
+Brian Bidulock <bidulock@openss7.org> (15):
       post release update
       better cscope and MDOCDATE
       fixups for -Wextra
@@ -38,6 +38,7 @@ Brian Bidulock <bidulock@openss7.org> (14):
       fixups for -Wextra
       fixups for -Wextra
       update copyright headers
+      update release files
 
 
 Release xde-applets-0.7 released 2019-12-21
