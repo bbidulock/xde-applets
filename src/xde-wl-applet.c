@@ -378,6 +378,7 @@ on_status_activate(GtkStatusIcon *icon, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
 
+	(void) icon;
 	DPRINTF(1, "static icon received activate signal\n");
 	get_status_window(xscr);
 
@@ -391,6 +392,7 @@ on_status_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 	XdeScreen *xscr = user_data;
 	GdkEventButton *ev;
 
+	(void) icon;
 	DPRINTF(1, "static icon received button-press signal\n");
 	(void) xscr;
 	ev = (typeof(ev)) event;
@@ -404,6 +406,9 @@ on_status_button_press(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 static gboolean
 on_status_button_release(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 {
+	(void) icon;
+	(void) event;
+	(void) user_data;
 	DPRINTF(1, "static icon received button-release signal\n");
 	return GTK_EVENT_PROPAGATE;
 }
@@ -411,6 +416,9 @@ on_status_button_release(GtkStatusIcon *icon, GdkEvent *event, gpointer user_dat
 static gboolean
 on_status_scroll_event(GtkStatusIcon *icon, GdkEvent *event, gpointer user_data)
 {
+	(void) icon;
+	(void) event;
+	(void) user_data;
 	DPRINTF(1, "static icon received scoll-event signal\n");
 	return GTK_EVENT_PROPAGATE;
 }
@@ -419,23 +427,32 @@ void
 on_status_selected(GtkMenuItem *item, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
+
+	(void) item;
 	get_status_window(xscr);
 }
 
 void
 on_networks_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 }
 
 void
 on_interfaces_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 }
 
 void
 on_about_selected(GtkMenuItem *item, gpointer user_data)
 {
 	gchar *authors[] = { "Brian F. G. Bidulock <bidulock@openss7.org>", NULL };
+
+	(void) item;
+	(void) user_data;
 	gtk_show_about_dialog(NULL,
 			      "authors", authors,
 			      "comments", RESCOMM,
@@ -453,6 +470,7 @@ on_about_selected(GtkMenuItem *item, gpointer user_data)
 static void
 applet_refresh(XdeScreen *xscr)
 {
+	(void) xscr;
 }
 
 /** @brief restart the applet
@@ -488,12 +506,16 @@ applet_restart(void)
 void
 on_redo_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 	applet_restart();
 }
 
 void
 on_quit_selected(GtkMenuItem *item, gpointer user_data)
 {
+	(void) item;
+	(void) user_data;
 	gtk_main_quit();
 }
 
@@ -669,6 +691,10 @@ on_status_query_tooltip(GtkStatusIcon *icon, gint x, gint y, gboolean keyboard_m
 {
 	XdeScreen *xscr = user_data;
 
+	(void) icon;
+	(void) x;
+	(void) y;
+	(void) keyboard_mode;
 	/* do not show tooltip when info window is shown */
 	if (xscr->info)
 		return FALSE;
@@ -898,6 +924,7 @@ init_applet(XdeScreen *xscr)
 {
 	static gboolean initialized = FALSE;
 
+	(void) xscr;
 	if (!initialized) {
 		initialized = TRUE;
 	}
@@ -1335,6 +1362,7 @@ root_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XdeScreen *xscr = (typeof(xscr)) data;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
 
+	(void) event;
 	PTRACE(1);
 	if (!xscr) {
 		EPRINTF("xscr is NULL\n");
@@ -1407,6 +1435,7 @@ event_handler_SelectionRequest(Display *dpy, XEvent *xev, XdeScreen *xscr)
 static GdkFilterReturn
 event_handler_DestroyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
 {
+	(void) dpy;
 	PTRACE(1);
 	if (options.debug > 1) {
 		fprintf(stderr, "==> DestroyNotify: %p\n", xscr);
@@ -1428,6 +1457,7 @@ selwin_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XdeScreen *xscr = data;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
 
+	(void) event;
 	PTRACE(1);
 	if (!xscr) {
 		EPRINTF("xscr is NULL\n");
@@ -1451,6 +1481,8 @@ owner_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XEvent *xev = (typeof(xev)) xevent;
 	XdeScreen *xscr = data;
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
+
+	(void) event;
 	switch (xev->type) {
 	case DestroyNotify:
 		return event_handler_DestroyNotify(dpy, xev, xscr);
@@ -1467,6 +1499,7 @@ client_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 	XEvent *xev = (typeof(xev)) xevent;
 	Display *dpy = (typeof(dpy)) data;
 
+	(void) event;
 	PTRACE(1);
 	switch (xev->type) {
 	case ClientMessage:
@@ -1495,6 +1528,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 		&prop[10]
 	};
 
+	(void) data;
 	j = 0;
 
 	/* CloneCommand: This is like the RestartCommand except it restarts a copy of the
@@ -1758,6 +1792,9 @@ static void
 clientSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
 		     int interactStyle, Bool fast)
 {
+	(void) saveType;
+	(void) interactStyle;
+	(void) fast;
 	if (!(shutting_down = shutdown)) {
 		if (!SmcRequestSaveYourselfPhase2(smcConn, clientSaveYourselfPhase2CB, data))
 			SmcSaveYourselfDone(smcConn, False);
@@ -1777,6 +1814,7 @@ clientSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdow
 static void
 clientDieCB(SmcConn smcConn, SmPointer data)
 {
+	(void) data;
 	SmcCloseConnection(smcConn, 0, NULL);
 	shutting_down = False;
 	gtk_main_quit();
@@ -1785,6 +1823,8 @@ clientDieCB(SmcConn smcConn, SmPointer data)
 static void
 clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
 {
+	(void) smcConn;
+	(void) data;
 	if (saving_yourself) {
 		saving_yourself = False;
 		gtk_main_quit();
@@ -1806,6 +1846,8 @@ clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
 static void
 clientShutdownCancelledCB(SmcConn smcConn, SmPointer data)
 {
+	(void) smcConn;
+	(void) data;
 	shutting_down = False;
 	gtk_main_quit();
 }
@@ -1843,6 +1885,7 @@ on_ifd_watch(GIOChannel *chan, GIOCondition cond, gpointer data)
 	SmcConn smcConn = data;
 	IceConn iceConn = SmcGetIceConnection(smcConn);
 
+	(void) chan;
 	if (cond & (G_IO_NVAL | G_IO_HUP | G_IO_ERR)) {
 		EPRINTF("poll failed: %s %s %s\n",
 			(cond & G_IO_NVAL) ? "NVAL" : "",
@@ -1900,6 +1943,7 @@ startup(int argc, char *argv[], Command command)
 	char *file;
 	int len;
 
+	(void) command;
 	/* We can start session management without a display; however, we then need to
 	   run a GLIB event loop instead of a GTK event loop.  */
 	init_smclient();
@@ -2032,6 +2076,8 @@ startup(int argc, char *argv[], Command command)
 static void
 do_run(int argc, char *argv[], Bool replace)
 {
+	(void) argc;
+	(void) argv;
 	setup_x11(replace);
 	gtk_main();
 }
@@ -2046,6 +2092,8 @@ do_refresh(int argc, char *argv[])
 	Atom atom;
 	Window owner, gotone = None;
 
+	(void) argc;
+	(void) argv;
 	if (!options.display) {
 		EPRINTF("%s: need display to refresh instance\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -2094,6 +2142,8 @@ do_restart(int argc, char *argv[])
 	Atom atom;
 	Window owner, gotone = None;
 
+	(void) argc;
+	(void) argv;
 	if (!options.display) {
 		EPRINTF("%s: need display to restart instance\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -2135,12 +2185,16 @@ do_restart(int argc, char *argv[])
 static void
 do_quit(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	get_selection(True, None);
 }
 
 static void
 copying(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -2185,6 +2239,8 @@ regulations).\n\
 static void
 version(int argc, char *argv[])
 {
+	(void) argc;
+	(void) argv;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stdout, "\
@@ -2207,6 +2263,7 @@ See `%1$s --copying' for copying permissions.\n\
 static void
 usage(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	(void) fprintf(stderr, "\
@@ -2232,6 +2289,7 @@ show_bool(Bool boolval)
 static void
 help(int argc, char *argv[])
 {
+	(void) argc;
 	if (!options.output && !options.debug)
 		return;
 	/* *INDENT-OFF* */
@@ -2526,6 +2584,7 @@ main(int argc, char *argv[])
 	default:
 	case CommandDefault:
 		defaults.command = options.command = CommandMonitor;
+		/* fall thru */
 	case CommandMonitor:
 		DPRINTF(1, "%s: running a new instance\n", argv[0]);
 		do_run(argc, argv, False);
