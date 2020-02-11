@@ -1,9 +1,9 @@
-[xde-applets -- read me first file.  2019-12-21]: #
+[xde-applets -- read me first file.  2020-02-11]: #
 
 xde-applets
 ===============
 
-Package `xde-applets-0.7` was released under GPLv3 license 2019-12-21.
+Package `xde-applets-0.8` was released under GPLv3 license 2020-02-11.
 
 This package provides a number of "C"-language applets for the system
 tray that provide various functions from package management to wireless
@@ -15,7 +15,7 @@ and to provide access to libraries not available from `perl(1)`.
 Release
 -------
 
-This is the `xde-applets-0.7` package, released 2019-12-21.  This
+This is the `xde-applets-0.8` package, released 2020-02-11.  This
 release, and the latest version, can be obtained from [GitHub][1], using
 a command such as:
 
@@ -74,12 +74,12 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-applets
 [2]: https://github.com/bbidulock/xde-applets/issues
-[3]: https://github.com/bbidulock/xde-applets/blob/0.7/NEWS
-[4]: https://github.com/bbidulock/xde-applets/blob/0.7/ChangeLog
-[5]: https://github.com/bbidulock/xde-applets/blob/0.7/TODO
-[6]: https://github.com/bbidulock/xde-applets/blob/0.7/COMPLIANCE
-[7]: https://github.com/bbidulock/xde-applets/blob/0.7/INSTALL
-[8]: https://github.com/bbidulock/xde-applets/blob/0.7/LICENSE
-[9]: https://github.com/bbidulock/xde-applets/blob/0.7/COPYING
+[3]: https://github.com/bbidulock/xde-applets/blob/0.8/NEWS
+[4]: https://github.com/bbidulock/xde-applets/blob/0.8/ChangeLog
+[5]: https://github.com/bbidulock/xde-applets/blob/0.8/TODO
+[6]: https://github.com/bbidulock/xde-applets/blob/0.8/COMPLIANCE
+[7]: https://github.com/bbidulock/xde-applets/blob/0.8/INSTALL
+[8]: https://github.com/bbidulock/xde-applets/blob/0.8/LICENSE
+[9]: https://github.com/bbidulock/xde-applets/blob/0.8/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #

@@ -1,5 +1,143 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 1581498a7d55d30b098e3667c653fa08cfda51e6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 04:07:05 2020 -0700
+
+    update copyright headers
+
+ src/xde-av-applet.c  | 8 ++++----
+ src/xde-bl-applet.c  | 8 ++++----
+ src/xde-bt-applet.c  | 8 ++++----
+ src/xde-cpu-applet.c | 8 ++++----
+ src/xde-dh-applet.c  | 8 ++++----
+ src/xde-hal-applet.c | 8 ++++----
+ src/xde-lm-applet.c  | 8 ++++----
+ src/xde-pk-applet.c  | 8 ++++----
+ src/xde-sd-applet.c  | 8 ++++----
+ src/xde-up-applet.c  | 8 ++++----
+ src/xde-wl-applet.c  | 8 ++++----
+ 11 files changed, 44 insertions(+), 44 deletions(-)
+
+commit 807e461340968f9c5ed53b0aab7dc37f664acee9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 04:03:34 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-up-applet.c | 67 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 67 insertions(+)
+
+commit feb690bb906bf824966267984ad6ee1f7958ba30
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:59:21 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-lm-applet.c | 55 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+commit 1a8e8f46c07415001d7146a9f022dad048f9e19d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:56:03 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-cpu-applet.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+commit 33573b00918d3b300b536c2620bf9f518ce36388
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:52:58 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-wl-applet.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+
+commit e05f2ce8fd4332005299cca0495c01875a3283f0
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:49:37 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-sd-applet.c | 59 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+
+commit df4a3cae538752ec8743d5a6bb2a4ea371d084b5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:46:06 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-pk-applet.c | 61 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
+
+commit 6e7ded7ae586c829ea0bd338a646912dfa0056a9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:42:11 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-hal-applet.c | 57 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 57 insertions(+)
+
+commit 8e9b30fa026bb0cb829bcc767c54ccf139239876
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:38:33 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-dh-applet.c | 58 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 58 insertions(+)
+
+commit 6cce8a3584583dfaa2c61f2c21301a2dd4821f83
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:34:42 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-bt-applet.c | 55 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+commit d10f707617aeb6ce7c14944354162568be4bf109
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:30:56 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-bl-applet.c | 55 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+commit 9bd2af7287605ac45eb87c349fd22a79d83c875e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:06:37 2020 -0700
+
+    fixups for -Wextra
+
+ src/xde-av-applet.c | 61 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 61 insertions(+)
+
+commit cfe7835500189ef6701e23ee5a1ce09c837a3a22
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 03:01:38 2020 -0700
+
+    better cscope and MDOCDATE
+
+ autogen.sh   | 8 ++++++--
+ configure.sh | 7 ++-----
+ 2 files changed, 8 insertions(+), 7 deletions(-)
+
+commit 03c0d01c73e7f6e0ac1b3f990f522d652bad2e69
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 21 05:18:09 2019 -0700
+
+    post release update
+
+ ChangeLog | 22 ++++++++++++++++++++++
+ NEWS      |  4 +++-
+ 2 files changed, 25 insertions(+), 1 deletion(-)
+
 commit cd338b2b6244891f6d06dc372617f342484ddab8
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Dec 21 05:16:07 2019 -0700

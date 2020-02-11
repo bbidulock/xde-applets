@@ -1,4 +1,44 @@
-xde-applets -- history of user-visible changes.  2019-12-21
+xde-applets -- history of user-visible changes.  2020-02-11
+
+Release xde-applets-0.8 released 2020-02-11
+-------------------------------------------
+
+git tag -n100 -l 0.8
+
+0.8             Preliminary Release 0.8
+
+    This is the eighth release of the xde-applets package. This package
+    provides a number of "C"-language applets for the system tray that
+    provide various functions from package management to wireless
+    connections. Some of these applets were originally written in perl(1)
+    as separate applications. They have now been converted to "C" for speed
+    and to provide access to libraries not available from perl(1).
+
+    This release is a preliminary release that add support for compilation
+    with -Wextra flag.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.7...0.8
+
+Brian Bidulock <bidulock@openss7.org> (14):
+      post release update
+      better cscope and MDOCDATE
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      fixups for -Wextra
+      update copyright headers
+
 
 Release xde-applets-0.7 released 2019-12-21
 -------------------------------------------
@@ -234,13 +274,4 @@ git shortlog -e -n -w80,6,8 0.1...0.2
 Brian Bidulock <bidulock@openss7.org> (2):
       initial updates
       initial build system
-
-
-Release xde-applets-0.1 released 2016-01-27
--------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.1
-
-Brian Bidulock <bidulock@openss7.org> (1):
-      initial commit
 
