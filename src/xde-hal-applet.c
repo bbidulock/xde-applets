@@ -271,6 +271,7 @@ typedef enum {
 	CaEventPowerChanged,
 	CaEventSleepSuspend,
 	CaEventBatteryLevel,
+	CaEventThermalEvent,
 } CaEventId;
 
 typedef struct {
