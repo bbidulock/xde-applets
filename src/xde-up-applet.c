@@ -1762,7 +1762,7 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 			g_variant_unref(key);
 			continue;
 		}
-		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel") && strcmp(name, "Percent")
+		if (strcmp(name, "IconName") && strcmp(name, "WarningLevel") && strcmp(name, "Percentage")
 		    && strcmp(name, "BatteryLevel") && strcmp(name, "State")) {
 			DPRINTF(1, "not looking for %s\n", name);
 			g_variant_unref(key);
