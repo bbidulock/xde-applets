@@ -289,6 +289,7 @@ typedef enum {
 	CoolFanMissing = 0,
 	CoolFanStopped,
 	CoolFanSlow,
+	CoolFanNormal,
 	CoolFanMedium,
 	CoolFanFast,
 } CoolRange;
@@ -299,6 +300,7 @@ typedef enum {
 	TempFlameCool,
 	TempFlameWarm,
 	TempFlameHot,
+	TempFlameBurn,
 } TempRange;
 
 typedef struct {
@@ -1089,19 +1091,19 @@ update_sensors(XdeScreen *xscr)
 					name = "voltmeter-missing";
 					volt = InputVoltmeterMissing;
 				} else {
-					if (perc < 20.0) {
+					if (perc < 10.0) {
 						name = "voltmeter-open";
 						volt = InputVoltmeterOpen;
-					} else if (20.0 <= perc && perc < 40.0) {
+					} else if (10.0 <= perc && perc < 20.0) {
 						name = "voltmeter-low";
 						volt = InputVoltmeterLow;
-					} else if (40.0 <= perc && perc < 60.0) {
+					} else if (20.0 <= perc && perc < 80.0) {
 						name = "voltmeter-nominal";
 						volt = InputVoltmeterNominal;
-					} else if (60.0 <= perc && perc < 80.0) {
+					} else if (80.0 <= perc && perc < 90.0) {
 						name = "voltmeter-high";
 						volt = InputVoltmeterHigh;
-					} else if (80.0 <= perc) {
+					} else if (90.0 <= perc) {
 						name = "voltmeter-short";
 						volt = InputVoltmeterShort;
 					}
@@ -1110,10 +1112,12 @@ update_sensors(XdeScreen *xscr)
 						in_icon = name;
 						in_range = volt;
 					}
+#if 0
 					if (total_max < perc) {
 						total_max = perc;
 						total_icon = name;
 					}
+#endif
 				}
 				break;
 			case SENSORS_FEATURE_FAN:
@@ -1125,16 +1129,19 @@ update_sensors(XdeScreen *xscr)
 					name = "fan-missing";
 					cool = CoolFanMissing;
 				} else {
-					if (perc < 25.0) {
+					if (perc < 10.0) {
 						name = "fan-stopped";
 						cool = CoolFanStopped;
-					} else if (25.0 <= perc && perc < 50.0) {
+					} else if (10.0 <= perc && perc < 20.0) {
 						name = "fan-slow";
 						cool = CoolFanSlow;
-					} else if (50.0 <= perc && perc < 75.0) {
+					} else if (20.0 <= perc && perc < 80.0) {
+						name = "fan-normal";
+						cool = CoolFanNormal;
+					} else if (80.0 <= perc && perc < 90.0) {
 						name = "fan-medium";
 						cool = CoolFanMedium;
-					} else if (75.0 <= perc) {
+					} else if (90.0 <= perc) {
 						name = "fan-fast";
 						cool = CoolFanFast;
 					}
@@ -1166,18 +1173,21 @@ update_sensors(XdeScreen *xscr)
 					name = "flame-missing";
 					temp = TempFlameMissing;
 				} else {
-					if (perc < 25.0) {
+					if (perc < 10.0) {
 						name = "flame-cold";
 						temp = TempFlameCold;
-					} else if (25.0 <= perc && perc < 50.0) {
+					} else if (10.0 <= perc && perc < 20.0) {
 						name = "flame-cool";
 						temp = TempFlameCool;
-					} else if (50.0 <= perc && perc < 75.0) {
-						name = "flame-warm";
+					} else if (20.0 <= perc && perc < 80.0) {
+						name = "flame-normal";
 						temp = TempFlameWarm;
-					} else if (75.0 <= perc) {
-						name = "flame-hot";
+					} else if (80.0 <= perc && perc < 90.0) {
+						name = "flame-warm";
 						temp = TempFlameHot;
+					} else if (90.0 <= perc) {
+						name = "flame-hot";
+						temp = TempFlameBurn;
 					}
 					if (temp_max < perc) {
 						temp_max = perc;
@@ -1258,9 +1268,12 @@ update_sensors(XdeScreen *xscr)
 			id = (old_temp > temp_range) ? "thermal-cool" : NULL;
 			break;
 		case TempFlameWarm:
-			id = (old_temp < temp_range) ? "thermal-hot" : NULL;
+			id = NULL;
 			break;
 		case TempFlameHot:
+			id = (old_temp < temp_range) ? "thermal-hot" : NULL;
+			break;
+		case TempFlameBurn:
 			id = "thermal-caution";
 			break;
 		}

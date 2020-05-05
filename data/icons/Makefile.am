@@ -8,12 +8,14 @@ dist_statusicon_DATA = \
 	fan.svg \
 	fan-stopped.svg \
 	fan-slow.svg \
+	fan-normal.svg \
 	fan-medium.svg \
 	fan-fast.svg \
 	fan-missing.svg \
 	flame.svg \
 	flame-cold.svg \
 	flame-cool.svg \
+	flame-normal.svg \
 	flame-warm.svg \
 	flame-hot.svg \
 	flame-missing.svg \
