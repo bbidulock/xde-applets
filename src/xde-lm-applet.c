@@ -419,8 +419,10 @@ typedef struct {
 	XdeSubfeature *input;
 	XdeSubfeature *minimum;
 	XdeSubfeature *maximum;
+	XdeSubfeature *maxhyst;
 	XdeSubfeature *lowcrit;
 	XdeSubfeature *critical;
+	XdeSubfeature *crithyst;
 	GtkWidget *image;
 } XdeFeature;
 
@@ -1158,21 +1160,44 @@ update_sensors(XdeScreen *xscr)
 				break;
 			case SENSORS_FEATURE_TEMP:
 				input = (xsubf = xfeat->input) ? xsubf->value : 0.0;
-				min = (xsubf = xfeat->minimum) ? xsubf->value :
-				    (xsubf = xfeat->lowcrit) ? xsubf->value : 25.0;
-				max = (xsubf = xfeat->maximum) ? xsubf->value :
-				    (xsubf = xfeat->critical) ? xsubf->value : 100.0;
-				low = (xsubf = xfeat->lowcrit) ? xsubf->value :
-				    (xsubf = xfeat->minimum) ? xsubf->value : -30.0;
-				cri = (xsubf = xfeat->critical) ? xsubf->value :
-				    (xsubf = xfeat->maximum) ? xsubf->value : 150.0;
+				min =   (xsubf = xfeat->minimum) ? xsubf->value :
+					(xsubf = xfeat->lowcrit) ? xsubf->value : 25.0;
+				max =   (xsubf = xfeat->maximum) ? xsubf->value :
+					(xsubf = xfeat->crithyst) ? xsubf->value :
+					(xsubf = xfeat->critical) ? (xsubf->value * 0.8) :
+					100.0;
+				low =   (xsubf = xfeat->lowcrit) ? xsubf->value :
+					(xsubf = xfeat->minimum) ? xsubf->value :
+					-30.0;
+				cri =   (xsubf = xfeat->critical) ? xsubf->value :
+					(xsubf = xfeat->maximum) ? xsubf->value / 0.8 :
+					150.0;
 				(void) low;
 				(void) cri;
 				perc = 100.0 * (input - min) / (max - min);
+				(void) perc;
 				if (input == 0.0 || (input == 127.0 && cri == 128.0)) {
 					name = "flame-missing";
 					temp = TempFlameMissing;
 				} else {
+#if 1
+					if (input < low) {
+						name = "flame-cold";
+						temp = TempFlameCold;
+					} else if (low <= input && input < min) {
+						name = "flame-cool";
+						temp = TempFlameCool;
+					} else if (min <= input && input < max) {
+						name = "flame-normal";
+						temp = TempFlameWarm;
+					} else if (max <= input && input < cri) {
+						name = "flame-warm";
+						temp = TempFlameHot;
+					} else if (cri < input) {
+						name = "flame-hot";
+						temp = TempFlameBurn;
+					}
+#else
 					if (perc < 10.0) {
 						name = "flame-cold";
 						temp = TempFlameCold;
@@ -1189,6 +1214,7 @@ update_sensors(XdeScreen *xscr)
 						name = "flame-hot";
 						temp = TempFlameBurn;
 					}
+#endif
 					if (temp_max < perc) {
 						temp_max = perc;
 						temp_icon = name;
@@ -1349,8 +1375,7 @@ init_sensors(XdeScreen *xscr)
 			case SENSORS_FEATURE_IN:
 				xfeat->icon = "voltmeter";
 				xfeat->format = "<small>%.3fV %s</small>";
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_INPUT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_INPUT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1359,8 +1384,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->input = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_MIN))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_MIN))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1369,8 +1393,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->minimum = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_MAX))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_MAX))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1379,8 +1402,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->maximum = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_LCRIT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_LCRIT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1389,8 +1411,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->lowcrit = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_CRIT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_IN_CRIT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1403,8 +1424,7 @@ init_sensors(XdeScreen *xscr)
 			case SENSORS_FEATURE_FAN:
 				xfeat->icon = "fan";
 				xfeat->format = "<small>%.0frpm %s</small>";
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_INPUT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_INPUT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1413,8 +1433,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->input = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_MIN))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_MIN))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1423,8 +1442,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->minimum = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_MAX))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_FAN_MAX))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1437,8 +1455,7 @@ init_sensors(XdeScreen *xscr)
 			case SENSORS_FEATURE_TEMP:
 				xfeat->icon = "flame";
 				xfeat->format = "<small>%.1f°C %s</small>";
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_INPUT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_INPUT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1447,8 +1464,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->input = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MIN))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MIN))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1457,8 +1473,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->minimum = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MAX))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MAX))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1467,8 +1482,16 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->maximum = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_LCRIT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_MAX_HYST))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->maxhyst = xsubf;
+				}
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_LCRIT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1477,8 +1500,7 @@ init_sensors(XdeScreen *xscr)
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->lowcrit = xsubf;
 				}
-				if ((subf =
-				     sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_CRIT))) {
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_CRIT))) {
 					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
 
 					xsubf->name = strdup(subf->name);
@@ -1486,6 +1508,15 @@ init_sensors(XdeScreen *xscr)
 					xsubf->number = subf->number;
 					sensors_get_value(chip, subf->number, &xsubf->value);
 					xfeat->critical = xsubf;
+				}
+				if ((subf = sensors_get_subfeature(chip, feat, SENSORS_SUBFEATURE_TEMP_CRIT_HYST))) {
+					XdeSubfeature *xsubf = calloc(1, sizeof(*xsubf));
+
+					xsubf->name = strdup(subf->name);
+					xsubf->type = subf->type;
+					xsubf->number = subf->number;
+					sensors_get_value(chip, subf->number, &xsubf->value);
+					xfeat->crithyst = xsubf;
 				}
 				break;
 			default:
