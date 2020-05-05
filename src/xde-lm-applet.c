@@ -1296,10 +1296,10 @@ update_sensors(XdeScreen *xscr)
 			id = NULL;
 			break;
 		case TempFlameHot:
-			id = (old_temp < temp_range) ? "thermal-hot" : NULL;
+			id = (old_temp < temp_range) ? "thermal-caution" : NULL;
 			break;
 		case TempFlameBurn:
-			id = "thermal-caution";
+			id = "thermal-hot";
 			break;
 		}
 		if (id) {
