@@ -276,6 +276,31 @@ typedef enum {
 	CaEventThermalEvent,
 } CaEventId;
 
+typedef enum {
+	InputVoltmeterMissing = 0,
+	InputVoltmeterOpen,
+	InputVoltmeterLow,
+	InputVoltmeterNominal,
+	InputVoltmeterHigh,
+	InputVoltmeterShort,
+} VoltRange;
+
+typedef enum {
+	CoolFanMissing = 0,
+	CoolFanStopped,
+	CoolFanSlow,
+	CoolFanMedium,
+	CoolFanFast,
+} CoolRange;
+
+typedef enum {
+	TempFlameMissing = 0,
+	TempFlameCold,
+	TempFlameCool,
+	TempFlameWarm,
+	TempFlameHot,
+} TempRange;
+
 typedef struct {
 	int index;
 	GdkDisplay *disp;
@@ -993,6 +1018,13 @@ update_sensors(XdeScreen *xscr)
 	GList *chip, *feat;
 	double temp_max = 0.0, fan_max = 0.0, in_max = 0.0, total_max = 0.0;
 	const char *temp_icon = NULL, *fan_icon = NULL, *in_icon = NULL, *total_icon = NULL;
+	VoltRange volt = 0, in_range = 0;
+	CoolRange cool = 0, fan_range = 0;
+	TempRange temp = 0, temp_range = 0;
+
+	static VoltRange old_volt = 0;
+	static CoolRange old_cool = 0;
+	static TempRange old_temp = 0;
 
 	for (chip = xscr->chips; chip; chip = chip->next) {
 		XdeChip *xchip = chip->data;
@@ -1055,21 +1087,28 @@ update_sensors(XdeScreen *xscr)
 				perc = 100.0 * (input - min) / (max - min);
 				if (input == 0.0) {
 					name = "voltmeter-missing";
+					volt = InputVoltmeterMissing;
 				} else {
 					if (perc < 20.0) {
 						name = "voltmeter-open";
+						volt = InputVoltmeterOpen;
 					} else if (20.0 <= perc && perc < 40.0) {
 						name = "voltmeter-low";
+						volt = InputVoltmeterLow;
 					} else if (40.0 <= perc && perc < 60.0) {
 						name = "voltmeter-nominal";
+						volt = InputVoltmeterNominal;
 					} else if (60.0 <= perc && perc < 80.0) {
 						name = "voltmeter-high";
+						volt = InputVoltmeterHigh;
 					} else if (80.0 <= perc) {
 						name = "voltmeter-short";
+						volt = InputVoltmeterShort;
 					}
 					if (in_max < perc) {
 						in_max = perc;
 						in_icon = name;
+						in_range = volt;
 					}
 					if (total_max < perc) {
 						total_max = perc;
@@ -1084,19 +1123,25 @@ update_sensors(XdeScreen *xscr)
 				perc = 100.0 * (input - min) / (max - min);
 				if (input == 0.0) {
 					name = "fan-missing";
+					cool = CoolFanMissing;
 				} else {
 					if (perc < 25.0) {
 						name = "fan-stopped";
+						cool = CoolFanStopped;
 					} else if (25.0 <= perc && perc < 50.0) {
 						name = "fan-slow";
+						cool = CoolFanSlow;
 					} else if (50.0 <= perc && perc < 75.0) {
 						name = "fan-medium";
+						cool = CoolFanMedium;
 					} else if (75.0 <= perc) {
 						name = "fan-fast";
+						cool = CoolFanFast;
 					}
 					if (fan_max < perc) {
 						fan_max = perc;
 						fan_icon = name;
+						fan_range = cool;
 					}
 					if (total_max < perc) {
 						total_max = perc;
@@ -1119,19 +1164,25 @@ update_sensors(XdeScreen *xscr)
 				perc = 100.0 * (input - min) / (max - min);
 				if (input == 0.0 || (input == 127.0 && cri == 128.0)) {
 					name = "flame-missing";
+					temp = TempFlameMissing;
 				} else {
 					if (perc < 25.0) {
 						name = "flame-cold";
+						temp = TempFlameCold;
 					} else if (25.0 <= perc && perc < 50.0) {
 						name = "flame-cool";
+						temp = TempFlameCool;
 					} else if (50.0 <= perc && perc < 75.0) {
 						name = "flame-warm";
+						temp = TempFlameWarm;
 					} else if (75.0 <= perc) {
 						name = "flame-hot";
+						temp = TempFlameHot;
 					}
 					if (temp_max < perc) {
 						temp_max = perc;
 						temp_icon = name;
+						temp_range = temp;
 					}
 					if (total_max < perc) {
 						total_max = perc;
@@ -1183,6 +1234,49 @@ update_sensors(XdeScreen *xscr)
 			}
 		}
 	}
+	if (temp_range && temp_range != old_temp) {
+		ca_context *ca = get_default_ca_context();
+		ca_proplist *pl = NULL;
+		const char *id;
+		int r;
+
+		if ((r = ca_proplist_create(&pl)) < 0) {
+			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
+			return;
+		}
+		ca_context_cancel(ca, CaEventThermalEvent);
+		ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
+		switch (temp_range) {
+		default:
+		case TempFlameMissing:
+			id = NULL;
+			break;
+		case TempFlameCold:
+			id = "thermal-cold";
+			break;
+		case TempFlameCool:
+			id = "thermal-cool";
+			break;
+		case TempFlameWarm:
+			id = "thermal-hot";
+			break;
+		case TempFlameHot:
+			id = "thermal-caution";
+			break;
+		}
+		if (id) {
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+			DPRINTF(1, "Playing %s\n", id);
+			if ((r = ca_context_play_full(ca, CaEventThermalEvent, pl, NULL, NULL)) < 0)
+				EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+		}
+		ca_proplist_destroy(pl);
+	}
+	old_temp = temp_range;
+	old_volt = in_range;
+	old_cool = fan_range;
+	(void) old_volt;
+	(void) old_cool;
 }
 
 gboolean
