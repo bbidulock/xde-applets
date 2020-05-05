@@ -6,12 +6,12 @@
 
 =head1 SYNOPSIS
 
- xde-lm-applet [ OPTIONS ]
- xde-lm-applet --quit [ OPTIONS ]
- xde-lm-applet --replace [ OPTIONS ]
- xde-lm-applet --help [ OPTIONS ]
- xde-lm-applet --version
- xde-lm-applet --copying
+B< xde-lm-applet> [ I<OPTIONS> ]
+ B<xde-lm-applet> --quit [ I<OPTIONS> ]
+ B<xde-lm-applet> --replace [ I<OPTIONS> ]
+ B<xde-lm-applet> --help [ I<OPTIONS> ]
+ B<xde-lm-applet> --version
+ B<xde-lm-applet> --copying
 
 =head1 DESCRIPTION
 
@@ -127,9 +127,81 @@ session information.
 
 =head1 USAGE
 
+=head1 SOUNDS
+
+B<xde-lm-applet> plays the following sounds under the following
+circumstances (see L<sound(7)>).
+
+=over
+
+=item B<thermal-cold>
+
+The sound to use when the computer or device has cooled down or has
+started at a temperature that is below the minimum or below room
+temperature.
+
+B<Spoken words:>
+"Device is Cold."
+
+=item B<thermal-cool>
+
+The sound to use when the computer or device has cooled down (below 20%
+of thermal limits, for example).
+
+B<Spoken words:>
+"Device has Cooled Down."
+
+=item B<thermal-caution>
+
+The sound to use when the computer or device has heated up (above 80% of
+thermal limits, for example).
+
+B<Spoken words:>
+"Device has Heated Up."
+
+=item B<thermal-hot>
+
+The sound used when the computer or device has become hot (above 90% of
+thermal limits, for example).
+Most mobile systems have limited thermal cooling capability under some
+circumstances (vents blocked, for example) and will automatically
+power-off to protect the CPU and other electronic components once
+temperatures reach a critical level.  Provides an audible indication to
+the user of an impending automatic power-down.
+
+B<Spoken words:>
+"Device hot! Device hot! Device hot!"
+
+=back
+
 =head1 ENVIRONMENT
 
+=over
+
+=item B<USER>
+
+Use to find the user's username.
+
+=item B<HOME>
+
+Used to find the user's home directory.
+
+=item B<DISPLAY>
+
+Used to determine the display on which to run.
+
+=item B<SESSION_MANAGER>
+
+Used to locate a connection to the X11R6 session manager.
+
+=back
+
 =head1 HISTORY
+
+I wrote B<xde-lm-applet> due to the deficiencies and lack of
+availability of system tray and windowmaker dock application thermal
+monitors.  The program was originally written in C<perl,> but later
+ported to C<C>.
 
 =head1 AUTHOR
 
