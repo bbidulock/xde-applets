@@ -1254,7 +1254,6 @@ update_sensors(XdeScreen *xscr)
 			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
 			return;
 		}
-		ca_context_cancel(ca, CaEventThermalEvent);
 		ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
 		switch (temp_range) {
 		default:
@@ -1279,6 +1278,7 @@ update_sensors(XdeScreen *xscr)
 		}
 		if (id) {
 			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+			ca_context_cancel(ca, CaEventThermalEvent);
 			DPRINTF(1, "Playing %s\n", id);
 			if ((r = ca_context_play_full(ca, CaEventThermalEvent, pl, NULL, NULL)) < 0)
 				EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
