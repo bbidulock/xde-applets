@@ -17,11 +17,11 @@
 
 B<xde-bl-applet> is a small system-tray and dock-app applet that can be
 used to control the back light of an LED panel, the brightness of a
-display, and the color tint (blue light filtration) of the display.  THe
-state of all back-lights and LEDs are displayed in a tool-tip pop-up and
-the overall state of the lights is shown in a status icon.  It also can
-be used to play sound theme specific sounds associated with changes to
-the display.
+display, and the color temperature (blue light filtration) of the
+display.  The state of all back-lights and LEDs are displayed in a
+tool-tip pop-up and the overall state of the lights is shown in a status
+icon.  It also can be used to play sound theme specific sounds
+associated with changes to the display.
 
 =head1 ARGUMENTS
 
