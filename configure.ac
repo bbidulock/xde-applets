@@ -126,6 +126,32 @@ PKG_CHECK_MODULES([CAIRO],[cairo])
 PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
 PKG_CHECK_MODULES([PKGLIB],[packagekit-glib2])
 
+AC_ARG_ENABLE([gudev],
+	AC_HELP_STRING([--disable-gudev],
+		[Disable GUDEV support @<:@default=auto@:>@]))
+if test "x$enable_gudev" != xno ; then
+	PKG_CHECK_MODULES([GUDEV],[gudev-1.0],
+		[AC_DEFINE([GUDEV],[1], [Define to 1 to support GUDEV library.])],
+		[enable_gudev=no])
+fi
+AM_CONDITIONAL([GUDEV],[test "x$enable_gudev" != xno])
+AC_MSG_CHECKING([for GUDEV support])
+AC_MSG_RESULT([${enable_gudev:-yes}])
+AM_CONDITIONAL([HAVE_GUDEV],[test  "x$enable_gudev" != "xno"])
+
+AC_ARG_ENABLE([xf86vm],
+	AC_HELP_STRING([--disable-xf86vm],
+		[Disable XF86VM support @<:@default=auto@:>@]))
+if test "x$enable_xf86vm" != xno ; then
+	PKG_CHECK_MODULES([XF86VM],[xxf86vm],
+		[AC_DEFINE([XF86VM],[1], [Define to 1 to support XF86VM extension.])],
+		[enable_xf86vm=no])
+fi
+AM_CONDITIONAL([XRANDR],[test "x$enable_xf86vm" != xno])
+AC_MSG_CHECKING([for XF86VM support])
+AC_MSG_RESULT([${enable_xf86vm:-yes}])
+AM_CONDITIONAL([HAVE_XF86VM],[test  "x$enable_xf86vm" != "xno"])
+
 AC_ARG_ENABLE([xrandr],
 	AC_HELP_STRING([--disable-xrandr],
 		[Disable XRANDR support @<:@default=auto@:>@]))
