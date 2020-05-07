@@ -272,6 +272,8 @@ typedef enum {
 	CaEventSleepSuspend,
 	CaEventBatteryLevel,
 	CaEventThermalEvent,
+	CaEventBatteryState,
+	CaEventSystemChange,
 } CaEventId;
 
 typedef struct {
@@ -1472,15 +1474,11 @@ xde_device_dump(GDBusProxy *proxy)
 }
 
 void
-xde_device_warn(XdeDevice *xdev, guint32 level)
+xde_device_warn(XdeDevice *xdev, guint32 level, gboolean initial)
 {
-	ca_context *ca = get_default_ca_context();
-	ca_proplist *pl;
+	const char *id = NULL, *desc = NULL;
 
 	notify_notification_close(xdev->notify, NULL);
-	ca_context_cancel(ca, CaEventBatteryLevel);
-	ca_proplist_create(&pl);
-
 	switch (level) {
 	default:
 	case 0:		/* Unknown(0) */
@@ -1499,56 +1497,65 @@ xde_device_warn(XdeDevice *xdev, guint32 level)
 		}
 		break;
 	case 3:		/* Low(3) */
+		id = "battery-low";
+		desc = "The battery level is low.";
 		if (xdev->display) {
 			battery_low = TRUE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
-			notify_notification_update(xdev->notify,
-					"Warning",
-					"The battery level is low.",
-					"battery-low");
+			notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
 			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	case 4:		/* Critical(4) */
+		id = "battery-caution";
+		desc = "The battery level is critically low.";
 		if (xdev->display) {
 			battery_low = TRUE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
-			notify_notification_update(xdev->notify,
-					"Warning",
-					"The battery level is critically low.",
-					"battery-caution");
+			notify_notification_update(xdev->notify, "Warning", desc, "battery-caution");
 			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	case 5:		/* Action(5) */
+		id = "battery-caution";
+		desc = "The battery level is critically low.";
 		if (xdev->display) {
 			battery_low = TRUE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
-			notify_notification_update(xdev->notify,
-					"Warning",
-					"The battery level is critically low.",
-					"battery-empty");
+			notify_notification_update(xdev->notify, "Warning", desc, "battery-empty");
 			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 			notify_notification_show(xdev->notify, NULL);
 		}
 		break;
 	}
-	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
-	ca_proplist_destroy(pl);
+	if (id && !initial) {
+		ca_context *ca = get_default_ca_context();
+		ca_proplist *pl = NULL;
+		int r;
+
+		if ((r = ca_proplist_create(&pl)) < 0) {
+			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
+			return;
+		}
+		ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
+		ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+		ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, desc);
+		ca_context_cancel(ca, CaEventBatteryLevel);
+		DPRINTF(1, "Playing %s\n", id);
+		if ((r = ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL)) < 0)
+			EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+		ca_proplist_destroy(pl);
+	}
 }
 
 void
-xde_device_level(XdeDevice *xdev, guint32 level, double percent)
+xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initial)
 {
 	ca_context *ca = get_default_ca_context();
-	ca_proplist *pl;
+	ca_proplist *pl = NULL;
+	const char *id = NULL, *desc = NULL;
+	int r;
 
 	notify_notification_close(xdev->notify, NULL);
-	ca_context_cancel(ca, CaEventBatteryLevel);
-	ca_proplist_create(&pl);
-
 	switch (level) {
 	default:
 	case 0:		/* Unknown(0) */
@@ -1557,180 +1564,185 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent)
 		}
 		break;
 	case 1:		/* None(1) */
-		if (percent <= 5.0) {
-			if (xdev->display && percent != 0.0) {
-				battery_low = TRUE;
-				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
-				ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is critically low.");
-				notify_notification_update(xdev->notify,
-						"Warning",
-						"The battery level is critically low.",
-						"battery-caution");
-				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-			}
-		} else if (percent <= 15.0) {
-			if (xdev->display && percent != 0.0) {
-				battery_low = TRUE;
-				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
-				ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery is low.");
-				notify_notification_update(xdev->notify,
-						"Warning",
-						"The battery level is low.",
-						"battery-low");
-				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-				notify_notification_show(xdev->notify, NULL);
-			}
-		} else if (percent >= 90.0) {
-			if (xdev->display && percent != 0.0) {
-				battery_low = FALSE;
-			}
-		} else {
-			if (xdev->display && percent != 0.0) {
-				battery_low = FALSE;
-				ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
-				ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery is full.");
-				notify_notification_update(xdev->notify,
-						"Notice",
-						"The battery is full.",
-						"battery-full");
-				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-				notify_notification_show(xdev->notify, NULL);
+		if (percent != 0.0) {
+			if (percent <= 5.0) {
+				id = "battery-caution";
+				desc = "The battery level is critically low.";
+				if (xdev->display) {
+					battery_low = TRUE;
+					notify_notification_update(xdev->notify, "Warning", desc, "battery-caution");
+					notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+				}
+			} else if (percent <= 15.0) {
+				id = "battery-low";
+				desc = "The battery is low.";
+				if (xdev->display) {
+					battery_low = TRUE;
+					notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
+					notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+					notify_notification_show(xdev->notify, NULL);
+				}
+			} else if (percent >= 90.0) {
+				if (xdev->display) {
+					battery_low = FALSE;
+				}
+			} else {
+				id = "battery-full";
+				desc = "The battery is full.";
+				if (xdev->display) {
+					battery_low = FALSE;
+					notify_notification_update(xdev->notify, "Notice", desc, "battery-full");
+					notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+					notify_notification_show(xdev->notify, NULL);
+				}
 			}
 		}
 		break;
 	case 3:		/* Low(3) */
-		if (xdev->display && percent != 0.0) {
-			battery_low = TRUE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-low");
-			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is low.");
-			notify_notification_update(xdev->notify,
-					"Warning",
-					"The battery level is low.",
-					"battery-low");
-			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-			notify_notification_show(xdev->notify, NULL);
+		if (percent != 0.0) {
+			id = "battery-low";
+			desc = "The battery level is low.";
+			if (xdev->display) {
+				battery_low = TRUE;
+				notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+				notify_notification_show(xdev->notify, NULL);
+			}
 		}
 		break;
 	case 4:		/* Critical(4) */
-		if (xdev->display && percent != 0.0) {
-			battery_low = TRUE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-caution");
-			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is critically low.");
-			notify_notification_update(xdev->notify,
-					"Warning",
-					"The battery level is critically low.",
-					"battery-low");
-			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-			notify_notification_show(xdev->notify, NULL);
+		if (percent != 0.0) {
+			id = "battery-caution";
+			desc = "The battery level is critically low.";
+			if (xdev->display) {
+				battery_low = TRUE;
+				notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+				notify_notification_show(xdev->notify, NULL);
+			}
 		}
 		break;
 	case 6:		/* Normal(6) */
-		if (xdev->display && percent != 0.0) {
-			battery_low = FALSE;
-			notify_notification_update(xdev->notify,
-					"Notice",
-					"The battery level is good.",
-					"battery-good");
-			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-			notify_notification_show(xdev->notify, NULL);
+		if (percent != 0.0) {
+			if (xdev->display) {
+				battery_low = FALSE;
+				desc = "The battery level is good.";
+				notify_notification_update(xdev->notify, "Notice", desc, "battery-good");
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+				notify_notification_show(xdev->notify, NULL);
+			}
 		}
 		break;
 	case 7:		/* High(7) */
-		if (xdev->display && percent != 0.0) {
-			battery_low = FALSE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
-			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery level is high.");
-			notify_notification_update(xdev->notify,
-					"Notice",
-					"The battery level is high.",
-					"battery-full");
-			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-			notify_notification_show(xdev->notify, NULL);
+		if (percent != 0.0) {
+			id = "battery-full";
+			desc = "The battery level is high.";
+			if (xdev->display) {
+				battery_low = FALSE;
+				notify_notification_update(xdev->notify, "Notice", desc, "battery-full");
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+				notify_notification_show(xdev->notify, NULL);
+			}
 		}
 		break;
 	case 8:		/* Full(8) */
-		if (xdev->display && percent != 0.0) {
-			battery_low = FALSE;
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, "battery-full");
-			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, "The battery is full.");
-			notify_notification_update(xdev->notify,
-					"Notice",
-					"The battery is full.",
-					"battery-full");
-			notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
-			notify_notification_show(xdev->notify, NULL);
+		if (percent != 0.0) {
+			id = "battery-full";
+			desc = "The battery is full.";
+			if (xdev->display) {
+				battery_low = FALSE;
+				notify_notification_update(xdev->notify, "Notice", desc, "battery-full");
+				notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
+				notify_notification_show(xdev->notify, NULL);
+			}
 		}
 		break;
 	}
-	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
-	ca_proplist_destroy(pl);
+	if (id && !initial) {
+		if ((r = ca_proplist_create(&pl)) < 0) {
+			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
+			return;
+		}
+		ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
+		ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+		ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, desc);
+		ca_context_cancel(ca, CaEventBatteryLevel);
+		DPRINTF(1, "Playing %s\n", id);
+		if ((r = ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL)) < 0)
+			EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+		ca_proplist_destroy(pl);
+	}
 }
 
 void
-xde_device_state(XdeDevice *xdev, guint32 state)
+xde_device_state(XdeDevice *xdev, guint32 state, gboolean initial)
 {
-	ca_context *ca = get_default_ca_context();
-	ca_proplist *pl;
+	const char *id = NULL, *desc = NULL;
 
 	notify_notification_close(xdev->notify, NULL);
-	ca_context_cancel(ca, CaEventBatteryLevel);
-	ca_proplist_create(&pl);
-
 	switch (state) {
 	default:
 	case 0:		/* Unknown(0) */
 		break;
 	case 1:		/* Charging(1) */
-		notify_notification_update(xdev->notify,
-				"Notice",
-				"The battery is charging.",
-				"battery");
+		id = "battery-charging";
+		desc = "The battery is charging.";
+		notify_notification_update(xdev->notify, "Notice", desc, "battery");
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 2:		/* Discharging(2) */
-		notify_notification_update(xdev->notify,
-				"Notice",
-				"The battery is discharging.",
-				"battery");
+		id = "battery-discharging";
+		desc = "The battery is discharging.";
+		notify_notification_update(xdev->notify, "Notice", desc, "battery");
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 3:		/* Empty(3) */
-		notify_notification_update(xdev->notify,
-				"Notice",
-				"The battery is empty.",
-				"battery-empty");
+		id = "battery-empty";
+		desc = "The battery is empty.";
+		notify_notification_update(xdev->notify, "Notice", desc, id);
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 4:		/* Fully charged(4) */
-		notify_notification_update(xdev->notify,
-				"Notice",
-				"The battery is fully charged.",
-				"battery-full");
+		id = "battery-full";
+		desc = "The battery is fully charged.";
+		notify_notification_update(xdev->notify, "Notice", desc, id);
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 5:		/* Pending charge(5) */
-		notify_notification_update(xdev->notify,
-				"Notice",
-				"The battery is pending charge.",
-				"battery");
+		desc = "The battery is pending charge.";
+		notify_notification_update(xdev->notify, "Notice", desc, "battery");
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	case 6:		/* Pending discharge(6) */
-		notify_notification_update(xdev->notify,
-				"Notice",
-				"The battery is pending discharge.",
-				"battery");
+		desc = "The battery is pending discharge.";
+		notify_notification_update(xdev->notify, "Notice", desc, "battery");
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
 		break;
 	}
-	ca_context_play_full(ca, CaEventBatteryLevel, pl, NULL, NULL);
-	ca_proplist_destroy(pl);
+	if (id && !initial) {
+		ca_context *ca = get_default_ca_context();
+		ca_proplist *pl = NULL;
+		int r;
+
+		if ((r = ca_proplist_create(&pl)) < 0)
+			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
+		else {
+			ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, desc);
+			ca_context_cancel(ca, CaEventSystemChange);
+			DPRINTF(1, "Playing %s\n", id);
+			if ((r = ca_context_play_full(ca, CaEventSystemChange, pl, NULL, NULL)) < 0)
+				EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+			ca_proplist_destroy(pl);
+		}
+	}
 }
 
 void
@@ -1783,7 +1795,7 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 		if (!strcmp(name, "IconName")) {
 			update_display_icons(xscr);
 		} else if (!strcmp(name, "WarningLevel")) {
-			xde_device_warn(xdev, g_variant_get_uint32(val));
+			xde_device_warn(xdev, g_variant_get_uint32(val), FALSE);
 		} else if (!strcmp(name, "Percentage")) {
 			GVariant *batt;
 			guint32 level = 1;
@@ -1792,7 +1804,7 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 				level = g_variant_get_uint32(batt);
 				g_variant_unref(batt);
 			}
-			xde_device_level(xdev, level, g_variant_get_double(val));
+			xde_device_level(xdev, level, g_variant_get_double(val), FALSE);
 		} else if (!strcmp(name, "BatteryLevel")) {
 			GVariant *perc;
 			double percent = 0.0;
@@ -1801,9 +1813,9 @@ on_up_device_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_properties
 				percent = g_variant_get_double(perc);
 				g_variant_unref(perc);
 			}
-			xde_device_level(xdev, g_variant_get_uint32(val), percent);
+			xde_device_level(xdev, g_variant_get_uint32(val), percent, FALSE);
 		} else if (!strcmp(name, "State")) {
-			xde_device_state(xdev, g_variant_get_uint32(val));
+			xde_device_state(xdev, g_variant_get_uint32(val), FALSE);
 		}
 		g_variant_unref(val);
 		g_variant_unref(boxed);
@@ -1848,7 +1860,7 @@ xde_remove_device(const gchar *dev)
 }
 
 void
-xde_create_device(const gchar *dev, gboolean display)
+xde_create_device(const gchar *dev, gboolean display, gboolean initial)
 {
 	GdkDisplay *disp = gdk_display_get_default();
 	int s, nscr = gdk_display_get_n_screens(disp);
@@ -1885,7 +1897,7 @@ xde_create_device(const gchar *dev, gboolean display)
 				g_variant_unref(prop);
 			}
 			if ((prop = g_dbus_proxy_get_cached_property(proxy, "WarningLevel"))) {
-				xde_device_warn(xdev, g_variant_get_uint32(prop));
+				xde_device_warn(xdev, g_variant_get_uint32(prop), initial);
 				g_variant_unref(prop);
 			}
 			if ((prop = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
@@ -1896,11 +1908,11 @@ xde_create_device(const gchar *dev, gboolean display)
 					guint32 level = g_variant_get_uint32(prop);
 
 					g_variant_unref(prop);
-					xde_device_level(xdev, level, percent);
+					xde_device_level(xdev, level, percent, initial);
 				}
 			}
 			if ((prop = g_dbus_proxy_get_cached_property(proxy, "State"))) {
-				xde_device_state(xdev, g_variant_get_uint32(prop));
+				xde_device_state(xdev, g_variant_get_uint32(prop), initial);
 				g_variant_unref(prop);
 			}
 		}
@@ -1917,6 +1929,7 @@ on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 			   GVariant *parameters, gpointer user_data)
 {
 	gchar *device = NULL;
+	const char *id = NULL;
 
 	(void) proxy;
 	(void) sender_name;
@@ -1924,15 +1937,17 @@ on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 	DPRINTF(1, "received upower manager proxy signal %s( %s )\n", signal_name,
 		g_variant_get_type_string(parameters));
 	if (!strcmp(signal_name, "DeviceAdded")) {
+		id = "device-added";
 		g_variant_get(parameters, "(o)", &device);
 		if (device) {
 			DPRINTF(1, "device \"%s\" added\n", device);
-			xde_create_device(device, FALSE);
+			xde_create_device(device, FALSE, FALSE);
 			g_free(device);
 		} else {
 			EPRINTF("could not get added device name\n");
 		}
 	} else if (!strcmp(signal_name, "DeviceRemoved")) {
+		id = "device-removed";
 		g_variant_get(parameters, "(o)", &device);
 		if (device) {
 			DPRINTF(1, "device \"%s\" removed\n", device);
@@ -1940,6 +1955,23 @@ on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 			g_free(device);
 		} else {
 			EPRINTF("could not get removed device name\n");
+		}
+	}
+	if (id) {
+		ca_context *ca = get_default_ca_context();
+		ca_proplist *pl = NULL;
+		int r;
+
+		if ((r = ca_proplist_create(&pl)) < 0)
+			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
+		else {
+			ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+			ca_context_cancel(ca, CaEventPowerChanged);
+			DPRINTF(1, "Playing %s\n", id);
+			if ((r = ca_context_play_full(ca, CaEventPowerChanged, pl, NULL, NULL)) < 0)
+				EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+			ca_proplist_destroy(pl);
 		}
 	}
 }
@@ -1958,6 +1990,8 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 			g_variant_get_type_string(changed_properties));
 	g_variant_iter_init(&iter, changed_properties);
 	while ((prop = g_variant_iter_next_value(&iter))) {
+		const char *id = NULL;
+
 		if (g_variant_is_container(prop)) {
 			GVariantIter iter2;
 			GVariant *key;
@@ -1992,32 +2026,41 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 				continue;
 			}
 			gboolean setting = g_variant_get_boolean(boxed);
-			ca_context *ca = get_default_ca_context();
-			ca_proplist *pl;
-
-			ca_context_cancel(ca, CaEventPowerChanged);
-			ca_proplist_create(&pl);
 			if (!strcmp(name, "OnBattery")) {
 				if (setting) {
 					if (battery_low) {
-						ca_proplist_sets(pl, CA_PROP_EVENT_ID, "power-unplug-battery-low");
+						id = "power-unplug-battery-low";
 					} else {
-						ca_proplist_sets(pl, CA_PROP_EVENT_ID, "power-unplug");
+						id = "power-unplug";
 					}
 				} else {
-					ca_proplist_sets(pl, CA_PROP_EVENT_ID, "power-plug");
+					id = "power-plug";
 				}
 			} else if (!strcmp(name, "LidIsClosed")) {
 				if (setting) {
-					ca_proplist_sets(pl, CA_PROP_EVENT_ID, "lid-close");
+					id = "lid-close";
 				} else {
-					ca_proplist_sets(pl, CA_PROP_EVENT_ID, "lid-open");
+					id = "lid-open";
 				}
 			} else if (!strcmp(name, "LidIsPresent")) {
 			}
-			ca_context_play_full(ca, CaEventPowerChanged, pl, NULL, NULL);
-			ca_proplist_destroy(pl);
+			if (id) {
+				ca_context *ca = get_default_ca_context();
+				ca_proplist *pl = NULL;
+				int r;
 
+				if ((r = ca_proplist_create(&pl)) < 0)
+					EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
+				else {
+					ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
+					ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+					ca_context_cancel(ca, CaEventPowerChanged);
+					DPRINTF(1, "Playing %s\n", id);
+					if ((r = ca_context_play_full(ca, CaEventPowerChanged, pl, NULL, NULL)) < 0)
+						EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+					ca_proplist_destroy(pl);
+				}
+			}
 			g_variant_unref(boxed);
 			g_variant_unref(val);
 			g_variant_unref(key);
@@ -2099,7 +2142,7 @@ init_applet(XdeScreen *xscr)
 		g_clear_error(&err);
 	}
 	DPRINTF(1, "creating UPower manager display device proxy\n");
-	xde_create_device("/org/freedesktop/UPower/devices/DisplayDevice", TRUE);
+	xde_create_device("/org/freedesktop/UPower/devices/DisplayDevice", TRUE, TRUE);
 	DPRINTF(1, "enumerating UPower manager devices\n");
 	if ((result = g_dbus_proxy_call_sync(up_manager, "EnumerateDevices", NULL,
 					     G_DBUS_CALL_FLAGS_NONE, -1, NULL, &err))) {
@@ -2113,7 +2156,7 @@ init_applet(XdeScreen *xscr)
 
 			g_variant_iter_init(&iter2, array);
 			while ((object = g_variant_iter_next_value(&iter2))) {
-				xde_create_device(g_variant_get_string(object, NULL), FALSE);
+				xde_create_device(g_variant_get_string(object, NULL), FALSE, TRUE);
 				g_variant_unref(object);
 			}
 			g_variant_unref(array);
