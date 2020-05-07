@@ -15,7 +15,16 @@ B< xde-lm-applet> [ I<OPTIONS> ]
 
 =head1 DESCRIPTION
 
+B<xde-lm-applet> is a small system-tray and dock-app applet that can be
+used to monitor sensors (thermal, voltage, current, tachometer) in a
+device.  The state of all sensors are also displayed in a tool-tip
+pop-up and the overall state of the sensors is shown in a status icon.
+It can also be used to play sound theme specification sounds associated
+with changes in the sensors.
+
 =head1 ARGUMENTS
+
+None.
 
 =head1 OPTIONS
 
@@ -127,14 +136,24 @@ session information.
 
 =head1 USAGE
 
+=head1 BEHAVIOR
+
+B<xde-lm-applet>, as the name implies, uses the F<lmsensors> library to
+detect and determine the thermal properties of device thermal zones, CPU
+and GPU, if suitable sensors exist.
+
 =head1 SOUNDS
 
 B<xde-lm-applet> plays the following sounds under the following
-circumstances (see L<sound(7)>).
+circumstances (see L<sound(7)>):
 
 =over
 
 =item B<thermal-cold>
+
+=item B<thermal-cold-cpu>
+
+=item B<thermal-cold-gpu>
 
 The sound to use when the computer or device has cooled down or has
 started at a temperature that is below the minimum or below room
@@ -142,24 +161,51 @@ temperature.
 
 B<Spoken words:>
 "Device is Cold."
+"CPU is Cold."
+"GPU is Cold."
+
+When the program can distinguish between the device, CPU and GPU, the
+device-specific sounds are played.
 
 =item B<thermal-cool>
+
+=item B<thermal-cool-cpu>
+
+=item B<thermal-cool-gpu>
 
 The sound to use when the computer or device has cooled down (below 20%
 of thermal limits, for example).
 
 B<Spoken words:>
 "Device has Cooled Down."
+"CPU has Cooled Down."
+"GPU has Cooled Down."
+
+When the program can distinguish between the device, CPU and GPU, the
+device-specific sounds are played.
 
 =item B<thermal-caution>
+
+=item B<thermal-caution-cpu>
+
+=item B<thermal-caution-gpu>
 
 The sound to use when the computer or device has heated up (above 80% of
 thermal limits, for example).
 
 B<Spoken words:>
 "Device has Heated Up."
+"CPU has Heated Up."
+"GPU has Heated Up."
+
+When the program can distinguish between the device, CPU and GPU, the
+device-specific sounds are played.
 
 =item B<thermal-hot>
+
+=item B<thermal-hot-cpu>
+
+=item B<thermal-hot-gpu>
 
 The sound used when the computer or device has become hot (above 90% of
 thermal limits, for example).
@@ -171,10 +217,17 @@ the user of an impending automatic power-down.
 
 B<Spoken words:>
 "Device hot! Device hot! Device hot!"
+"CPU hot! CPU hot! CPU hot!"
+"GPU hot! GPU hot! GPU hot!"
+
+When the program can distinguish between the device, CPU and GPU, the
+device-specific sounds are played.
 
 =back
 
 =head1 ENVIRONMENT
+
+B<xde-lm-applet> examines the following environment variables:
 
 =over
 
@@ -199,7 +252,7 @@ Used to locate a connection to the X11R6 session manager.
 =head1 HISTORY
 
 I wrote B<xde-lm-applet> due to the deficiencies and lack of
-availability of system tray and windowmaker dock application thermal
+availability of system tray and window-maker dock application thermal
 monitors.  The program was originally written in C<perl,> but later
 ported to C<C>.
 
@@ -209,7 +262,7 @@ Brian Bidulock L<mailto:bidulock@openss7.org>.
 
 =head1 SEE ALSO
 
-L<xde-applets(5)>.
+L<xde-applets(5)>, L<xde-sound(1)>, L<sound(7)>.
 
 =head1 LICENSE
 

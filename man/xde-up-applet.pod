@@ -2,7 +2,7 @@
 
 =head1 NAME
 
- xde-up-applet - an Upower system tray applet
+ xde-up-applet - a Upower system tray applet
 
 =head1 SYNOPSIS
 
@@ -15,7 +15,16 @@
 
 =head1 DESCRIPTION
 
+B<xde-up-applet> is a small system-tray and dock-app applet that can be
+used to monitor the power (primary battery, auxiliary batteries, AC
+power adapters, and laptop lids) to a device.  The state of all
+batteries and power sources is also displayed in a tool-tip pop-up.  It
+also can be used to play sound theme specification sounds associated
+with changes in the power, batteries or lid.
+
 =head1 ARGUMENTS
+
+None.
 
 =head1 OPTIONS
 
@@ -127,9 +136,196 @@ session information.
 
 =head1 USAGE
 
+=head1 BEHAVIOR
+
+B<xde-up-applet>, as the name implies, uses the F<UPower> D-BUS
+interface to detect and determine the state and condition of various
+batteries in the system, including USB-attached battery-operated devices
+such as mouse and keyboard, power adapters, as well as the state of the
+lid (if any).
+
+=head1 SOUNDS
+
+B<xde-up-applet> plays the following sounds under the following
+circumstances (see L<sound(7)>):
+
+=over
+
+=item I<battery-full>
+
+=item B<battery-full-mouse>
+
+=item B<battery-full-keyboard>
+
+The sound used when the battery is fully loaded up.
+
+B<Spoken words:>
+"Battery is fully charged."
+"Mouse battery is fully charged."
+"Keyboard battery is fully charged."
+
+=item B<battery-charging>
+
+=item B<battery-charging-mouse>
+
+=item B<battery-charging-keyboard>
+
+The sound used when the battery begins charging.
+
+B<Spoken words:>
+"Battery charging."
+"Mouse battery charging."
+"Keyboard battery charging."
+
+When the program can distinguish between mouse, keyboard and primary
+battery, the device-specific sound is played.
+
+=item I<power-plug>
+
+The power cable has been plugged in.
+
+B<Spoken words:>
+"The power cable has been plugged in."
+
+=item I<power-unplug>
+
+The power cable has been unplugged.
+
+B<Spoken words:>
+"The power cable has been unplugged."
+
+=item B<battery-discharging>
+
+=item B<battery-discharging-mouse>
+
+=item B<battery-discharging-keyboard>
+
+The sound used when the battery begins discharging.
+
+B<Spoken words:>
+"Battery discharging."
+"Mouse battery discharging."
+"Keyboard battery discharging."
+
+When the program can distinguish between mouse, keyboard and primary
+battery, the device-specific sound is played.
+
+=item I<battery-caution>
+
+=item B<battery-caution-mouse>
+
+=item B<battery-caution-keyboard>
+
+The sound used when the battery is nearing exhaustion (below 40%, for example).
+
+B<Spoken words:>
+"Caution: battery nearing exhaustion."
+"Caution: mouse battery nearing exhaustion."
+"Caution: keyboard battery nearing exhaustion."
+
+When the program can distinguish between mouse, keyboard and primary
+battery, the device-specific sound is played.
+
+=item I<battery-low>
+
+=item B<battery-low-mouse>
+
+=item B<battery-low-keyboard>
+
+The sound used when the battery is low (below 20%, for example).
+
+B<Spoken words:>
+"Low Battery! Low Battery! Low Battery!"
+"Low Mouse Battery! Low Mouse Battery! Mouse Low Battery!"
+"Low Keyboard Battery! Low Keyboard Battery! Low Keyboard Battery!"
+
+When the program can distinguish between mouse, keyboard and primary
+battery, the device-specific sound is played.
+
+=item I<power-unplug-battery-low>
+
+=item B<power-unplug-battery-low-mouse>
+
+=item B<power-unplug-battery-low-keyboard>
+
+The power cable has been unplugged and the battery level is still low.
+
+B<Spoken words:>
+"The power cable has been unplugged and the battery level is low."
+"The power cable has been unplugged and the mouse battery level is low."
+"The power cable has been unplugged and the keyboard battery level is low."
+
+When the program can distinguish between mouse, keyboard and primary
+battery, the device-specific sound is played.
+
+Note that, for the mouse and keyboard batteries, when rechargeable, do
+not trigger this notification sound when the AC power is pulled (that is
+only for the primary battery); therefore, detecting the condition
+requires a transition of the mouse or keyboard from the charging to
+discharging state while still low.
+
+=item B<battery-empty>
+
+=item B<battery-empty-mouse>
+
+=item B<battery-empty-keyboard>
+
+The sound used when the battery is depleted.
+
+B<Spoken words:>
+"Battery empty."
+"Mouse battery empty."
+"Keyboard battery empty."
+
+When the program can distinguish between mouse, keyboard and primary
+battery, the device-specific sound is played.
+
+=item I<lid-close>
+
+The lid has been closed (for laptops, mobile devices).
+
+B<Spoken words:>
+"Lid closed."
+
+=item I<lid-open>
+
+The lid has been opened (for laptops, mobile devices).
+
+B<Spoken words:>
+"Lid opened."
+
+=back
+
 =head1 ENVIRONMENT
 
+B<xde-up-applet> examines the following environment variables:
+
+=over
+
+=item B<USER>
+
+Use to find the user's username.
+
+=item B<HOME>
+
+Used to find the user's home directory.
+
+=item B<DISPLAY>
+
+Used to determine the display on which to run.
+
+=item B<SESSION_MANAGER>
+
+Used to locate a connection to the X11R6 session manager.
+
+=back
+
 =head1 HISTORY
+
+I wrote B<xde-up-applet> due to the deficiencies and lack of
+availability of system tray and window-maker dock application battery
+monitors.  The program was originally written in C<perl,> but later
+ported to C<C>.
 
 =head1 AUTHOR
 
@@ -137,7 +333,7 @@ Brian Bidulock L<mailto:bidulock@openss7.org>.
 
 =head1 SEE ALSO
 
-L<xde-applets(5)>.
+L<xde-applets(5)>, L<xde-sound(1)>, L<sound(7)>.
 
 =head1 LICENSE
 

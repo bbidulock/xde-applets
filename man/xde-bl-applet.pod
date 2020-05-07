@@ -15,7 +15,17 @@
 
 =head1 DESCRIPTION
 
+B<xde-bl-applet> is a small system-tray and dock-app applet that can be
+used to control the back light of an LED panel, the brightness of a
+display, and the color tint (blue light filtration) of the display.  THe
+state of all back-lights and LEDs are displayed in a tool-tip pop-up and
+the overall state of the lights is shown in a status icon.  It also can
+be used to play sound theme specific sounds associated with changes to
+the display.
+
 =head1 ARGUMENTS
+
+None.
 
 =head1 OPTIONS
 
@@ -127,9 +137,53 @@ session information.
 
 =head1 USAGE
 
+=head1 BEHAVIOR
+
+Like the X.org B<xbacklight> program, B<xde-bl-applet> uses the RANDR
+X11 extension to control the back-light when the C<BACKLIGHT> or
+C<Backlight> output property exists for the CRTC.  When the appropriate
+output property exists, B<xde-bl-applet> will register for output
+property change notifications to monitor for changes made by other
+programs.
+
+In the absence of a back-light RANDR output property, on linux,
+F<libudev> will be deployed to control devices of class C<backlight>.
+When F<libudev> is supported, devices of class C<leds> and kernel name
+C<*::kbd_backlight> will also be controllable with B<xde-bl-applet>.
+When F<libudev> is supported, B<xde-bl-applet> will use the F<uevent>
+system file-system interface to monitor for changes made by the kernel
+and by other programs.
+
 =head1 ENVIRONMENT
 
+B<xde-bl-applet> examines the following environment variables:
+
+=over
+
+=item B<USER>
+
+Use to find the user's username.
+
+=item B<HOME>
+
+Used to find the user's home directory.
+
+=item B<DISPLAY>
+
+Used to determine the display on which to run.
+
+=item B<SESSION_MANAGER>
+
+Used to locate a connection to the X11R6 session manager.
+
+=back
+
 =head1 HISTORY
+
+I wrote B<xde-bl-applet> due to the deficiencies and lack of
+availability of system tray and window-maker dock application backlight
+controls.  The program was originally written in C<perl,> but later
+ported to C<C>.
 
 =head1 AUTHOR
 
