@@ -125,7 +125,7 @@ management:
 =item B<-clientId> I<CLIENTID>
 
 Specifies the X Session Management client identifier of the previously
-running session of B<xde-winlist>.
+running session of B<xde-lm-applet>.
 
 =item B<-restore> I<SAVEFILE>
 
@@ -225,6 +225,8 @@ device-specific sounds are played.
 
 =back
 
+=head1 FILES
+
 =head1 ENVIRONMENT
 
 B<xde-lm-applet> examines the following environment variables:
@@ -252,9 +254,9 @@ Used to locate a connection to the X11R6 session manager.
 =head1 HISTORY
 
 I wrote B<xde-lm-applet> due to the deficiencies and lack of
-availability of system tray and window-maker dock application thermal
-monitors.  The program was originally written in C<perl,> but later
-ported to C<C>.
+availability of system tray and window-maker dock application
+thermal monitors.
+The program was originally written in C<perl,> but later ported to C<C>.
 
 =head1 AUTHOR
 
