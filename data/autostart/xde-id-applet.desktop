@@ -1,0 +1,16 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=Input Device Applet
+GenericName=Tray Icon
+Comment=An Input Device System Tray Icon
+Icon=input_devices_settings
+TryExec=xde-id-applet
+Exec=xde-id-applet --replace --nodock
+Terminal=false
+Categories=XDE;System;Utility;TrayIcon;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=XDE-ID-Applet
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Application
