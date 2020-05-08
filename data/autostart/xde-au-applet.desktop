@@ -1,0 +1,16 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=Audio Applet
+GenericName=Tray Icon
+Comment=An Audio System Tray Icon
+Icon=audio-card
+TryExec=xde-au-applet
+Exec=xde-au-applet --replace --nodock
+Terminal=false
+Categories=XDE;System;Utility;TrayIcon;
+NotShowIn=GNOME;KDE;XFCE;LXDE;
+StartupNotify=true
+StartupWMClass=XDE-AU-Applet
+X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Phase=Application
