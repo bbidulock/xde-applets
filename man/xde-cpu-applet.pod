@@ -2,20 +2,22 @@
 
 =head1 NAME
 
- xde-cpu-applet - an Avahi system tray applet
+ xde-cpu-applet - an CPU performance system tray applet
 
 =head1 SYNOPSIS
 
- xde-cpu-applet [ OPTIONS ]
- xde-cpu-applet --quit [ OPTIONS ]
- xde-cpu-applet --replace [ OPTIONS ]
- xde-cpu-applet --help [ OPTIONS ]
- xde-cpu-applet --version
- xde-cpu-applet --copying
+B< xde-cpu-applet> [ I<OPTIONS> ]
+ B<xde-cpu-applet> --quit [ I<OPTIONS> ]
+ B<xde-cpu-applet> --replace [ I<OPTIONS> ]
+ B<xde-cpu-applet> --help [ I<OPTIONS> ]
+ B<xde-cpu-applet> --version
+ B<xde-cpu-applet> --copying
 
 =head1 DESCRIPTION
 
 =head1 ARGUMENTS
+
+None.
 
 =head1 OPTIONS
 
@@ -116,7 +118,7 @@ management:
 =item B<-clientId> I<CLIENTID>
 
 Specifies the X Session Management client identifier of the previously
-running session of B<xde-winlist>.
+running session of B<xde-cpu-applet>.
 
 =item B<-restore> I<SAVEFILE>
 
@@ -127,9 +129,49 @@ session information.
 
 =head1 USAGE
 
+=head1 BEHAVIOR
+
+=head1 SOUNDS
+
+B<xde-cpu-applet> plays the following sounds under the following
+circumstances (see L<sound(7)>):
+
+=over
+
+=back
+
+=head1 FILES
+
 =head1 ENVIRONMENT
 
+B<xde-cpu-applet> examines the following environment variables:
+
+=over
+
+=item B<USER>
+
+Use to find the user's username.
+
+=item B<HOME>
+
+Used to find the user's home directory.
+
+=item B<DISPLAY>
+
+Used to determine the display on which to run.
+
+=item B<SESSION_MANAGER>
+
+Used to locate a connection to the X11R6 session manager.
+
+=back
+
 =head1 HISTORY
+
+I wrote B<xde-cpu-applet> due to the deficiencies and lack of
+availability of system tray and window-maker dock application
+cpu performance controls.
+The program was originally written in C<perl,> but later ported to C<C>.
 
 =head1 AUTHOR
 
