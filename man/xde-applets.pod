@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-xde-applets - package of 'C' language system tray and dock applets for XDE
+ xde-applets - package of 'C' language system tray and dock applets for XDE
 
 =head1 DESCRIPTION
 
@@ -12,15 +12,33 @@ package are as follows:
 
 =over
 
+=item L<xde-au-applet(1)>
+
+Provides a system tray and dock applet for monitoring and controlling
+the audio system.
+(Only supported on systems that support ALSA or Pulse Audio.)
+
 =item L<xde-av-applet(1)>
 
 Provides a system tray and dock applet for monitoring DDNS and DNS-SD
 networks.
 
+=item L<xde-bl-applet(1)>
+
+Provides a system tray and dock applet for monitoring and controlling
+display panel back-light and monitor characteristics.
+(Requires X11 RANDR extension support for at least minimal operation on
+non-Linux systems.)
+
 =item L<xde-bt-applet(1)>
 
 Provides a system tray and dock applet for managing and connecting
 bluetooth devices to a computer.
+
+=item L<xde-cpu-applet(1)>
+
+Provides a system tray and dock applet for managing and monitoring CPU
+frequency and system performance/power-consumption/cooling trade-offs.
 
 =item L<xde-dh-applet(1)>
 
@@ -31,6 +49,11 @@ connections with the DHCP client daemon (L<dhcpcd(8)>).
 
 Provides a system tray and dock applet for monitoring HAL (which in turn
 monitors devices and system resources).
+
+=item L<xde-id-applet(1)>
+
+Provides a system tray and dock applet for managing and monitoring input
+device parameters and characteristics.
 
 =item L<xde-lm-applet(1)>
 
@@ -58,6 +81,245 @@ network connections using L<wpa_supplicant(1)>.
 
 =back
 
+=head1 ARGUMENTS
+
+None.
+
+=head1 OPTIONS
+
+The following options are accepted by all applets:
+
+=head2 COMMAND OPTIONS
+
+When specified, the following options alter the primary operating mode
+of the applet:
+
+=over
+
+=item [B<--monitor>, B<-m>]
+
+When no command is specified, the default is to run the applet without
+replacing an existing instance.  It is an error if an instance is
+currently running.
+
+=item B<--replace>, B<-r>
+
+Run the applet, but replace a running instance of the applet.  It is not
+an error when no instance is currently running.
+
+=item B<--restart>, B<-S>
+
+Ask a running instance to restart.  It is an error if there is no
+instance currently running.  This is useful when the binary has been
+upgraded.
+
+=item B<--quit>, B<-q>
+
+Ask a running instance of the applet to quit.  It is not an error if no
+instance is currently running.
+
+=item B<--help>, B<-h>
+
+Prints usage information and the current options settings and defaults,
+then exits.
+
+=item B<--version>, B<-V>
+
+Prints the version of the program and a brief copyright statement, then
+exits.  Parse the first line with L<awk(1)> to obtain just the version
+number.
+
+=item B<--copying>, B<-C>
+
+Prints the long copying permission statement, then exits.
+
+=back
+
+=head2 GENERAL OPTIONS
+
+The following options are general options:
+
+=over
+
+=item B<--display>, B<-d> I<DISPLAY>
+
+Specify the display to use (overriding the B<DISPLAY> environment
+variable).  The default is the value of the B<DISPLAY> environment
+variable.
+
+=item B<--screen>, B<-s> I<SCREEN>
+
+Specify the screen number to use when locating the current window and
+workspace.  The default is either specified by the B<DISPLAY>
+environment variable (when that variable specifies a screen); otherwise,
+all screens will be considered by default.
+
+=item B<--notray>, B<-Y> or B<--tray>, B<-y>
+
+Specifies to install (B<-y>) or not to install (B<-Y>) a system tray
+status icon.  The default is normally to install a system tray status
+icon.  This option has no effect if a system tray is not running.
+
+=item B<--nodock>, B<-K> or B<--dock>, B<-k>
+
+Specifies to install (B<-k>) or not to install (B<-K>) a withdrawn
+windowmaker dock application.  The default is dependent on the
+B<XDG_CURRENT_DESKTOP> and detection of the running window manager.
+This detection is performed to determine whether the desktop environment
+and window manager is capable of handling a withdrawn windowmaker dock
+application.  The default is to run a dock application if the desktop
+environment or window manager supports it.  Specifying this option
+overrides the default behaviour.
+
+=back
+
+=head2 SESSION MANAGEMENT OPTIONS
+
+X session management options are not used by another user other than the
+X11 Session Manager.  The following options are used by X session
+management:
+
+=over
+
+=item B<-clientId> I<CLIENTID>
+
+Specifies the X Session Management client identifier of the previously
+running session of the applet.
+
+=item B<-restore> I<SAVEFILE>
+
+Specifies the X Session Management filename of a file to which to save
+session information.
+
+=back
+
+=head1 USAGE
+
+=head1 BEHAVIOR
+
+=head1 SOUNDS
+
+All applets provide the ability to play event sounds consistent with the
+X Desktop Group (XDG) Sound Theme specification (see L<sound(7)>),
+relieving the light-weight window manager of playing these sounds.  The
+F<libcanberra> library is used to play sounds where available.  The
+following event identifiers are supported by the various applets:  (See
+the individual manual pages for the applets for more detailed
+explanation of the supported sound event identifiers.)
+
+=over
+
+=item I<battery-caution>
+
+=item I<battery-caution-keyboard>
+
+=item I<battery-caution-mouse>
+
+=item I<battery-charging>
+
+=item I<battery-charging-keyboard>
+
+=item I<battery-charging-mouse>
+
+=item I<battery-discharging>
+
+=item I<battery-discharging-keyboard>
+
+=item I<battery-discharging-mouse>
+
+=item I<battery-empty>
+
+=item I<battery-empty-keyboard>
+
+=item I<battery-empty-mouse>
+
+=item I<battery-full>
+
+=item I<battery-full-keyboard>
+
+=item I<battery-full-mouse>
+
+=item I<battery-low>
+
+=item I<battery-low-keyboard>
+
+=item I<battery-low-mouse>
+
+=item I<device-added>
+
+=item I<device-removed>
+
+=item I<lid-close>
+
+=item I<lid-open>
+
+=item I<power-plug>
+
+=item I<power-unplug>
+
+=item I<power-unplug-battery-low>
+
+=item I<power-unplug-battery-low-keyboard>
+
+=item I<power-unplug-battery-low-mouse>
+
+=item I<thermal-caution>
+
+=item I<thermal-caution-cpu>
+
+=item I<thermal-caution-gpu>
+
+=item I<thermal-cold>
+
+=item I<thermal-cold-cpu>
+
+=item I<thermal-cold-gpu>
+
+=item I<thermal-cool>
+
+=item I<thermal-cool-cpu>
+
+=item I<thermal-cool-gpu>
+
+=item I<thermal-hot>
+
+=item I<thermal-hot-cpu>
+
+=item I<thermal-hot-gpu>
+
+=back
+
+=head1 FILES
+
+=head1 ENVIRONMENT
+
+The applets examine the following environment variables:
+
+=over
+
+=item B<USER>
+
+Use to find the user's username.
+
+=item B<HOME>
+
+Used to find the user's home directory.
+
+=item B<DISPLAY>
+
+Used to determine the display on which to run.
+
+=item B<SESSION_MANAGER>
+
+Used to locate a connection to the X11R6 session manager.
+
+=item B<XDG_CURRENT_DESKTOP>
+
+Used to determine whether the desktop environment supports a
+windowmaker style dock.
+
+=back
+
 =head1 CAVEATS
 
 Not all of the programs of the original separate perl packages have
@@ -73,22 +335,51 @@ These libraries are useful things for a desktop environment.  Therefore,
 each of the applets in the separate packages were converted from
 perl programs to C<C> language programs.
 
+Many of these applets have variations in the wild from other sources.
+The difficulty I found with these applets are as follows:
+
+=over
+
+=item 1.  Not built with consistent toolkit, language or dependency choices.
+
+These applets are C<C>-language programs that use the GTK 2 toolkit for
+consistent theme, look and feel.
+
+=item 2.  Linux specific.
+
+Wherever possible, an attempt has been made to allow the applets to
+operate, even when Linux-specific support is not available.
+
+=item 3.  Inadequate or restrictive function.
+
+These applets are designed to provide complete management, control and
+monitoring of the system aspect for which they are responsible.
+
+=back
+
+Many of the functions provided by these applets are provided by
+heavy-weight desktops.  These applets are intended on providing similar
+functionality for light-weight window managers that provide either a
+system tray or dock to house them.
+
 =head1 AUTHOR
 
 Brian Bidulock L<mailto:bidulock@openss7.org>.
 
 =head1 SEE ALSO
 
-L<xde-av-applet(1)>,
-L<xde-av-applet(1)>,
-L<xde-bt-applet(1)>,
-L<xde-dh-applet(1)>,
-L<xde-hal-applet(1)>,
-L<xde-lm-applet(1)>,
-L<xde-pk-applet(1)>,
-L<xde-sd-applet(1)>,
-L<xde-up-applet(1)>,
-L<xde-wl-applet(1)>,
+L<xde-av-applet>,
+L<xde-bl-applet>,
+L<xde-bt-applet>,
+L<xde-cpu-applet>,
+L<xde-dh-applet>,
+L<xde-hal-applet>,
+L<xde-id-applet>,
+L<xde-lm-applet>,
+L<xde-pk-applet>,
+L<xde-sd-applet>,
+L<xde-up-applet>,
+L<xde-wl-applet>,
 L<wpa_supplicant(1)>,
 L<dhcpcd(1)>
 
