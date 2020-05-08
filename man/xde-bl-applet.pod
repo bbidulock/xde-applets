@@ -6,12 +6,12 @@
 
 =head1 SYNOPSIS
 
- xde-bl-applet [ OPTIONS ]
- xde-bl-applet --quit [ OPTIONS ]
- xde-bl-applet --replace [ OPTIONS ]
- xde-bl-applet --help [ OPTIONS ]
- xde-bl-applet --version
- xde-bl-applet --copying
+B< xde-bl-applet> [ I<OPTIONS> ]
+ B<xde-bl-applet> --quit [ I<OPTIONS> ]
+ B<xde-bl-applet> --replace [ I<OPTIONS> ]
+ B<xde-bl-applet> --help [ I<OPTIONS> ]
+ B<xde-bl-applet> --version
+ B<xde-bl-applet> --copying
 
 =head1 DESCRIPTION
 
@@ -126,7 +126,7 @@ management:
 =item B<-clientId> I<CLIENTID>
 
 Specifies the X Session Management client identifier of the previously
-running session of B<xde-winlist>.
+running session of B<xde-bl-applet>.
 
 =item B<-restore> I<SAVEFILE>
 
@@ -153,6 +153,17 @@ C<*::kbd_backlight> will also be controllable with B<xde-bl-applet>.
 When F<libudev> is supported, B<xde-bl-applet> will use the F<uevent>
 system file-system interface to monitor for changes made by the kernel
 and by other programs.
+
+=head1 SOUNDS
+
+B<xde-bl-applet> plays the following sounds under the following
+circumstances (see L<sound(7)>):
+
+=over
+
+=back
+
+=head1 FILES
 
 =head1 ENVIRONMENT
 
@@ -181,9 +192,9 @@ Used to locate a connection to the X11R6 session manager.
 =head1 HISTORY
 
 I wrote B<xde-bl-applet> due to the deficiencies and lack of
-availability of system tray and window-maker dock application backlight
-controls.  The program was originally written in C<perl,> but later
-ported to C<C>.
+availability of system tray and window-maker dock application
+backlight controls.
+The program was originally written in C<perl,> but later ported to C<C>.
 
 =head1 AUTHOR
 
