@@ -126,6 +126,19 @@ PKG_CHECK_MODULES([CAIRO],[cairo])
 PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
 PKG_CHECK_MODULES([PKGLIB],[packagekit-glib2])
 
+AC_ARG_ENABLE([pulse],
+	AC_HELP_STRING([--disable-pulse],
+		[Disable Pulse support @<:@default=auto@:>@]))
+if test "x$enable_pulse" != xno ; then
+	PKG_CHECK_MODULES([PULSE],[libpulse],
+		[AC_DEFINE([PULSE],[1], [Define to 1 to support Pulse library.])],
+		[enable_pulse=no])
+fi
+AM_CONDITIONAL([PULSE],[test "x$enable_pulse" != xno])
+AC_MSG_CHECKING([for Pulse support])
+AC_MSG_RESULT([${enable_pulse:-yes}])
+AM_CONDITIONAL([HAVE_PULSE],[test  "x$enable_pulse" != "xno"])
+
 AC_ARG_ENABLE([gudev],
 	AC_HELP_STRING([--disable-gudev],
 		[Disable GUDEV support @<:@default=auto@:>@]))
