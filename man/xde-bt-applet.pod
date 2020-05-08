@@ -6,16 +6,18 @@
 
 =head1 SYNOPSIS
 
- xde-bt-applet [ OPTIONS ]
- xde-bt-applet --quit [ OPTIONS ]
- xde-bt-applet --replace [ OPTIONS ]
- xde-bt-applet --help [ OPTIONS ]
- xde-bt-applet --version
- xde-bt-applet --copying
+B< xde-bt-applet> [ I<OPTIONS> ]
+ B<xde-bt-applet> --quit [ I<OPTIONS> ]
+ B<xde-bt-applet> --replace [ I<OPTIONS> ]
+ B<xde-bt-applet> --help [ I<OPTIONS> ]
+ B<xde-bt-applet> --version
+ B<xde-bt-applet> --copying
 
 =head1 DESCRIPTION
 
 =head1 ARGUMENTS
+
+None.
 
 =head1 OPTIONS
 
@@ -116,7 +118,7 @@ management:
 =item B<-clientId> I<CLIENTID>
 
 Specifies the X Session Management client identifier of the previously
-running session of B<xde-winlist>.
+running session of B<xde-bt-applet>.
 
 =item B<-restore> I<SAVEFILE>
 
@@ -127,9 +129,49 @@ session information.
 
 =head1 USAGE
 
+=head1 BEHAVIOR
+
+=head1 SOUNDS
+
+B<xde-bt-applet> plays the following sounds under the following
+circumstances (see L<sound(7)>):
+
+=over
+
+=back
+
+=head1 FILES
+
 =head1 ENVIRONMENT
 
+B<xde-bt-applet> examines the following environment variables:
+
+=over
+
+=item B<USER>
+
+Use to find the user's username.
+
+=item B<HOME>
+
+Used to find the user's home directory.
+
+=item B<DISPLAY>
+
+Used to determine the display on which to run.
+
+=item B<SESSION_MANAGER>
+
+Used to locate a connection to the X11R6 session manager.
+
+=back
+
 =head1 HISTORY
+
+I wrote B<xde-bt-applet> due to the deficiencies and lack of
+availability of system tray and window-maker dock application
+for avahi/rendevous.
+The program was originally written in C<perl,> but later ported to C<C>.
 
 =head1 AUTHOR
 
