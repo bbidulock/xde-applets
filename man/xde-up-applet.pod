@@ -6,12 +6,12 @@
 
 =head1 SYNOPSIS
 
- xde-up-applet [ OPTIONS ]
- xde-up-applet --quit [ OPTIONS ]
- xde-up-applet --replace [ OPTIONS ]
- xde-up-applet --help [ OPTIONS ]
- xde-up-applet --version
- xde-up-applet --copying
+B< xde-up-applet> [ I<OPTIONS> ]
+ B<xde-up-applet> --quit [ I<OPTIONS> ]
+ B<xde-up-applet> --replace [ I<OPTIONS> ]
+ B<xde-up-applet> --help [ I<OPTIONS> ]
+ B<xde-up-applet> --version
+ B<xde-up-applet> --copying
 
 =head1 DESCRIPTION
 
@@ -125,7 +125,7 @@ management:
 =item B<-clientId> I<CLIENTID>
 
 Specifies the X Session Management client identifier of the previously
-running session of B<xde-winlist>.
+running session of B<xde-up-applet>.
 
 =item B<-restore> I<SAVEFILE>
 
@@ -296,6 +296,8 @@ B<Spoken words:>
 
 =back
 
+=head1 FILES
+
 =head1 ENVIRONMENT
 
 B<xde-up-applet> examines the following environment variables:
@@ -323,9 +325,14 @@ Used to locate a connection to the X11R6 session manager.
 =head1 HISTORY
 
 I wrote B<xde-up-applet> due to the deficiencies and lack of
-availability of system tray and window-maker dock application battery
-monitors.  The program was originally written in C<perl,> but later
-ported to C<C>.
+availability of system tray and window-maker dock application
+battery monitors.
+The program was originally written in C<perl,> but later ported to C<C>.
+
+There are quite a few simple battery system tray applets, however, most
+are crude and do no display much.  For example, currently on my desktop,
+the battery in my mouse is about to exhaust, the one in my keyboard is
+fine, and the only thing another applet shows is "AC Power, No Battery".
 
 =head1 AUTHOR
 
