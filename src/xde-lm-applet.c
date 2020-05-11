@@ -226,6 +226,7 @@ char **cmdArgv;
 /** @} */
 
 Atom _XA_XDE_ICON_THEME_NAME;	/* XXX */
+Atom _XA_XDE_SOUND_THEME_NAME;	/* XXX */
 Atom _XA_XDE_THEME_NAME;
 Atom _XA_XDE_WM_CLASS;
 Atom _XA_XDE_WM_CMDLINE;
@@ -244,6 +245,7 @@ Atom _XA_XDE_WM_PID;
 Atom _XA_XDE_WM_PRVDIR;
 Atom _XA_XDE_WM_RCFILE;
 Atom _XA_XDE_WM_REDIR_SUPPORT;
+Atom _XA_XDE_WM_SOUNDTHEME;	/* XXX */
 Atom _XA_XDE_WM_STYLE;
 Atom _XA_XDE_WM_STYLENAME;
 Atom _XA_XDE_WM_SYSDIR;
@@ -255,10 +257,10 @@ Atom _XA_XDE_WM_VERSION;
 Atom _XA_GTK_READ_RCFILES;
 Atom _XA_MANAGER;
 
-Atom _XA_XDE_APPLET_REFRESH;
-Atom _XA_XDE_APPLET_RESTART;
-Atom _XA_XDE_APPLET_POPMENU;
-Atom _XA_XDE_APPLET_REQUEST;
+Atom _XA_PREFIX_REFRESH;
+Atom _XA_PREFIX_RESTART;
+Atom _XA_PREFIX_POPMENU;
+Atom _XA_PREFIX_REQUEST;
 
 #define UPDATE_TIMEOUT 750
 #define CA_CONTEXT_ID	55
@@ -286,6 +288,7 @@ struct EventQueue {
 	GIOChannel *channel;
 	guint source_id;
 	GQueue *queue;
+	gboolean enabled;
 } CaEventQueues[CaEventMaximumContextId-CA_CONTEXT_ID] = { {0, }, };
 
 typedef enum {
@@ -323,6 +326,7 @@ typedef struct {
 	WnckScreen *wnck;
 	char *theme;
 	char *itheme;
+	char *stheme;
 	Window selwin;
 	Window owner;
 	Atom atom;
@@ -448,6 +452,49 @@ typedef struct {
 /** @section Queued Sound Functions
   * @{ */
 
+static int initializing = 0;
+
+int
+ca_context_cancel_norm(ca_context *ca, uint32_t id)
+{
+	if (id >= CA_CONTEXT_ID && id < CaEventMaximumContextId) {
+		struct EventQueue *q = &CaEventQueues[id - CA_CONTEXT_ID];
+
+		if (!q->enabled)
+			return CA_SUCCESS;
+	}
+	return ca_context_cancel(ca, id);
+}
+
+int
+ca_context_play_norm(ca_context *ca, uint32_t id, ca_proplist *pl, const char *event_id, const char *event_desc, ca_finish_callback_t cb, void *userdata)
+{
+	int r;
+
+	if (initializing) {
+		if (cb)
+			(*cb) (ca, id, CA_SUCCESS, userdata);
+		return CA_SUCCESS;
+	}
+	if (id >= CA_CONTEXT_ID && id < CaEventMaximumContextId) {
+		struct EventQueue *q = &CaEventQueues[id - CA_CONTEXT_ID];
+
+		if (!q->enabled) {
+			if (cb)
+				(*cb) (ca, id, CA_SUCCESS, userdata);
+			return CA_SUCCESS;
+		}
+	}
+	if (event_id)
+		ca_proplist_sets(pl, CA_PROP_EVENT_ID, event_id);
+	if (event_desc)
+		ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, event_desc);
+	DPRINTF(1, "Playing %s\n", event_id);
+	if ((r = ca_context_play_full(ca, id, pl, cb, userdata)) < 0)
+		EPRINTF("Cannot play %s: %s\n", event_id, ca_strerror(r));
+	return (r);
+}
+
 void
 play_done(ca_context *ca, uint32_t id, int error_code, void *user_data)
 {
@@ -458,8 +505,11 @@ play_done(ca_context *ca, uint32_t id, int error_code, void *user_data)
 	(void) id;
 	(void) error_code;
 
-	if (!g_queue_is_empty(q->queue))
+	DPRINTF(1, "Playing done for context id %u\n", id);
+	if (!g_queue_is_empty(q->queue)) {
+		DPRINTF(1, "Signalling next event to play for context id %u\n", id);
 		if (write(q->efd, &count, sizeof(count))) {}
+	}
 }
 
 void
@@ -478,7 +528,7 @@ ca_context_cancel_queue(ca_context *ca, uint32_t id)
 
 		g_queue_clear_full(q->queue, prop_free);
 	}
-	return ca_context_cancel(ca, id);
+	return ca_context_cancel_norm(ca, id);
 }
 
 int
@@ -490,6 +540,10 @@ ca_context_play_queue(ca_context *ca, uint32_t id, ca_proplist *pl)
 		struct EventQueue *q = &CaEventQueues[id - CA_CONTEXT_ID];
 		int playing = 0;
 
+		if (!q->enabled) {
+			ca_proplist_destroy(pl);
+			return CA_SUCCESS;
+		}
 		ca_context_playing(ca, id, &playing);
 		if (playing || !g_queue_is_empty(q->queue)) {
 			g_queue_push_tail(q->queue, pl);
@@ -564,7 +618,6 @@ on_status_selected(GtkMenuItem *item, gpointer user_data)
 {
 	XdeScreen *xscr = user_data;
 
-	(void) xscr;
 	(void) item;
 	get_status_window(xscr);
 }
@@ -1377,11 +1430,8 @@ update_sensors(XdeScreen *xscr)
 			break;
 		}
 		if (id) {
-			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
-			ca_context_cancel(ca, CaEventThermalEvent);
-			DPRINTF(1, "Playing %s\n", id);
-			if ((r = ca_context_play_full(ca, CaEventThermalEvent, pl, NULL, NULL)) < 0)
-				EPRINTF("Cannot play %s: %s\n", id, ca_strerror(r));
+			ca_context_cancel_norm(ca, CaEventThermalEvent);
+			ca_context_play_norm(ca, CaEventThermalEvent, pl, id, NULL, NULL, NULL);
 		}
 		ca_proplist_destroy(pl);
 	}
@@ -1610,23 +1660,32 @@ queue_call(GIOChannel *channel, GIOCondition condition, gpointer data)
 	(void) channel;
 	(void) condition;
 
+	DPRINTF(1, "Reading event file descriptor context id %u\n", q->context_id);
 	if (read(q->efd, &count, sizeof(count)) >= 0) {
 		ca_context *ca = get_default_ca_context();
 		int playing = 0;
 
+		if (!q->enabled) {
+			ca_context_cancel_queue(ca, q->context_id);
+			return G_SOURCE_CONTINUE;
+		}
 		ca_context_playing(ca, q->context_id, &playing);
 		if (!playing) {
 			ca_proplist *pl;
 
+			DPRINTF(1, "Popping queue for context id %u\n", q->context_id);
 			while ((pl = g_queue_pop_head(q->queue))) {
 				int r;
 
+				DPRINTF(1, "Playing queued event for context id %u\n", q->context_id);
 				r = ca_context_play_full(ca, q->context_id, pl, play_done, q);
 				ca_proplist_destroy(pl);
 				if (r == CA_SUCCESS)
 					break;
 			}
 		}
+	} else {
+		EPRINTF("Did not get event!\n");
 	}
 	return G_SOURCE_CONTINUE;
 }
@@ -1634,10 +1693,15 @@ queue_call(GIOChannel *channel, GIOCondition condition, gpointer data)
 void
 init_canberra(void)
 {
+	GdkDisplay *disp = gdk_display_get_default();
+	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
 	ca_context *ca = get_default_ca_context();
 	ca_proplist *pl;
 	int theme_set = 0;
-	int i;
+	int i, s, nscr;
+	char selection[64] = { 0, };
+	Atom atom;
+	Window owner;
 
 	ca_proplist_create(&pl);
 	ca_proplist_sets(pl, CA_PROP_APPLICATION_ID, "com.unexicon." RESNAME);
@@ -1646,7 +1710,6 @@ init_canberra(void)
 	ca_proplist_sets(pl, CA_PROP_APPLICATION_LANGUAGE, "C");
 	ca_proplist_sets(pl, CA_PROP_CANBERRA_VOLUME, "0.0");
 	if (!theme_set) {
-		GdkDisplay *disp = gdk_display_get_default();
 		GdkScreen *scrn = gdk_display_get_default_screen(disp);
 		GtkSettings *set = gtk_settings_get_for_screen(scrn);
 		GValue theme_v = G_VALUE_INIT;
@@ -1693,7 +1756,19 @@ init_canberra(void)
 			if ((q->channel = g_io_channel_unix_new(q->efd))) {
 				q->queue = g_queue_new();
 				q->source_id = g_io_add_watch(q->channel, G_IO_IN, queue_call, q);
+				q->enabled = TRUE;
 			}
+		}
+	}
+	nscr = gdk_display_get_n_screens(disp);
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), "_XDE_PAGER_S%d", s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom))) {
+			DPRINTF(1, "Disabling Workspace Change Context\n");
+			CaEventQueues[CaEventWorkspaceChange - CA_CONTEXT_ID].enabled = FALSE;
+			DPRINTF(1, "Disabling Desktop Change Context\n");
+			CaEventQueues[CaEventDesktopChange - CA_CONTEXT_ID].enabled = FALSE;
 		}
 	}
 }
@@ -1903,6 +1978,74 @@ update_theme(XdeScreen *xscr, Atom prop)
 }
 
 static void
+update_sound_theme(XdeScreen *xscr, Atom prop)
+{
+	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
+	Window root = RootWindow(dpy, xscr->index);
+	XTextProperty xtp = { NULL, };
+	Bool changed = False;
+	GtkSettings *set;
+
+	gtk_rc_reparse_all();
+	if (!prop || prop == _XA_GTK_READ_RCFILES)
+		prop = _XA_XDE_SOUND_THEME_NAME;
+	if (XGetTextProperty(dpy, root, &xtp, prop)) {
+		char **list = NULL;
+		int strings = 0;
+
+		if (Xutf8TextPropertyToTextList(dpy, &xtp, &list, &strings) == Success) {
+			if (strings >= 1) {
+				char *rc_string;
+
+				rc_string = g_strdup_printf("gtk-sound-theme-name=\"%s\"", list[0]);
+				gtk_rc_parse_string(rc_string);
+				g_free(rc_string);
+				if (!xscr->stheme || strcmp(xscr->stheme, list[0])) {
+					free(xscr->stheme);
+					xscr->stheme = strdup(list[0]);
+					changed = True;
+				}
+			}
+			if (list)
+				XFreeStringList(list);
+		} else {
+			char *name = NULL;
+
+			EPRINTF("could not get text list for %s property\n", (name = XGetAtomName(dpy, prop)));
+			if (name)
+				XFree(name);
+		}
+		if (xtp.value)
+			XFree(xtp.value);
+	} else {
+		char *name = NULL;
+
+		DPRINTF(1, "could not get %s for root 0x%lx\n", (name = XGetAtomName(dpy, prop)), root);
+		if (name)
+			XFree(name);
+	}
+	if ((set = gtk_settings_get_for_screen(xscr->scrn))) {
+		GValue theme_v = G_VALUE_INIT;
+		const char *stheme;
+
+		g_value_init(&theme_v, G_TYPE_STRING);
+		g_object_get_property(G_OBJECT(set), "gtk-sound-theme-name", &theme_v);
+		stheme = g_value_get_string(&theme_v);
+		if (stheme && (!xscr->stheme || strcmp(xscr->stheme, stheme))) {
+			free(xscr->stheme);
+			xscr->stheme = strdup(stheme);
+			changed = True;
+		}
+		g_value_unset(&theme_v);
+	}
+	if (changed) {
+		DPRINTF(1, "New sound theme is %s\n", xscr->stheme);
+		/* FIXME: do something more about it. */
+	} else
+		DPRINTF(1, "No change in current sound theme %s\n", xscr->stheme);
+}
+
+static void
 update_icon_theme(XdeScreen *xscr, Atom prop)
 {
 	Display *dpy = GDK_DISPLAY_XDISPLAY(xscr->disp);
@@ -2053,15 +2196,26 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 {
 	XdeScreen *xscr = NULL;
 	int s, nscr = ScreenCount(dpy);
+	Atom type = xev->xclient.message_type;
+	char *name = NULL;
 
 	for (s = 0; s < nscr; s++)
-		if (xev->xclient.window == RootWindow(dpy, s))
+		if (xev->xclient.window == RootWindow(dpy, s)) {
 			xscr = screens + s;
-	if (options.debug) {
+			break;
+		}
+	if (!xscr) {
+#ifdef STARTUP_NOTIFICATION
+		if (type != _XA_NET_STARTUP_INFO && type != _XA_NET_STARTUP_INFO_BEGIN)
+#endif
+			EPRINTF("could not find screen for client message %s with window 0%08lx\n",
+				name ? : (name = XGetAtomName(dpy, type)), xev->xclient.window);
+		xscr = screens;
+	}
+	if (options.debug > 1) {
 		fprintf(stderr, "==> ClientMessage: %p\n", xscr);
 		fprintf(stderr, "    --> window = 0x%08lx\n", xev->xclient.window);
-		fprintf(stderr, "    --> message_type = %s\n",
-			XGetAtomName(dpy, xev->xclient.message_type));
+		fprintf(stderr, "    --> message_type = %s\n", name ? : (name = XGetAtomName(dpy, type)));
 		fprintf(stderr, "    --> format = %d\n", xev->xclient.format);
 		switch (xev->xclient.format) {
 			int i;
@@ -2080,30 +2234,47 @@ event_handler_ClientMessage(Display *dpy, XEvent *xev)
 			break;
 		case 32:
 			fprintf(stderr, "    --> data =");
-			for (i = 0; i < 20; i++)
+			for (i = 0; i < 5; i++)
 				fprintf(stderr, " %08lx", xev->xclient.data.l[i]);
 			fprintf(stderr, "\n");
 			break;
 		}
 		fprintf(stderr, "<== ClientMessage: %p\n", xscr);
 	}
-	if (xscr && xev->xclient.message_type == _XA_GTK_READ_RCFILES) {
-		update_theme(xscr, xev->xclient.message_type);
-		update_icon_theme(xscr, xev->xclient.message_type);
+	if (name) {
+		XFree(name);
+		name = NULL;
+	}
+	if (type == _XA_GTK_READ_RCFILES) {
+		update_theme(xscr, type);
+		update_icon_theme(xscr, type);
+		update_sound_theme(xscr, type);
+		return GDK_FILTER_REMOVE;	/* event handled */
+	} else if (type == _XA_MANAGER) {
+		Atom select = xev->xclient.data.l[1], atom;
+		gchar *sname;
+
+		sname = g_strdup_printf("_XDE_PAGER_S%d", xscr->index);
+		atom = XInternAtom(dpy, sname, False);
+		g_free(sname);
+		if (select == atom) {
+			CaEventQueues[CaEventWorkspaceChange - CA_CONTEXT_ID].enabled = FALSE;
+			CaEventQueues[CaEventDesktopChange - CA_CONTEXT_ID].enabled = FALSE;
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_APPLET_REFRESH) {
+		}
+	} else if (type == _XA_PREFIX_REFRESH) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
 		applet_refresh(xscr);
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_APPLET_RESTART) {
+	} else if (type == _XA_PREFIX_RESTART) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
 		applet_restart();
 		return GDK_FILTER_REMOVE;
-	} else if (xscr && xev->xclient.message_type == _XA_XDE_APPLET_POPMENU) {
+	} else if (type == _XA_PREFIX_POPMENU) {
 		// set_flags(xev->xclient.data.l[2]);
 		// set_word1(xev->xclient.data.l[3]);
 		// set_word2(xev->xclient.data.l[4]);
@@ -2135,6 +2306,9 @@ event_handler_PropertyNotify(Display *dpy, XEvent *xev, XdeScreen *xscr)
 			return GDK_FILTER_REMOVE;
 		} else if (atom == _XA_XDE_ICON_THEME_NAME || atom == _XA_XDE_WM_ICONTHEME) {
 			update_icon_theme(xscr, xev->xproperty.atom);
+			return GDK_FILTER_REMOVE;
+		} else if (atom == _XA_XDE_SOUND_THEME_NAME || atom == _XA_XDE_WM_SOUNDTHEME) {
+			update_sound_theme(xscr, xev->xproperty.atom);
 			return GDK_FILTER_REMOVE;
 		}
 	}
@@ -2753,6 +2927,9 @@ startup(int argc, char *argv[], Command command)
 	disp = gdk_display_get_default();
 	dpy = GDK_DISPLAY_XDISPLAY(disp);
 
+	atom = gdk_atom_intern_static_string("_XDE_SOUND_THEME_NAME");
+	_XA_XDE_SOUND_THEME_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
 	atom = gdk_atom_intern_static_string("_XDE_ICON_THEME_NAME");
 	_XA_XDE_ICON_THEME_NAME = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
@@ -2810,6 +2987,9 @@ startup(int argc, char *argv[], Command command)
 	atom = gdk_atom_intern_static_string("_XDE_WM_REDIR_SUPPORT");
 	_XA_XDE_WM_REDIR_SUPPORT = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
+	atom = gdk_atom_intern_static_string("_XDE_WM_SOUNDTHEME");
+	_XA_XDE_WM_SOUNDTHEME = gdk_x11_atom_to_xatom_for_display(disp, atom);
+
 	atom = gdk_atom_intern_static_string("_XDE_WM_STYLE");
 	_XA_XDE_WM_STYLE = gdk_x11_atom_to_xatom_for_display(disp, atom);
 
@@ -2837,18 +3017,23 @@ startup(int argc, char *argv[], Command command)
 
 	atom = gdk_atom_intern_static_string("MANAGER");
 	_XA_MANAGER = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_REFRESH");
-	_XA_XDE_APPLET_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	_XA_PREFIX_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_RESTART");
-	_XA_XDE_APPLET_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	_XA_PREFIX_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_POPMENU");
-	_XA_XDE_APPLET_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	_XA_PREFIX_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_REQUEST");
-	_XA_XDE_APPLET_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	_XA_PREFIX_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
 
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
@@ -2900,7 +3085,7 @@ do_refresh(int argc, char *argv[])
 			ev.xclient.send_event = False;
 			ev.xclient.display = dpy;
 			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_APPLET_REFRESH;
+			ev.xclient.message_type = _XA_PREFIX_REFRESH;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
@@ -2950,7 +3135,7 @@ do_restart(int argc, char *argv[])
 			ev.xclient.send_event = False;
 			ev.xclient.display = dpy;
 			ev.xclient.window = RootWindow(dpy, s);
-			ev.xclient.message_type = _XA_XDE_APPLET_RESTART;
+			ev.xclient.message_type = _XA_PREFIX_RESTART;
 			ev.xclient.format = 32;
 			ev.xclient.data.l[0] = CurrentTime;
 			ev.xclient.data.l[1] = atom;
