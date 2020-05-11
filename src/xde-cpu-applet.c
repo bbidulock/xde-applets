@@ -2354,23 +2354,23 @@ startup(int argc, char *argv[], Command command)
 
 	atom = gdk_atom_intern_static_string("MANAGER");
 	_XA_MANAGER = gdk_x11_atom_to_xatom_for_display(disp, atom);
-	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, dpy);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_REFRESH");
 	_XA_PREFIX_REFRESH = gdk_x11_atom_to_xatom_for_display(disp, atom);
-	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, dpy);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_RESTART");
 	_XA_PREFIX_RESTART = gdk_x11_atom_to_xatom_for_display(disp, atom);
-	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, dpy);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_POPMENU");
 	_XA_PREFIX_POPMENU = gdk_x11_atom_to_xatom_for_display(disp, atom);
-	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, dpy);
 
 	atom = gdk_atom_intern_static_string(XA_PREFIX "_REQUEST");
 	_XA_PREFIX_REQUEST = gdk_x11_atom_to_xatom_for_display(disp, atom);
-	gdk_display_add_client_message_filter(disp, atom, client_handler, NULL);
+	gdk_display_add_client_message_filter(disp, atom, client_handler, dpy);
 
 	scrn = gdk_display_get_default_screen(disp);
 	root = gdk_screen_get_root_window(scrn);
