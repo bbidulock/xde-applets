@@ -15,6 +15,16 @@ B< xde-au-applet> [ I<OPTIONS> ]
 
 =head1 DESCRIPTION
 
+B<xde-au-applet> is a system tray and dock application applet that
+monitors and controls the desktop audio system.  Currently, it only
+supports control and monitoring of the audio system using ALSA (Advanced
+Linux Sound Architecture) and Pulse audio.
+
+As a system-tray and dock-application applet, B<xde-au-applet> provides
+a status icon and tool-tip pop-up controls for determining current audio
+settings and providing for control of volume, muting and output
+selection.
+
 =head1 ARGUMENTS
 
 None.
