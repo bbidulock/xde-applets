@@ -1852,9 +1852,9 @@ xde_device_state(XdeDevice *xdev, guint32 state, gboolean initial)
 			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
 		else {
 			ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
-			ca_context_cancel_norm(ca, CaEventSystemChange);
-			ca_context_play_norm(ca, CaEventSystemChange, pl, id, desc, NULL, NULL);
-			ca_proplist_destroy(pl);
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+			ca_proplist_sets(pl, CA_PROP_EVENT_DESCRIPTION, desc);
+			ca_context_play_queue(ca, CaEventPowerChanged, pl);
 		}
 	}
 }
@@ -2080,9 +2080,8 @@ on_up_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 			EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
 		else {
 			ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
-			ca_context_cancel_norm(ca, CaEventPowerChanged);
-			ca_context_play_norm(ca, CaEventPowerChanged, pl, id, NULL, NULL, NULL);
-			ca_proplist_destroy(pl);
+			ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+			ca_context_play_queue(ca, CaEventPowerChanged, pl);
 		}
 	}
 }
@@ -2102,6 +2101,7 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 	g_variant_iter_init(&iter, changed_properties);
 	while ((prop = g_variant_iter_next_value(&iter))) {
 		const char *id = NULL;
+		uint32_t context_id = 0;
 
 		if (g_variant_is_container(prop)) {
 			GVariantIter iter2;
@@ -2141,17 +2141,22 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 				if (setting) {
 					if (battery_low) {
 						id = "power-unplug-battery-low";
+						context_id = CaEventPowerChanged;
 					} else {
 						id = "power-unplug";
+						context_id = CaEventPowerChanged;
 					}
 				} else {
 					id = "power-plug";
+					context_id = CaEventPowerChanged;
 				}
 			} else if (!strcmp(name, "LidIsClosed")) {
 				if (setting) {
 					id = "lid-close";
+					context_id = CaEventSystemChange;
 				} else {
 					id = "lid-open";
+					context_id = CaEventSystemChange;
 				}
 			} else if (!strcmp(name, "LidIsPresent")) {
 			}
@@ -2164,9 +2169,8 @@ on_up_manager_proxy_props_changed(GDBusProxy *proxy, GVariant *changed_propertie
 					EPRINTF("Cannot create property list: %s\n", ca_strerror(r));
 				else {
 					ca_proplist_sets(pl, CA_PROP_CANBERRA_CACHE_CONTROL, "volatile");
-					ca_context_cancel_norm(ca, CaEventPowerChanged);
-					ca_context_play_norm(ca, CaEventPowerChanged, pl, id, NULL, NULL, NULL);
-					ca_proplist_destroy(pl);
+					ca_proplist_sets(pl, CA_PROP_EVENT_ID, id);
+					ca_context_play_queue(ca, context_id, pl);
 				}
 			}
 			g_variant_unref(boxed);
