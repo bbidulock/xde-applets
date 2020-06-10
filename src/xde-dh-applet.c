@@ -82,6 +82,7 @@
 #include <assert.h>
 #include <locale.h>
 #include <langinfo.h>
+#include <locale.h>
 #include <stdarg.h>
 #include <strings.h>
 #include <regex.h>
@@ -312,6 +313,7 @@ typedef struct {
 	GtkWidget *table;
 	GtkWidget *tooltip;
 	GtkWidget *info;
+	GList *devices;
 } XdeScreen;
 
 typedef enum {
@@ -390,6 +392,16 @@ GMainLoop *loop = NULL;
 
 /** @section Queued Sound Functions
   * @{ */
+
+ca_context *
+get_default_ca_context(void)
+{
+	GdkDisplay *disp = gdk_display_get_default();
+	GdkScreen *scrn = gdk_display_get_default_screen(disp);
+	ca_context *ca = ca_gtk_context_get_for_screen(scrn);
+
+	return (ca);
+}
 
 static int initializing = 0;
 
@@ -495,6 +507,128 @@ ca_context_play_queue(ca_context *ca, uint32_t id, ca_proplist *pl)
 	r = ca_context_play_full(ca, id, pl, NULL, NULL);
 	ca_proplist_destroy(pl);
 	return (r);
+}
+
+gboolean
+queue_call(GIOChannel *channel, GIOCondition condition, gpointer data)
+{
+	struct EventQueue *q = data;
+	uint64_t count = 0;
+
+	(void) channel;
+	(void) condition;
+
+	DPRINTF(1, "Reading event file descriptor context id %u\n", q->context_id);
+	if (read(q->efd, &count, sizeof(count)) >= 0) {
+		ca_context *ca = get_default_ca_context();
+		int playing = 0;
+
+		if (!q->enabled) {
+			ca_context_cancel_queue(ca, q->context_id);
+			return G_SOURCE_CONTINUE;
+		}
+		ca_context_playing(ca, q->context_id, &playing);
+		if (!playing) {
+			ca_proplist *pl;
+
+			DPRINTF(1, "Popping queue for context id %u\n", q->context_id);
+			while ((pl = g_queue_pop_head(q->queue))) {
+				int r;
+
+				DPRINTF(1, "Playing queued event for context id %u\n", q->context_id);
+				r = ca_context_play_full(ca, q->context_id, pl, play_done, q);
+				ca_proplist_destroy(pl);
+				if (r == CA_SUCCESS)
+					break;
+			}
+		}
+	} else {
+		EPRINTF("Did not get event!\n");
+	}
+	return G_SOURCE_CONTINUE;
+}
+
+void
+init_canberra(void)
+{
+	GdkDisplay *disp = gdk_display_get_default();
+	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
+	ca_context *ca = get_default_ca_context();
+	ca_proplist *pl;
+	int theme_set = 0;
+	int i, s, nscr;
+	char selection[64] = { 0, };
+	Atom atom;
+	Window owner;
+
+	ca_proplist_create(&pl);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_ID, "com.unexicon." RESNAME);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_VERSION, VERSION);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_ICON_NAME, LOGO_NAME);
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_LANGUAGE, "C");
+	ca_proplist_sets(pl, CA_PROP_CANBERRA_VOLUME, "0.0");
+	if (!theme_set) {
+		GdkScreen *scrn = gdk_display_get_default_screen(disp);
+		GtkSettings *set = gtk_settings_get_for_screen(scrn);
+		GValue theme_v = G_VALUE_INIT;
+		const char *stheme;
+
+		gtk_rc_reparse_all();
+
+		g_value_init(&theme_v, G_TYPE_STRING);
+		g_object_get_property(G_OBJECT(set), "gtk-sound-theme-name", &theme_v);
+		stheme = g_value_get_string(&theme_v);
+		if (stheme) {
+			DPRINTF(1, "Setting sound theme to %s\n", stheme);
+			ca_proplist_sets(pl, CA_PROP_CANBERRA_XDG_THEME_NAME, stheme);
+			theme_set = 1;
+		}
+		g_value_unset(&theme_v);
+	}
+	if (!theme_set) {
+		EPRINTF("Could not set theme!\n");
+		ca_proplist_sets(pl, CA_PROP_CANBERRA_XDG_THEME_NAME, "freedesktop");
+		theme_set = 1;
+	}
+	ca_proplist_sets(pl, CA_PROP_CANBERRA_XDG_THEME_OUTPUT_PROFILE, "stereo");
+	ca_proplist_sets(pl, CA_PROP_CANBERRA_ENABLE, "1");
+	{
+		char pidstring[64];
+
+		snprintf(pidstring, 64, "%d", getpid());
+		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_ID, pidstring);
+	}
+	ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_USER, getenv("USER"));
+	{
+		char hostname[64];
+
+		gethostname(hostname, 64);
+		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_HOST, hostname);
+	}
+	ca_context_change_props_full(ca, pl);
+	for (i = 0; i < CaEventMaximumContextId - CA_CONTEXT_ID; i++) {
+		struct EventQueue *q = &CaEventQueues[i];
+
+		q->context_id = i + CA_CONTEXT_ID;
+		if ((q->efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK | EFD_SEMAPHORE)) >= 0) {
+			if ((q->channel = g_io_channel_unix_new(q->efd))) {
+				q->queue = g_queue_new();
+				q->source_id = g_io_add_watch(q->channel, G_IO_IN, queue_call, q);
+				q->enabled = TRUE;
+			}
+			}
+		}
+	nscr = gdk_display_get_n_screens(disp);
+	for (s = 0; s < nscr; s++) {
+		snprintf(selection, sizeof(selection), "_XDE_PAGER_S%d", s);
+		atom = XInternAtom(dpy, selection, False);
+		if ((owner = XGetSelectionOwner(dpy, atom))) {
+			DPRINTF(1, "Disabling Workspace Change Context\n");
+			CaEventQueues[CaEventWorkspaceChange - CA_CONTEXT_ID].enabled = FALSE;
+			DPRINTF(1, "Disabling Desktop Change Context\n");
+			CaEventQueues[CaEventDesktopChange - CA_CONTEXT_ID].enabled = FALSE;
+			}
+	}
 }
 
 
@@ -985,16 +1119,6 @@ init_dockapp(XdeScreen *xscr)
 	cairo_paint(xscr->cr);
 }
 
-ca_context *
-get_default_ca_context(void)
-{
-	GdkDisplay *disp = gdk_display_get_default();
-	GdkScreen *scrn = gdk_display_get_default_screen(disp);
-	ca_context *ca = ca_gtk_context_get_for_screen(scrn);
-
-	return (ca);
-}
-
 GDBusProxy *dh_manager = NULL;
 
 void
@@ -1015,128 +1139,6 @@ on_dh_manager_proxy_signal(GDBusProxy *proxy, gchar *sender_name, gchar *signal_
 		g_variant_get(parameters, "(s)", &interface);
 	} else {
 		EPRINTF("unknown dhcpcd manager proxy signal %s\n", signal_name);
-	}
-}
-
-gboolean
-queue_call(GIOChannel *channel, GIOCondition condition, gpointer data)
-{
-	struct EventQueue *q = data;
-	uint64_t count = 0;
-
-	(void) channel;
-	(void) condition;
-
-	DPRINTF(1, "Reading event file descriptor context id %u\n", q->context_id);
-	if (read(q->efd, &count, sizeof(count)) >= 0) {
-		ca_context *ca = get_default_ca_context();
-		int playing = 0;
-
-		if (!q->enabled) {
-			ca_context_cancel_queue(ca, q->context_id);
-			return G_SOURCE_CONTINUE;
-		}
-		ca_context_playing(ca, q->context_id, &playing);
-		if (!playing) {
-			ca_proplist *pl;
-
-			DPRINTF(1, "Popping queue for context id %u\n", q->context_id);
-			while ((pl = g_queue_pop_head(q->queue))) {
-				int r;
-
-				DPRINTF(1, "Playing queued event for context id %u\n", q->context_id);
-				r = ca_context_play_full(ca, q->context_id, pl, play_done, q);
-				ca_proplist_destroy(pl);
-				if (r == CA_SUCCESS)
-					break;
-			}
-		}
-	} else {
-		EPRINTF("Did not get event!\n");
-	}
-	return G_SOURCE_CONTINUE;
-}
-
-void
-init_canberra(void)
-{
-	GdkDisplay *disp = gdk_display_get_default();
-	Display *dpy = GDK_DISPLAY_XDISPLAY(disp);
-	ca_context *ca = get_default_ca_context();
-	ca_proplist *pl;
-	int theme_set = 0;
-	int i, s, nscr;
-	char selection[64] = { 0, };
-	Atom atom;
-	Window owner;
-
-	ca_proplist_create(&pl);
-	ca_proplist_sets(pl, CA_PROP_APPLICATION_ID, "com.unexicon." RESNAME);
-	ca_proplist_sets(pl, CA_PROP_APPLICATION_VERSION, VERSION);
-	ca_proplist_sets(pl, CA_PROP_APPLICATION_ICON_NAME, LOGO_NAME);
-	ca_proplist_sets(pl, CA_PROP_APPLICATION_LANGUAGE, "C");
-	ca_proplist_sets(pl, CA_PROP_CANBERRA_VOLUME, "0.0");
-	if (!theme_set) {
-		GdkScreen *scrn = gdk_display_get_default_screen(disp);
-		GtkSettings *set = gtk_settings_get_for_screen(scrn);
-		GValue theme_v = G_VALUE_INIT;
-		const char *stheme;
-
-		gtk_rc_reparse_all();
-
-		g_value_init(&theme_v, G_TYPE_STRING);
-		g_object_get_property(G_OBJECT(set), "gtk-sound-theme-name", &theme_v);
-		stheme = g_value_get_string(&theme_v);
-		if (stheme) {
-			DPRINTF(1, "Setting sound theme to %s\n", stheme);
-			ca_proplist_sets(pl, CA_PROP_CANBERRA_XDG_THEME_NAME, stheme);
-			theme_set = 1;
-		}
-		g_value_unset(&theme_v);
-	}
-	if (!theme_set) {
-		EPRINTF("Could not set theme!\n");
-		ca_proplist_sets(pl, CA_PROP_CANBERRA_XDG_THEME_NAME, "freedesktop");
-		theme_set = 1;
-	}
-	ca_proplist_sets(pl, CA_PROP_CANBERRA_XDG_THEME_OUTPUT_PROFILE, "stereo");
-	ca_proplist_sets(pl, CA_PROP_CANBERRA_ENABLE, "1");
-	{
-		char pidstring[64];
-
-		snprintf(pidstring, 64, "%d", getpid());
-		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_ID, pidstring);
-	}
-	ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_USER, getenv("USER"));
-	{
-		char hostname[64];
-
-		gethostname(hostname, 64);
-		ca_proplist_sets(pl, CA_PROP_APPLICATION_PROCESS_HOST, hostname);
-	}
-	ca_context_change_props_full(ca, pl);
-	for (i = 0; i < CaEventMaximumContextId - CA_CONTEXT_ID; i++) {
-		struct EventQueue *q = &CaEventQueues[i];
-
-		q->context_id = i + CA_CONTEXT_ID;
-		if ((q->efd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK | EFD_SEMAPHORE)) >= 0) {
-			if ((q->channel = g_io_channel_unix_new(q->efd))) {
-				q->queue = g_queue_new();
-				q->source_id = g_io_add_watch(q->channel, G_IO_IN, queue_call, q);
-				q->enabled = TRUE;
-			}
-			}
-		}
-	nscr = gdk_display_get_n_screens(disp);
-	for (s = 0; s < nscr; s++) {
-		snprintf(selection, sizeof(selection), "_XDE_PAGER_S%d", s);
-		atom = XInternAtom(dpy, selection, False);
-		if ((owner = XGetSelectionOwner(dpy, atom))) {
-			DPRINTF(1, "Disabling Workspace Change Context\n");
-			CaEventQueues[CaEventWorkspaceChange - CA_CONTEXT_ID].enabled = FALSE;
-			DPRINTF(1, "Disabling Desktop Change Context\n");
-			CaEventQueues[CaEventDesktopChange - CA_CONTEXT_ID].enabled = FALSE;
-			}
 	}
 }
 
@@ -1841,7 +1843,7 @@ client_handler(GdkXEvent *xevent, GdkEvent *event, gpointer data)
 }
 
 static void
-clientSetProperties(SmcConn smcConn, SmPointer data)
+xdeSetProperties(SmcConn smcConn, SmPointer data)
 {
 	char userID[20];
 	int i, j, argc = saveArgc;
@@ -2008,6 +2010,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals[prop[j].num_vals++].length = strlen(options.saveFile);
 	j++;
 
+#if 1
 	/* ResignCommand: A client that sets the RestartStyleHint to RestartAnyway uses
 	   this property to specify a command that undoes the effect of the client and
 	   removes any saved state. */
@@ -2016,11 +2019,12 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals = calloc(2, sizeof(*prop[j].vals));
 	prop[j].num_vals = 2;
 	props[j] = &prop[j];
-	prop[j].vals[0].value = "/usr/bin/xde-pager";
-	prop[j].vals[0].length = strlen("/usr/bin/xde-pager");
+	prop[j].vals[0].value = "/usr/bin/" RESNAME;
+	prop[j].vals[0].length = strlen("/usr/bin/" RESNAME);
 	prop[j].vals[1].value = "-quit";
 	prop[j].vals[1].length = strlen("-quit");
 	j++;
+#endif
 
 	/* RestartStyleHint: If the RestartStyleHint property is present, it will contain
 	   the style of restarting the client prefers.  If this flag is not specified,
@@ -2049,6 +2053,7 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	propval[j].length = 1;
 	j++;
 
+#if 1
 	/* ShutdownCommand: This command is executed at shutdown time to clean up after a
 	   client that is no longer running but retained its state by setting
 	   RestartStyleHint to RestartAnyway(1).  The command must not remove any saved
@@ -2058,11 +2063,12 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 	prop[j].vals = calloc(2, sizeof(*prop[j].vals));
 	prop[j].num_vals = 2;
 	props[j] = &prop[j];
-	prop[j].vals[0].value = "/usr/bin/xde-pager";
-	prop[j].vals[0].length = strlen("/usr/bin/xde-pager");
+	prop[j].vals[0].value = "/usr/bin/" RESNAME;
+	prop[j].vals[0].length = strlen("/usr/bin/" RESNAME);
 	prop[j].vals[1].value = "-quit";
 	prop[j].vals[1].length = strlen("-quit");
 	j++;
+#endif
 
 	/* UserID: Specifies the user's ID.  On POSIX-based systems this will contain the
 	   user's name (the pw_name field of struct passwd).  */
@@ -2091,12 +2097,12 @@ clientSetProperties(SmcConn smcConn, SmPointer data)
 }
 
 static Bool saving_yourself;
-static Bool shutting_down;
+static Bool sm_shutting_down;
 
 static void
-clientSaveYourselfPhase2CB(SmcConn smcConn, SmPointer data)
+xdeSaveYourselfPhase2CB(SmcConn smcConn, SmPointer data)
 {
-	clientSetProperties(smcConn, data);
+	xdeSetProperties(smcConn, data);
 	SmcSaveYourselfDone(smcConn, True);
 }
 
@@ -2120,18 +2126,18 @@ clientSaveYourselfPhase2CB(SmcConn smcConn, SmPointer data)
   * it calls SmcSaveYourSelfDone().
   */
 static void
-clientSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
+xdeSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdown,
 		     int interactStyle, Bool fast)
 {
 	(void) saveType;
 	(void) interactStyle;
 	(void) fast;
-	if (!(shutting_down = shutdown)) {
-		if (!SmcRequestSaveYourselfPhase2(smcConn, clientSaveYourselfPhase2CB, data))
+	if (!(sm_shutting_down = shutdown)) {
+		if (!SmcRequestSaveYourselfPhase2(smcConn, xdeSaveYourselfPhase2CB, data))
 			SmcSaveYourselfDone(smcConn, False);
 		return;
 	}
-	clientSetProperties(smcConn, data);
+	xdeSetProperties(smcConn, data);
 	SmcSaveYourselfDone(smcConn, True);
 }
 
@@ -2143,16 +2149,16 @@ clientSaveYourselfCB(SmcConn smcConn, SmPointer data, int saveType, Bool shutdow
   * "Die" message.
   */
 static void
-clientDieCB(SmcConn smcConn, SmPointer data)
+xdeDieCB(SmcConn smcConn, SmPointer data)
 {
 	(void) data;
 	SmcCloseConnection(smcConn, 0, NULL);
-	shutting_down = False;
+	sm_shutting_down = False;
 	gtk_main_quit();
 }
 
 static void
-clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
+xdeSaveCompleteCB(SmcConn smcConn, SmPointer data)
 {
 	(void) smcConn;
 	(void) data;
@@ -2175,36 +2181,36 @@ clientSaveCompleteCB(SmcConn smcConn, SmPointer data)
   * of the save.
   */
 static void
-clientShutdownCancelledCB(SmcConn smcConn, SmPointer data)
+xdeShutdownCancelledCB(SmcConn smcConn, SmPointer data)
 {
 	(void) smcConn;
 	(void) data;
-	shutting_down = False;
+	sm_shutting_down = False;
 	gtk_main_quit();
 }
 
 /* *INDENT-OFF* */
-static unsigned long clientCBMask =
+static unsigned long xdeCBMask =
 	SmcSaveYourselfProcMask |
 	SmcDieProcMask |
 	SmcSaveCompleteProcMask |
 	SmcShutdownCancelledProcMask;
 
-static SmcCallbacks clientCBs = {
+static SmcCallbacks xdeCBs = {
 	.save_yourself = {
-		.callback = &clientSaveYourselfCB,
+		.callback = &xdeSaveYourselfCB,
 		.client_data = NULL,
 	},
 	.die = {
-		.callback = &clientDieCB,
+		.callback = &xdeDieCB,
 		.client_data = NULL,
 	},
 	.save_complete = {
-		.callback = &clientSaveCompleteCB,
+		.callback = &xdeSaveCompleteCB,
 		.client_data = NULL,
 	},
 	.shutdown_cancelled = {
-		.callback = &clientShutdownCancelledCB,
+		.callback = &xdeShutdownCancelledCB,
 		.client_data = NULL,
 	},
 };
@@ -2243,7 +2249,7 @@ init_smclient(void)
 		return;
 	}
 	smcConn = SmcOpenConnection(env, NULL, SmProtoMajor, SmProtoMinor,
-				    clientCBMask, &clientCBs, options.clientId,
+				    xdeCBMask, &xdeCBs, options.clientId,
 				    &options.clientId, sizeof(err), err);
 	if (!smcConn) {
 		EPRINTF("SmcOpenConnection: %s\n", err);
