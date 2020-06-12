@@ -1,6 +1,6 @@
-xde-applets -- history of user-visible changes.  2020-06-09
+xde-applets -- history of user-visible changes.  2020-06-11
 
-Release xde-applets-0.9 released 2020-06-09
+Release xde-applets-0.9 released 2020-06-11
 -------------------------------------------
 
 git tag -n100 -l 0.9
@@ -23,7 +23,7 @@ git tag -n100 -l 0.9
 
 git shortlog -e -n -w80,6,8 0.8...0.9
 
-Brian Bidulock <bidulock@openss7.org> (45):
+Brian Bidulock <bidulock@openss7.org> (46):
       post-release update
       whoops
       Used Percent instead of Percentage
@@ -69,6 +69,7 @@ Brian Bidulock <bidulock@openss7.org> (45):
       fix null pointer
       queue some sounds
       rename and refactor
+      update release files
 
 
 Release xde-applets-0.8 released 2020-02-11
