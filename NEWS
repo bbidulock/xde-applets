@@ -23,7 +23,7 @@ git tag -n100 -l 0.9
 
 git shortlog -e -n -w80,6,8 0.8...0.9
 
-Brian Bidulock <bidulock@openss7.org> (46):
+Brian Bidulock <bidulock@openss7.org> (47):
       post-release update
       whoops
       Used Percent instead of Percentage
@@ -70,6 +70,7 @@ Brian Bidulock <bidulock@openss7.org> (46):
       queue some sounds
       rename and refactor
       update release files
+      update release files again
 
 
 Release xde-applets-0.8 released 2020-02-11
