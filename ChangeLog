@@ -1,5 +1,481 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 7207cc40e57613606df8451a4173009dc41709b6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Jun 9 23:57:57 2020 -0600
+
+    rename and refactor
+
+ src/xde-au-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-av-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-bl-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-bt-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-cpu-applet.c | 319 +++++++++++++++++++++++----------------------
+ src/xde-dh-applet.c  | 318 +++++++++++++++++++++++----------------------
+ src/xde-hal-applet.c | 319 +++++++++++++++++++++++----------------------
+ src/xde-id-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-lm-applet.c  | 318 +++++++++++++++++++++++----------------------
+ src/xde-pk-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-sd-applet.c  | 319 +++++++++++++++++++++++----------------------
+ src/xde-up-applet.c  | 332 ++++++++++++++++++++++++-----------------------
+ src/xde-wl-applet.c  | 319 +++++++++++++++++++++++----------------------
+ 13 files changed, 2121 insertions(+), 2037 deletions(-)
+
+commit d3ee2b2848003b1c4d36d5baeb58caed8941f25f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 18:34:20 2020 -0600
+
+    queue some sounds
+
+ src/xde-up-applet.c | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
+
+commit 4e2eb84a542cdda9d8e18cb77547719b8eea94a8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 04:28:23 2020 -0600
+
+    fix null pointer
+
+ src/xde-au-applet.c  | 10 +++++-----
+ src/xde-av-applet.c  | 10 +++++-----
+ src/xde-bl-applet.c  | 10 +++++-----
+ src/xde-bt-applet.c  | 10 +++++-----
+ src/xde-cpu-applet.c | 10 +++++-----
+ src/xde-dh-applet.c  | 10 +++++-----
+ src/xde-hal-applet.c | 10 +++++-----
+ src/xde-id-applet.c  | 10 +++++-----
+ src/xde-lm-applet.c  | 10 +++++-----
+ src/xde-pk-applet.c  | 10 +++++-----
+ src/xde-sd-applet.c  | 10 +++++-----
+ src/xde-up-applet.c  | 10 +++++-----
+ src/xde-wl-applet.c  | 10 +++++-----
+ 13 files changed, 65 insertions(+), 65 deletions(-)
+
+commit 806c2f80bcab1db8c1223dbb79d4024f2233b9e3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 04:13:35 2020 -0600
+
+    better sound handling
+
+ src/xde-bl-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-bt-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-cpu-applet.c | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-dh-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-hal-applet.c | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-id-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-pk-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-sd-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ src/xde-wl-applet.c  | 239 ++++++++++++++++++++++++++++++++++++++++++-----
+ 9 files changed, 1926 insertions(+), 225 deletions(-)
+
+commit 3715d82f6229a1423ece4f9137c69b541eef09af
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 03:59:34 2020 -0600
+
+    update docs a bit
+
+ man/xde-au-applet.pod | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+commit 470166783350ce0860dd9d3cdf69fafef6b10386
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 03:59:07 2020 -0600
+
+    better sound handling
+
+ src/xde-av-applet.c | 239 +++++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 214 insertions(+), 25 deletions(-)
+
+commit 891bbad86da54605f05b39736afcfefb1fa548cf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 03:59:03 2020 -0600
+
+    better sound handling
+
+ src/xde-au-applet.c | 241 ++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 215 insertions(+), 26 deletions(-)
+
+commit 9b329bc3bb1f140cd6ccebbc48f0cc40ff01922c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 03:58:59 2020 -0600
+
+    better sound handling
+
+ src/xde-lm-applet.c | 247 ++++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 216 insertions(+), 31 deletions(-)
+
+commit fab8a58813c44aa1c3eef4980d08049ff131a958
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 03:58:53 2020 -0600
+
+    better sound handling
+
+ src/xde-up-applet.c | 279 ++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 225 insertions(+), 54 deletions(-)
+
+commit 3cc778a079fac262578786e0e40e5b593edea8b3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon May 11 00:11:52 2020 -0600
+
+    properly initialize libcanberra
+
+ src/xde-au-applet.c  | 146 ++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-av-applet.c  | 146 ++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-bl-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-bt-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-cpu-applet.c | 146 ++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-dh-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-hal-applet.c | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-id-applet.c  | 146 ++++++++++++++++++++++++++++++++++++++++++++++-
+ src/xde-lm-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-pk-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-sd-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-up-applet.c  | 142 +++++++++++++++++++++++++++++++++++++++++++++
+ src/xde-wl-applet.c  | 144 ++++++++++++++++++++++++++++++++++++++++++++++
+ 13 files changed, 1874 insertions(+), 4 deletions(-)
+
+commit d315135dce9d29e44e3c546036ae063f413da4bf
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:41:40 2020 -0600
+
+    check for libpulse
+
+ configure.ac | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+commit 4c1206265dd2171196f119d8156e87a12f4f4b7d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:41:19 2020 -0600
+
+    update wireless applet documentation
+
+ man/xde-wl-applet.pod | 56 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit 6e28f77f78361933f8b563000037bd9c8e7bcd88
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:41:10 2020 -0600
+
+    update upower applet documentation
+
+ man/xde-up-applet.pod | 27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
+
+commit 90188e3fa85d73401bcb5eaf6b4adee2571130a2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:40:59 2020 -0600
+
+    update systemd applet documentation
+
+ man/xde-sd-applet.pod | 56 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit 4c2bfbc7f01d389510bef8bf89e8c075446ac9c2
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:40:49 2020 -0600
+
+    update package kit applet documentation
+
+ man/xde-pk-applet.pod | 56 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit 017ea45232f1160b1d0e0347778d50b6ef65cad3
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:40:36 2020 -0600
+
+    update LM Sensors applet documentation
+
+ man/xde-lm-applet.pod | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+commit 382232b521baade950b576d0493a51e9f760e005
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:40:26 2020 -0600
+
+    update HAL applet documentation
+
+ man/xde-hal-applet.pod | 56 ++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit 62aef5e5dec4224d3a6a692ebf3824f552056731
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:40:17 2020 -0600
+
+    update DHCP applet documentation
+
+ man/xde-dh-applet.pod | 56 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit 7765c02611dc1ca6af7b00d7bfcdd17e72b84df7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:39:55 2020 -0600
+
+    update cpu power applet documentation
+
+ man/xde-cpu-applet.pod | 58 +++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 50 insertions(+), 8 deletions(-)
+
+commit 69f3d72ab5a60928ce61363f5612298144d12cb6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:39:43 2020 -0600
+
+    update bluetooth applet documentation
+
+ man/xde-bt-applet.pod | 56 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit a0a50debec930a760543394f6f42f8db4dbf138b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:39:32 2020 -0600
+
+    update backlight applet documentation
+
+ man/xde-bl-applet.pod | 31 +++++++++++++++++++++----------
+ 1 file changed, 21 insertions(+), 10 deletions(-)
+
+commit 28b95a5a9f3cf6609cad46ff6613c1e0eb9ab8e8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:39:18 2020 -0600
+
+    update avahi applet documentation
+
+ man/xde-av-applet.pod | 56 +++++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 49 insertions(+), 7 deletions(-)
+
+commit d1d845aedf3c8eb6719a19a83a3e186bbc16ca55
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:38:44 2020 -0600
+
+    update package documentation
+
+ man/xde-applets.pod | 313 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 302 insertions(+), 11 deletions(-)
+
+commit dcf63fa8e9171ee976a87417abb91a089c867a2f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:38:13 2020 -0600
+
+    add audio and input device applets, make others conditional
+
+ data/applications/Makefile.am | 40 +++++++++++++++++++++++++++++++++++----
+ data/autostart/Makefile.am    | 37 ++++++++++++++++++++++++++++++++----
+ 2 files changed, 69 insertions(+), 8 deletions(-)
+
+commit 993bd0a90cbbb2b44f51365c4f6fd8ce0fd2af91
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:36:27 2020 -0600
+
+    add audio and input device applets
+
+    - move xde-applet manpage to section 5 from section 1
+
+ man/Makefile.am | 35 +++++++++++++++++++++--------------
+ 1 file changed, 21 insertions(+), 14 deletions(-)
+
+commit c155efc3e216a2b89e3ec0aef9bb9ac31689d7f7
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:35:51 2020 -0600
+
+    add audio and input device applets
+
+ src/Makefile.am | 34 +++++++++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 9 deletions(-)
+
+commit ec10f6488c39301e69eda2468290ad99c6e6ce47
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:34:27 2020 -0600
+
+    add input device applet
+
+ data/applications/xde-id-applet.desktop |   23 +
+ data/autostart/xde-id-applet.desktop    |   16 +
+ man/xde-id-applet.pod                   |  192 ++
+ src/xde-id-applet.c                     | 2603 +++++++++++++++++++++++++++
+ 4 files changed, 2834 insertions(+)
+
+commit 12b418e96e29b099d06880494c2452c12a59f8fa
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri May 8 11:33:55 2020 -0600
+
+    add audio applet
+
+ data/applications/xde-au-applet.desktop |   23 +
+ data/autostart/xde-au-applet.desktop    |   16 +
+ man/xde-au-applet.pod                   |  197 ++
+ src/xde-au-applet.c                     | 2603 +++++++++++++++++++++++++++
+ 4 files changed, 2839 insertions(+)
+
+commit 2048d1a9903e85d120b778c34b14e55639045385
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 7 05:16:13 2020 -0600
+
+    minor correction
+
+ man/xde-bl-applet.pod | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 9db7254ff1b8f9118cb522c255e06c952a62c0e8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 7 05:13:13 2020 -0600
+
+    update documentation a bit
+
+ man/xde-bl-applet.pod |  54 +++++++++++++
+ man/xde-lm-applet.pod |  59 +++++++++++++-
+ man/xde-up-applet.pod | 200 +++++++++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 308 insertions(+), 5 deletions(-)
+
+commit 51833ca66fb3947182d6ebad78d20a9fcf460b47
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 7 03:34:04 2020 -0600
+
+    suppress battery notifications on startup
+
+ src/xde-up-applet.c | 385 +++++++++++++++++++++++++++---------------------
+ 1 file changed, 214 insertions(+), 171 deletions(-)
+
+commit 285308ffc43dd6ea9d9f6f8bf350b25505755a68
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 7 03:32:12 2020 -0600
+
+    add libraries for xde-bl-applet
+
+ src/Makefile.am | 16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+commit ee8521d267351c830d64b3a61c667bf3ca77c33d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu May 7 03:31:46 2020 -0600
+
+    check for more libraries
+
+ configure.ac | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+commit 6d7a0de7708099c2d0b726c1ff245c31cca78b7e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 05:26:50 2020 -0600
+
+    update xde-lm-applet manpage a bit
+
+    - more man pages need a lot of updating
+
+ man/xde-lm-applet.pod | 84 +++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 78 insertions(+), 6 deletions(-)
+
+commit d5be932d5e099c7565b0a4e02e710d5aaf9ea5d5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 05:26:28 2020 -0600
+
+    cool down sounds quicker
+
+ src/xde-lm-applet.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 0860a1da7d0c8e60ffee9f090f020906e512784e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 05:14:34 2020 -0600
+
+    correct order thermal-caution then -hot
+
+ src/xde-lm-applet.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 80e5daeab79b75ed2b0b56d34c22975f6225161c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 04:14:29 2020 -0600
+
+    bit better alarm function
+
+ src/xde-lm-applet.c | 99 ++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 65 insertions(+), 34 deletions(-)
+
+commit 7dedca058662eef2b4d783ac3a88cbfe8305ee4b
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 03:05:01 2020 -0600
+
+    don't cancel thermal event unless playing new sound
+
+ src/xde-lm-applet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 242c701112dfdb785d9c4c98fbf1bb81c03f5511
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 02:53:03 2020 -0600
+
+    handle wider normal range for sensors
+
+ data/icons/Makefile.am      |   2 +
+ data/icons/fan-normal.svg   | 120 ++++++++++++++++++++++++++++++++++++++++
+ data/icons/flame-normal.svg |  72 ++++++++++++++++++++++++
+ src/xde-lm-applet.c         |  45 +++++++++------
+ 4 files changed, 223 insertions(+), 16 deletions(-)
+
+commit 5336d0764199f5df773d593e7098f30b6488da33
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 01:41:56 2020 -0600
+
+    provide some hysterysis
+
+ src/xde-lm-applet.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+commit 30164993331072f8c9715ae1664b1cba04dcd18d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 5 01:31:42 2020 -0600
+
+    play thermal events when detected
+
+ src/xde-lm-applet.c | 94 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 94 insertions(+)
+
+commit 03acae477a0ae2c9eba1ca6fb474a6188d3e476a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Apr 27 19:40:18 2020 -0600
+
+    Add thermal event canberra context.
+
+ src/xde-av-applet.c  | 1 +
+ src/xde-bl-applet.c  | 1 +
+ src/xde-bt-applet.c  | 1 +
+ src/xde-cpu-applet.c | 1 +
+ src/xde-dh-applet.c  | 1 +
+ src/xde-hal-applet.c | 1 +
+ src/xde-lm-applet.c  | 1 +
+ src/xde-pk-applet.c  | 1 +
+ src/xde-sd-applet.c  | 1 +
+ src/xde-up-applet.c  | 1 +
+ src/xde-wl-applet.c  | 1 +
+ 11 files changed, 11 insertions(+)
+
+commit e228b3fe2ad086a46045c6d54e4b69a47466dbc9
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Mon Apr 27 19:37:59 2020 -0600
+
+    Used Percent instead of Percentage
+
+ src/xde-up-applet.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 8652c89ed016b34af1ba89fc29b39e675ddf5a95
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 08:29:46 2020 -0700
+
+    whoops
+
+ autogen.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+commit 57b20d7721994c8d5a7955e61697941899b86f94
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue Feb 11 04:11:31 2020 -0700
+
+    post-release update
+
+ ChangeLog | 14 ++++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 16 insertions(+), 1 deletion(-)
+
 commit e4af5378dd1ecdbf5f906ad4b89403ae4ad21d9c
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue Feb 11 04:09:20 2020 -0700

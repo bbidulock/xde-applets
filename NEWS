@@ -1,4 +1,75 @@
-xde-applets -- history of user-visible changes.  2020-02-11
+xde-applets -- history of user-visible changes.  2020-06-09
+
+Release xde-applets-0.9 released 2020-06-09
+-------------------------------------------
+
+git tag -n100 -l 0.9
+
+0.9             Preliminary Release 0.9
+
+    This is the ninth release of the xde-applets package. This package
+    provides a number of "C"-language applets for the system tray that
+    provide various functions from package management to wireless
+    connections. Some of these applets were originally written in perl(1)
+    as separate applications. They have now been converted to "C" for speed
+    and to provide access to libraries not available from perl(1).
+
+    This release is a preliminary release that adds support for compilation
+    with GCC 10.1 and provides some improved sound support.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.8...0.9
+
+Brian Bidulock <bidulock@openss7.org> (45):
+      post-release update
+      whoops
+      Used Percent instead of Percentage
+      Add thermal event canberra context.
+      play thermal events when detected
+      provide some hysterysis
+      handle wider normal range for sensors
+      don't cancel thermal event unless playing new sound
+      bit better alarm function
+      correct order thermal-caution then -hot
+      cool down sounds quicker
+      update xde-lm-applet manpage a bit
+      check for more libraries
+      add libraries for xde-bl-applet
+      suppress battery notifications on startup
+      update documentation a bit
+      minor correction
+      add audio applet
+      add input device applet
+      add audio and input device applets
+      add audio and input device applets
+      add audio and input device applets, make others conditional
+      update package documentation
+      update avahi applet documentation
+      update backlight applet documentation
+      update bluetooth applet documentation
+      update cpu power applet documentation
+      update DHCP applet documentation
+      update HAL applet documentation
+      update LM Sensors applet documentation
+      update package kit applet documentation
+      update systemd applet documentation
+      update upower applet documentation
+      update wireless applet documentation
+      check for libpulse
+      properly initialize libcanberra
+      better sound handling
+      better sound handling
+      better sound handling
+      better sound handling
+      update docs a bit
+      better sound handling
+      fix null pointer
+      queue some sounds
+      rename and refactor
+
 
 Release xde-applets-0.8 released 2020-02-11
 -------------------------------------------
@@ -265,14 +336,4 @@ git shortlog -e -n -w80,6,8 0.2...0.3
 Brian Bidulock <bidulock@openss7.org> (2):
       builds
       update release
-
-
-Release xde-applets-0.2 released 2016-01-27
--------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.1...0.2
-
-Brian Bidulock <bidulock@openss7.org> (2):
-      initial updates
-      initial build system
 

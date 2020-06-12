@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([xde-applets],[0.8],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
-AC_REVISION([0.8])
+AC_INIT([xde-applets],[0.9],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
+AC_REVISION([0.9])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -20,13 +20,13 @@ AC_CONFIG_AUX_DIR([scripts])
 AC_USE_SYSTEM_EXTENSIONS
 AC_CANONICAL_TARGET
 
-DATE='2020-02-11'
+DATE='2020-06-09'
 AC_SUBST([DATE])
 
-MDOCDATE='February 11, 2020'
+MDOCDATE='June 9, 2020'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.8'
+BRANCH='0.9'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
