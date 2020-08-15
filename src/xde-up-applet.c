@@ -1750,6 +1750,7 @@ xde_device_warn(XdeDevice *xdev, guint32 level, gboolean initial)
 	case 3:		/* Low(3) */
 		id = "battery-low";
 		desc = "The battery level is low.";
+		DPRINTF(1, "%s: %s", id, desc);
 		if (xdev->display) {
 			battery_low = TRUE;
 			notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
@@ -1760,6 +1761,7 @@ xde_device_warn(XdeDevice *xdev, guint32 level, gboolean initial)
 	case 4:		/* Critical(4) */
 		id = "battery-caution";
 		desc = "The battery level is critically low.";
+		DPRINTF(1, "%s: %s", id, desc);
 		if (xdev->display) {
 			battery_low = TRUE;
 			notify_notification_update(xdev->notify, "Warning", desc, "battery-caution");
@@ -1770,6 +1772,7 @@ xde_device_warn(XdeDevice *xdev, guint32 level, gboolean initial)
 	case 5:		/* Action(5) */
 		id = "battery-caution";
 		desc = "The battery level is critically low.";
+		DPRINTF(1, "%s: %s", id, desc);
 		if (xdev->display) {
 			battery_low = TRUE;
 			notify_notification_update(xdev->notify, "Warning", desc, "battery-empty");
@@ -1815,6 +1818,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 			if (percent <= 5.0) {
 				id = "battery-caution";
 				desc = "The battery level is critically low.";
+				DPRINTF(1, "%s: %s", id, desc);
 				if (xdev->display) {
 					battery_low = TRUE;
 					notify_notification_update(xdev->notify, "Warning", desc, "battery-caution");
@@ -1823,6 +1827,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 			} else if (percent <= 15.0) {
 				id = "battery-low";
 				desc = "The battery is low.";
+				DPRINTF(1, "%s: %s", id, desc);
 				if (xdev->display) {
 					battery_low = TRUE;
 					notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
@@ -1833,9 +1838,10 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 				if (xdev->display) {
 					battery_low = FALSE;
 				}
-			} else {
+			} else if (0) {
 				id = "battery-full";
 				desc = "The battery is full.";
+				DPRINTF(1, "%s: %s", id, desc);
 				if (xdev->display) {
 					battery_low = FALSE;
 					notify_notification_update(xdev->notify, "Notice", desc, "battery-full");
@@ -1849,6 +1855,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 		if (percent != 0.0) {
 			id = "battery-low";
 			desc = "The battery level is low.";
+			DPRINTF(1, "%s: %s", id, desc);
 			if (xdev->display) {
 				battery_low = TRUE;
 				notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
@@ -1861,6 +1868,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 		if (percent != 0.0) {
 			id = "battery-caution";
 			desc = "The battery level is critically low.";
+			DPRINTF(1, "%s: %s", id, desc);
 			if (xdev->display) {
 				battery_low = TRUE;
 				notify_notification_update(xdev->notify, "Warning", desc, "battery-low");
@@ -1884,6 +1892,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 		if (percent != 0.0) {
 			id = "battery-full";
 			desc = "The battery level is high.";
+			DPRINTF(1, "%s: %s", id, desc);
 			if (xdev->display) {
 				battery_low = FALSE;
 				notify_notification_update(xdev->notify, "Notice", desc, "battery-full");
@@ -1896,6 +1905,7 @@ xde_device_level(XdeDevice *xdev, guint32 level, double percent, gboolean initia
 		if (percent != 0.0) {
 			id = "battery-full";
 			desc = "The battery is full.";
+			DPRINTF(1, "%s: %s", id, desc);
 			if (xdev->display) {
 				battery_low = FALSE;
 				notify_notification_update(xdev->notify, "Notice", desc, "battery-full");
@@ -1930,6 +1940,7 @@ xde_device_state(XdeDevice *xdev, guint32 state, gboolean initial)
 	case 1:		/* Charging(1) */
 		id = "battery-charging";
 		desc = "The battery is charging.";
+		DPRINTF(1, "%s: %s", id, desc);
 		notify_notification_update(xdev->notify, "Notice", desc, "battery");
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
@@ -1937,6 +1948,7 @@ xde_device_state(XdeDevice *xdev, guint32 state, gboolean initial)
 	case 2:		/* Discharging(2) */
 		id = "battery-discharging";
 		desc = "The battery is discharging.";
+		DPRINTF(1, "%s: %s", id, desc);
 		notify_notification_update(xdev->notify, "Notice", desc, "battery");
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
@@ -1944,6 +1956,7 @@ xde_device_state(XdeDevice *xdev, guint32 state, gboolean initial)
 	case 3:		/* Empty(3) */
 		id = "battery-empty";
 		desc = "The battery is empty.";
+		DPRINTF(1, "%s: %s", id, desc);
 		notify_notification_update(xdev->notify, "Notice", desc, id);
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
@@ -1951,6 +1964,7 @@ xde_device_state(XdeDevice *xdev, guint32 state, gboolean initial)
 	case 4:		/* Fully charged(4) */
 		id = "battery-full";
 		desc = "The battery is fully charged.";
+		DPRINTF(1, "%s: %s", id, desc);
 		notify_notification_update(xdev->notify, "Notice", desc, id);
 		notify_notification_set_timeout(xdev->notify, NOTIFY_NORMAL_TIMEOUT);
 		notify_notification_show(xdev->notify, NULL);
