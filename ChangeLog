@@ -1,5 +1,33 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 37f903e24d0a0f8dcb4856a5508b41e46d46f0df
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 15 02:39:33 2020 -0600
+
+    update release file
+
+ RELEASE.md | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+commit b32b562823658a6b9b821a83c5f039f896d48510
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 15 01:50:20 2020 -0600
+
+    fix some battery-full issues
+
+ src/xde-up-applet.c | 16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
+
+commit 2e560f500eb1c0d7d3cbdab6272b7a03e561eb0e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jun 11 22:14:06 2020 -0600
+
+    post release update
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
 commit 31ab26bd1e9aaf51d73bc4cd5962ced59608ce99
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Thu Jun 11 22:11:38 2020 -0600

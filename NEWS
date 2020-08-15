@@ -1,4 +1,33 @@
-xde-applets -- history of user-visible changes.  2020-06-11
+xde-applets -- history of user-visible changes.  2020-08-15
+
+Release xde-applets-0.10 released 2020-08-15
+--------------------------------------------
+
+git tag -n100 -l 0.10
+
+0.10            Preliminary Release 0.10
+
+    This is the tenth release of the xde-applets package. This package
+    provides a number of "C"-language applets for the system tray that
+    provide various functions from package management to wireless
+    connections. Some of these applets were originally written in perl(1)
+    as separate applications. They have now been converted to "C" for speed
+    and to provide access to libraries not available from perl(1).
+
+    This release is a preliminary release that provides fixes for battery
+    level sound support.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.9...0.10
+
+Brian Bidulock <bidulock@openss7.org> (3):
+      post release update
+      fix some battery-full issues
+      update release file
+
 
 Release xde-applets-0.9 released 2020-06-11
 -------------------------------------------
@@ -328,14 +357,4 @@ Brian Bidulock <bidulock@openss7.org> (13):
       modified ignore files
       simplify distribution
       update release files
-
-
-Release xde-applets-0.3 released 2016-01-27
--------------------------------------------
-
-git shortlog -e -n -w80,6,8 0.2...0.3
-
-Brian Bidulock <bidulock@openss7.org> (2):
-      builds
-      update release
 
