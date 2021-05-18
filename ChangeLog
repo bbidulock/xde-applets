@@ -1,5 +1,33 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit c21e922489dec2c072c6f4e1caa79f5f7d558e15
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 18 01:40:19 2021 -0600
+
+    update release notes
+
+ RELEASE.md | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+commit 6e0a851ef6ec48824ee2e01d985eb6da3a1fc10d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 18 01:40:06 2021 -0600
+
+    update autoconf
+
+ configure.ac | 63 ++++++++++++++++++++++++--------------------------------
+ 1 file changed, 27 insertions(+), 36 deletions(-)
+
+commit f09165b9d1dfa03eeb37b8e1467e97d1b0e1eac6
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Aug 15 02:48:57 2020 -0600
+
+    post release update
+
+ ChangeLog | 10 ++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
+
 commit 0a579a4809bef62a9797ebee762658718c675cae
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Aug 15 02:47:19 2020 -0600
