@@ -1,9 +1,9 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.69])
-AC_INIT([xde-applets],[0.10],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
-AC_REVISION([0.10])
+AC_PREREQ([2.71])
+AC_INIT([xde-applets],[0.10.1],[http://github.com/bbidulock/xde-applets],[xde-applets],[http://github.com/bbidulock/xde-applets/issues])
+AC_REVISION([0.10.1])
 
 # set better defaults
 AC_PREFIX_DEFAULT([/usr])
@@ -26,11 +26,11 @@ AC_SUBST([DATE])
 MDOCDATE='August 15, 2020'
 AC_SUBST([MDOCDATE])
 
-BRANCH='0.10'
+BRANCH='master'
 AC_SUBST([BRANCH])
 
 # Initialize Automake
-AM_INIT_AUTOMAKE([gnits 1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
+AM_INIT_AUTOMAKE([1.16 dist-lzip no-dist-gzip std-options -Wall color-tests silent-rules tar-pax])
 AM_MAINTAINER_MODE
 AM_SILENT_RULES([yes])
 
@@ -91,20 +91,25 @@ PKG_PROG_PKG_CONFIG([0.14.0])
 # Checks for libraries.
 
 # Checks for header files.
-AC_HEADER_STDC
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
 AC_PATH_X
 AC_PATH_XTRA
-AC_CHECK_HEADERS([fcntl.h locale.h stddef.h stdint.h stdlib.h string.h strings.h sys/ioctl.h sys/time.h syslog.h unistd.h])
+AC_CHECK_HEADERS([fcntl.h locale.h stddef.h stdint.h stdlib.h string.h strings.h sys/ioctl.h sys/time.h syslog.h unistd.h langinfo.h])
+AC_C_INLINE
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_UINT32_T
+AC_TYPE_UINT64_T
 
 # Checks for library functions.
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([gethostname memmove select strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul])
+AC_CHECK_FUNCS([gethostname memmove select strcasecmp strchr strcspn strdup strerror strncasecmp strndup strpbrk strrchr strspn strstr strtol strtoul endpwent getcwd gettimeofday setlocale])
 
 PKG_CHECK_MODULES([X11],[x11])
 PKG_CHECK_MODULES([XEXT],[xext])
@@ -127,8 +132,7 @@ PKG_CHECK_MODULES([SYSTEMD],[libsystemd])
 PKG_CHECK_MODULES([PKGLIB],[packagekit-glib2])
 
 AC_ARG_ENABLE([pulse],
-	AC_HELP_STRING([--disable-pulse],
-		[Disable Pulse support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-pulse],[Disable Pulse support @<:@default=auto@:>@]))
 if test "x$enable_pulse" != xno ; then
 	PKG_CHECK_MODULES([PULSE],[libpulse],
 		[AC_DEFINE([PULSE],[1], [Define to 1 to support Pulse library.])],
@@ -140,8 +144,7 @@ AC_MSG_RESULT([${enable_pulse:-yes}])
 AM_CONDITIONAL([HAVE_PULSE],[test  "x$enable_pulse" != "xno"])
 
 AC_ARG_ENABLE([gudev],
-	AC_HELP_STRING([--disable-gudev],
-		[Disable GUDEV support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-gudev],[Disable GUDEV support @<:@default=auto@:>@]))
 if test "x$enable_gudev" != xno ; then
 	PKG_CHECK_MODULES([GUDEV],[gudev-1.0],
 		[AC_DEFINE([GUDEV],[1], [Define to 1 to support GUDEV library.])],
@@ -153,8 +156,7 @@ AC_MSG_RESULT([${enable_gudev:-yes}])
 AM_CONDITIONAL([HAVE_GUDEV],[test  "x$enable_gudev" != "xno"])
 
 AC_ARG_ENABLE([xf86vm],
-	AC_HELP_STRING([--disable-xf86vm],
-		[Disable XF86VM support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xf86vm],[Disable XF86VM support @<:@default=auto@:>@]))
 if test "x$enable_xf86vm" != xno ; then
 	PKG_CHECK_MODULES([XF86VM],[xxf86vm],
 		[AC_DEFINE([XF86VM],[1], [Define to 1 to support XF86VM extension.])],
@@ -166,8 +168,7 @@ AC_MSG_RESULT([${enable_xf86vm:-yes}])
 AM_CONDITIONAL([HAVE_XF86VM],[test  "x$enable_xf86vm" != "xno"])
 
 AC_ARG_ENABLE([xrandr],
-	AC_HELP_STRING([--disable-xrandr],
-		[Disable XRANDR support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xrandr],[Disable XRANDR support @<:@default=auto@:>@]))
 if test "x$enable_xrandr" != xno ; then
 	PKG_CHECK_MODULES([XRANDR],[xrandr],
 		[AC_DEFINE([XRANDR],[1], [Define to 1 to support XRANDR extension.])],
@@ -179,8 +180,7 @@ AC_MSG_RESULT([${enable_xrandr:-yes}])
 AM_CONDITIONAL([HAVE_XRANDR],[test  "x$enable_xrandr" != "xno"])
 
 AC_ARG_ENABLE([xinerama],
-	AC_HELP_STRING([--disable-xinerama],
-		[Disable XINERAMA support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-xinerama],[Disable XINERAMA support @<:@default=auto@:>@]))
 if test "x$enable_xinerama" != xno ; then
 	PKG_CHECK_MODULES([XINERAMA],[xinerama],
 		[AC_DEFINE([XINERAMA],[1], [Define to 1 to support XINERAMA extension.])],
@@ -193,8 +193,7 @@ AM_CONDITIONAL([HAVE_XINERAMA],[test  "x$enable_xinerama" != "xno"])
 
 
 AC_ARG_ENABLE([startup-notification],
-	AC_HELP_STRING([--disable-startup-notification],
-		[Disable startup notification support @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-startup-notification],[Disable startup notification support @<:@default=auto@:>@]))
 if test "x$enable_startup_notification" != xno ; then
 	PKG_CHECK_MODULES([SN],[libstartup-notification-1.0],
 		[AC_DEFINE([STARTUP_NOTIFICATION],[1], [Define to 1 to support startup notification.])],
@@ -204,8 +203,7 @@ AC_MSG_CHECKING([for startup notification support])
 AC_MSG_RESULT([${enable_startup_notification:-yes}])
 
 AC_ARG_ENABLE([notify],
-	AC_HELP_STRING([--disable-notify],
-		[Disable notification daemon notifications @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-notify],[Disable notification daemon notifications @<:@default=auto@:>@]))
 if test "x$enable_notify" != xno ; then
 	PKG_CHECK_MODULES([NOTIFY],[gio-2.0 gio-unix-2.0 glib-2.0 gdk-pixbuf-2.0 libnotify],
 		[AC_DEFINE([DESKTOP_NOTIFICATIONS],[1],[Define to 1 to support desktop notifications.])],
@@ -216,8 +214,7 @@ AC_MSG_RESULT([${enable_notify:-yes}])
 AM_CONDITIONAL([HAVE_DESKTOP_NOTIFICATIONS],[test  "x$enable_notify" != "xno"])
 
 AC_ARG_ENABLE([status-icon],
-	AC_HELP_STRING([--disable-status-icon],
-		[Disable status icon in system tray @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-status-icon],[Disable status icon in system tray @<:@default=auto@:>@]))
 if test "x$enable_status_icon" != xno ; then
 	PKG_CHECK_MODULES([GTK2],[gtk+-2.0 >= 2.10],
 		[AC_DEFINE([SYSTEM_TRAY_STATUS_ICON],[1],[Define to 1 to support system tray icon.])],
@@ -228,8 +225,7 @@ AC_MSG_RESULT([${enable_status_icon:-yes}])
 AM_CONDITIONAL([HAVE_SYSTEM_TRAY_STATUS_ICON],[test  "x$enable_status_icon" != "xno"])
 
 AC_ARG_ENABLE([canberra],
-	AC_HELP_STRING([--disable-canberra],
-		[Disable canberra sound @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-canberra],[Disable canberra sound @<:@default=auto@:>@]))
 if test "x$enable_canberra" != xno ; then
 	PKG_CHECK_MODULES([SOUND],[libcanberra-gtk],
 		[AC_DEFINE([CANBERRA_SOUND],[1],[Define to 1 to support libcanberra sound.])],
@@ -240,8 +236,7 @@ AC_MSG_RESULT([${enable_canberra:-yes}])
 AM_CONDITIONAL([HAVE_CANBERRA_SOUND],[test "x$enable_canberra" != "xno"])
 
 AC_ARG_ENABLE([cpupower],
-	AC_HELP_STRING([--disable-cpupower],
-		[Disable cpupower @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-cpupower],[Disable cpupower @<:@default=auto@:>@]))
 if test "x$enable_cpupower" != xno ; then
 	AC_CHECK_HEADER([cpufreq.h],
 		[AC_DEFINE([USE_CPUPOWER],[1],[Define to 1 to support cpupower.])],
@@ -261,8 +256,7 @@ AC_MSG_RESULT([${enable_cpupower:-yes}])
 AM_CONDITIONAL([HAVE_CPUPOWER],[test "x$enable_cpupower" != "xno"])
 
 AC_ARG_ENABLE([upower],
-	AC_HELP_STRING([--disable-upower],
-		[Disable upower @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-upower],[Disable upower @<:@default=auto@:>@]))
 if test "x$enable_upower" != xno ; then
 	PKG_CHECK_MODULES([UPOWER],[upower-glib],
 		[AC_DEFINE([USE_UPOWER],[1],[Define to 1 to support libupower-glib.])],
@@ -273,8 +267,7 @@ AC_MSG_RESULT([${enable_upower:-yes}])
 AM_CONDITIONAL([HAVE_UPOWER_GLIB],[test "x$enable_upower" != "xno"])
 
 AC_ARG_ENABLE([libdnet],
-	AC_HELP_STRING([--disable-libdnet],
-		[Disable libdnet @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-libdnet],[Disable libdnet @<:@default=auto@:>@]))
 if test "x$enable_libdnet" != xno ; then
 	AC_CHECK_HEADER([dnet.h],
 		[AC_DEFINE([USE_LIBDNET],[1],[Define to 1 to support libdnet.])],
@@ -294,8 +287,7 @@ AC_MSG_RESULT([${enable_libdnet:-yes}])
 AM_CONDITIONAL([HAVE_LIBDNET],[test "x$enable_libdnet" != "xno"])
 
 AC_ARG_ENABLE([sensors],
-	AC_HELP_STRING([--disable-sensors],
-		[Disable lm-sensors @<:@default=auto@:>@]))
+	AS_HELP_STRING([--disable-sensors],[Disable lm-sensors @<:@default=auto@:>@]))
 if test "x$enable_sensors" != xno ; then
 	AC_CHECK_HEADER([sensors/sensors.h],
 		[AC_DEFINE([USE_LM_SENSORS],[1],[Define to 1 to support lm sensors.])],
@@ -315,8 +307,7 @@ AC_MSG_RESULT([${enable_sensors:-yes}])
 AM_CONDITIONAL([HAVE_LM_SENSORS],[test "x$enable_sensors" != "xno"])
 
 AC_ARG_ENABLE([debug],
-	AC_HELP_STRING([--enable-debug],
-		[Enable debugging support @<:@default=disabled@:>@]))
+	AS_HELP_STRING([--enable-debug],[Enable debugging support @<:@default=disabled@:>@]))
 if test "x$enable_debug" = xyes ; then
 	AC_DEFINE_UNQUOTED([DEBUG],[],[Define to enable debugging])
 fi
