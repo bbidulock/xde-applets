@@ -1,3 +1,6 @@
+---
+layout: default
+---
 [xde-applets -- read me first file.  2021-05-18]: #
 
 xde-applets
@@ -11,6 +14,8 @@ tray that provide various functions from package management to wireless
 connections.  Some of these applets were originally written in perl(1)
 as separate applications.  They have now been converted to "C" for speed
 and to provide access to libraries not available from `perl(1)`.
+
+For screenshots and examples, see [SAMPLES](SAMPLES.html).
 
 The source for `xde-applets` is hosted on [GitHub][1].
 
