@@ -1618,7 +1618,11 @@ xde_device_dump(GDBusProxy *proxy)
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "UpdateTime"))) {
+#if __SIZEOF_LONG__ == 4
+		DPRINTF(1, "UpdateTime: %llu sec\n", g_variant_get_uint64(prop));
+#else
 		DPRINTF(1, "UpdateTime: %lu sec\n", g_variant_get_uint64(prop));
+#endif
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Type"))) {
