@@ -1671,11 +1671,19 @@ xde_device_dump(GDBusProxy *proxy)
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "TimeToEmpty"))) {
+#if __SIZEOF_LONG__ == 4
+		DPRINTF(1, "TimeToEmpty: %lld sec\n", g_variant_get_int64(prop));
+#else
 		DPRINTF(1, "TimeToEmpty: %ld sec\n", g_variant_get_int64(prop));
+#endif
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "TimeToFull"))) {
+#if __SIZEOF_LONG__ == 4
+		DPRINTF(1, "TimeToFull: %lld sec\n", g_variant_get_int64(prop));
+#else
 		DPRINTF(1, "TimeToFull: %ld sec\n", g_variant_get_int64(prop));
+#endif
 		g_variant_unref(prop);
 	}
 	if ((prop = g_dbus_proxy_get_cached_property(proxy, "Percentage"))) {
