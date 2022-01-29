@@ -23,7 +23,7 @@ git tag -n100 -l 0.12
 
 git shortlog -e -n -w80,6,8 0.11...0.12
 
-Brian Bidulock <bidulock@openss7.org> (10):
+Brian Bidulock <bidulock@openss7.org> (11):
       post-release update
       update copyright
       new Arch Linux cflags
@@ -34,6 +34,7 @@ Brian Bidulock <bidulock@openss7.org> (10):
       more 32-bit clean
       update copyright
       update release files
+      lost README
 
 
 Release xde-applets-0.11 released 2021-05-18

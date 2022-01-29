@@ -1,5 +1,16 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 6e34a0ae4f33c556b83efe32a68fd18174135d38
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jan 29 00:40:27 2022 -0700
+
+    lost README
+
+ ChangeLog | 18 ++++++++++++
+ NEWS      |  3 +-
+ README    | 92 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 112 insertions(+), 1 deletion(-)
+
 commit b167ab66e34dd17987c6f00095f4cee811cfc792
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Sat Jan 29 00:38:51 2022 -0700
