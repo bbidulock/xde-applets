@@ -1,4 +1,39 @@
-xde-applets -- history of user-visible changes.  2021-05-18
+xde-applets -- history of user-visible changes.  2022-01-29
+
+Release xde-applets-0.12 released 2022-01-29
+--------------------------------------------
+
+git tag -n100 -l 0.12
+
+0.12            Preliminary Release 0.12
+
+    This is the twelfth release of the xde-applets package. This package
+    provides a number of "C"-language applets for the system tray that
+    provide various functions from package management to wireless
+    connections. Some of these applets were originally written in perl(1)
+    as separate applications. They have now been converted to "C" for speed
+    and to provide access to libraries not available from perl(1).
+
+    This release is a preliminary release that provides an update to the
+    build chain and compiles 32-bit clean with GCC 11.1.0.
+
+    Included in the release is an autoconf tarball for building the package
+    from source. See the NEWS and TODO file in the release for more
+    information. Please report problems to the issues list on GitHub.
+
+git shortlog -e -n -w80,6,8 0.11...0.12
+
+Brian Bidulock <bidulock@openss7.org> (9):
+      post-release update
+      update copyright
+      new Arch Linux cflags
+      deploy gh-pages
+      update build flags
+      update gh-pages
+      make 32-bit clean
+      more 32-bit clean
+      update copyright
+
 
 Release xde-applets-0.11 released 2021-05-18
 --------------------------------------------
@@ -239,133 +274,5 @@ Brian Bidulock <bidulock@openss7.org> (8):
       better defaults now
       build release notes with distribution
       update release notes
-      update release files
-
-
-Release xde-applets-0.5 released 2019-08-31
--------------------------------------------
-
-git tag -n100 -l 0.5
-
-0.5             Preliminary Release 0.5
-
-    This is the fifth release of the xde-applets package. This package
-    provides a number of "C"-language applets for the system tray that
-    provide various functions from package management to wireless
-    connections. Some of these applets were originally written in perl(1)
-    as separate applications. They have now been converted to "C" for speed
-    and to provide access to libraries not available from perl(1).
-
-    This release is a preliminary release that updates the build system,
-    generates better NEWS files, handles annotated tags better, and
-    converts the release archives to lzip compression. A number of the
-    applets are still incomplete; however, some are almost complete, such
-    as the battery and sensors applets.
-
-    Included in the release is an autoconf tarball for building the package
-    from source. See the NEWS and TODO file in the release for more
-    information. Please report problems to the issues list on GitHub.
-
-git shortlog -e -n -w80,6,8 0.4...0.5
-
-Brian Bidulock <bidulock@openss7.org> (99):
-      git hates trailing space
-      better formatting
-      better formatting
-      limit changelog
-      todos
-      update build system
-      rename things a bit
-      more more things around
-      add two new applets
-      more additions for new applets
-      update build system
-      update release files for new build
-      taking a stab at dock app
-      working dockapp icon
-      simplified dock app
-      simplify dock app some more
-      dockapps for all
-      update copyright headers
-      set backgrund pixmap to parentrelative
-      parent relative all
-      rationalize headers and debug
-      add indent specification
-      working up xde-up-applet
-      breakout enumerations
-      correct logic
-      change status icon with display battery
-      change dockapp icon with battery too
-      factor icon updates
-      start using libnotify
-      add more events
-      a little factoring
-      more factoring
-      quiet down debugs
-      add a type
-      play sound on battery level events
-      show desktop notificaitons
-      use offscreen pixmap for compositing dockapps
-      display additional batteries (mouse, keyboard)
-      rationalize approach between applets
-      rationalize popup menus
-      start creating applet
-      use a custom tooltip window
-      remove cruft
-      might be other signals of interest on statusicon
-      process additional status icon signals
-      rationalize new status icon tooltip approach
-      correct notification timeout
-      use libpackagekit-glib2 for the pk applet
-      a first stab at lm_sensors applet
-      icons for xde-lm-applet
-      keep tooltip widgets around
-      provide mechanism for updating tooltip widget
-      update tooltip window dynamically
-      update icons based on read settings
-      statis icons and dockapps are per screen
-      install icons
-      update release files
-      add missing symbols
-      add missing types
-      show missing inputs and proper labels
-      don't include missing sensors in calculations
-      use table for tooltip
-      better label alignment in tooltip
-      tighter table formatting
-      set default max temp to boiling
-      one chip structure per screen
-      pop and position status window on activate
-      pop status window when requested by menu
-      correct options and commands
-      rationalize changes back to other applets
-      need a device tree per screen
-      use default table spacing
-      use table for tooltips (first cut)
-      use default spacings for tables
-      keep track of table for updates
-      add and delete rows as required
-      more properties for canberra
-      test dhcp again
-      rationalize to other applets
-      start completing documentation
-      add in library checks and new cpu applet
-      update desktop entry files
-      update desktop files
-      rearrange desktop files
-      add missing desktop entry
-      add backlight applet support
-      add backlight applet skeleton
-      reformat TODO
-      update release files
-      update for gettext 0.20.1
-      generate NEWS better
-      place filename last in sed command
-      better html to txt conversion
-      add RELEASE files to ignore
-      add moc date and lzip compression
-      get rid of gcc 9.1 string warnings
-      update release notes
-      don't need gnits in this package
       update release files
 

@@ -1,5 +1,122 @@
 # created with git log --stat=76 -M -C -500|fmt -sct -w80
 
+commit 2c7d1f30b2da381db72ef958478283e8ba87ee1e
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Jan 29 00:36:45 2022 -0700
+
+    update copyright
+
+ src/xde-au-applet.c  | 8 ++++----
+ src/xde-av-applet.c  | 8 ++++----
+ src/xde-bl-applet.c  | 8 ++++----
+ src/xde-bt-applet.c  | 8 ++++----
+ src/xde-cpu-applet.c | 8 ++++----
+ src/xde-dh-applet.c  | 8 ++++----
+ src/xde-hal-applet.c | 8 ++++----
+ src/xde-id-applet.c  | 8 ++++----
+ src/xde-lm-applet.c  | 8 ++++----
+ src/xde-pk-applet.c  | 8 ++++----
+ src/xde-sd-applet.c  | 8 ++++----
+ src/xde-up-applet.c  | 8 ++++----
+ src/xde-wl-applet.c  | 8 ++++----
+ 13 files changed, 52 insertions(+), 52 deletions(-)
+
+commit f936c41ecc494c7f9b70f85c9aeb72b715342fd5
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 02:06:38 2022 -0700
+
+    more 32-bit clean
+
+ src/xde-up-applet.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+commit 5e6ba8452a4d281a28e067031598b5226479302a
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 02:04:48 2022 -0700
+
+    make 32-bit clean
+
+ src/xde-up-applet.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+commit 4f98f640c3407f357e0ea23f121ca2bac55ff30f
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Jan 28 01:53:42 2022 -0700
+
+    update gh-pages
+
+ Makefile.am  | 7 +++++--
+ README       | 2 ++
+ README.md    | 2 ++
+ README.md.in | 2 ++
+ SAMPLES.md   | 3 +++
+ index.md     | 5 +++++
+ 6 files changed, 19 insertions(+), 2 deletions(-)
+
+commit 5222b9ddb0750522447a2cbbc79f7e0a5028208c
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Thu Jan 27 20:53:30 2022 -0700
+
+    update build flags
+
+ configure.sh | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+commit f5418338016c56d8aac22a4dac1824874b2706c1
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Sat Dec 4 19:10:23 2021 -0700
+
+    deploy gh-pages
+
+ README       | 90 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ README.md    | 55 ++++++++++++++++++----------------
+ README.md.in | 55 ++++++++++++++++++----------------
+ RELEASE      | 22 ++++++++++++++
+ _config.yml  |  4 +++
+ index.md     | 90 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ logo.svg     | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 357 insertions(+), 50 deletions(-)
+
+commit 7eea18762862b0a50b9c553328efce8211a6ac7d
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Fri Dec 3 22:40:47 2021 -0700
+
+    new Arch Linux cflags
+
+ configure.sh | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+commit 4766fc427fe4fe8e86f2d262d1fffc56049259d8
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 18 02:09:36 2021 -0600
+
+    update copyright
+
+ src/xde-au-applet.c  | 8 ++++----
+ src/xde-av-applet.c  | 8 ++++----
+ src/xde-bl-applet.c  | 8 ++++----
+ src/xde-bt-applet.c  | 8 ++++----
+ src/xde-cpu-applet.c | 8 ++++----
+ src/xde-dh-applet.c  | 8 ++++----
+ src/xde-hal-applet.c | 8 ++++----
+ src/xde-id-applet.c  | 8 ++++----
+ src/xde-lm-applet.c  | 8 ++++----
+ src/xde-pk-applet.c  | 8 ++++----
+ src/xde-sd-applet.c  | 8 ++++----
+ src/xde-up-applet.c  | 8 ++++----
+ src/xde-wl-applet.c  | 8 ++++----
+ 13 files changed, 52 insertions(+), 52 deletions(-)
+
+commit bfecdf4093ab8be8651bc7856fb500836ec417ba
+Author: Brian Bidulock <bidulock@openss7.org>
+Date:   Tue May 18 01:46:34 2021 -0600
+
+    post-release update
+
+ ChangeLog | 13 +++++++++++++
+ NEWS      |  3 ++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+
 commit e5fefcbaf4d60647a39f79f6c14b6733c8674888
 Author: Brian Bidulock <bidulock@openss7.org>
 Date:   Tue May 18 01:44:11 2021 -0600

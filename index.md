@@ -1,13 +1,13 @@
 ---
 layout: default
 ---
-[xde-applets -- read me first file.  2021-05-18]: #
+[xde-applets -- read me first file.  2022-01-29]: #
 
 xde-applets
 ===============
 
-Package `xde-applets-0.11` was released under GPLv3 license
-2021-05-18.
+Package `xde-applets-0.12` was released under GPLv3 license
+2022-01-29.
 
 This package provides a number of "C"-language applets for the system
 tray that provide various functions from package management to wireless
@@ -23,7 +23,7 @@ The source for `xde-applets` is hosted on [GitHub][1].
 Release
 -------
 
-This is the `xde-applets-0.11` package, released 2021-05-18.
+This is the `xde-applets-0.12` package, released 2022-01-29.
 This release, and the latest version, can be obtained from [GitHub][1],
 using a command such as:
 
@@ -83,13 +83,13 @@ Report issues on GitHub [here][2].
 
 [1]: https://github.com/bbidulock/xde-applets
 [2]: https://github.com/bbidulock/xde-applets/issues
-[3]: https://github.com/bbidulock/xde-applets/blob/0.11/RELEASE
-[4]: https://github.com/bbidulock/xde-applets/blob/0.11/NEWS
-[5]: https://github.com/bbidulock/xde-applets/blob/0.11/ChangeLog
-[6]: https://github.com/bbidulock/xde-applets/blob/0.11/TODO
-[7]: https://github.com/bbidulock/xde-applets/blob/0.11/COMPLIANCE
-[8]: https://github.com/bbidulock/xde-applets/blob/0.11/INSTALL
-[9]: https://github.com/bbidulock/xde-applets/blob/0.11/LICENSE
-[10]: https://github.com/bbidulock/xde-applets/blob/0.11/COPYING
+[3]: https://github.com/bbidulock/xde-applets/blob/0.12/RELEASE
+[4]: https://github.com/bbidulock/xde-applets/blob/0.12/NEWS
+[5]: https://github.com/bbidulock/xde-applets/blob/0.12/ChangeLog
+[6]: https://github.com/bbidulock/xde-applets/blob/0.12/TODO
+[7]: https://github.com/bbidulock/xde-applets/blob/0.12/COMPLIANCE
+[8]: https://github.com/bbidulock/xde-applets/blob/0.12/INSTALL
+[9]: https://github.com/bbidulock/xde-applets/blob/0.12/LICENSE
+[10]: https://github.com/bbidulock/xde-applets/blob/0.12/COPYING
 
 [ vim: set ft=markdown sw=4 tw=72 nocin nosi fo+=tcqlorn spell: ]: #
